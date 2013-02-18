@@ -103,11 +103,11 @@ define(function (require, exports) {
                 autoScroll: true,
                 enableHdMenu: false,
                 sm: rsm,
-                columns: [],
+                columns: config.columns,
                 //tbar: tbar,
                 listeners: {
                     viewready: function () {
-                        store.load();
+                        //store.load();
                     },
                     destroy: function () {
                         console.log('ucparam window destroy');
