@@ -22,105 +22,105 @@ define(function (require, exports) {
 
     var Config = require('crud/Grid.CRUD.Config.js');
 
-    function getButtons(config) {
-        
-    }
-    return {
-        init: function (config) {
-            var store = config.store,
-                btnConf = config.buttons,
-                rsm, mainPanel, tbar;
+    var View = Ext.extend(Ext.util.Observable, {
+        constructor: function () {
+            this.init = function (config) {
+                var store = config.store,
+                    btnConf = config.buttons,
+                    rsm, mainPanel, tbar;
 
-            function changeBtnStatu(record) {
-                var delBtn = Ext.getCmp(btnConf.delete.id);
-                if (!record) {
-                    delBtn.disable();
-                } else {
-                    delBtn.enable();
-                }
-            }
-            /**
-             * 处理删除之后的操作
-             */
-            function afterDelete(store, action, result, res, rs) {
-                var nextIndex,
-                    index = rs.lastIndex,
-                    count = store.getCount();
-                if (action === 'destroy') {
-                    if (count === 0) {
-                        Ext.getCmp(btnConf.delete.id).disable();
-                        return;
-                    }
-                    if (index === 0) {
-                        nextIndex = 0;
-                    } else if (index === count) {
-                        nextIndex = index - 1;
+                function changeBtnStatu(record) {
+                    var delBtn = Ext.getCmp(btnConf.delete.id);
+                    if (!record) {
+                        delBtn.disable();
                     } else {
-                        nextIndex = index;
+                        delBtn.enable();
                     }
-                    rsm.selectRow(nextIndex);
-                    Ext.getCmp(btnConf.delete.id).enable();
-                } else {
-                    changeBtnStatu(rsm.getSelected());
                 }
-            }
-
-            /**
-             * 对删除错误之后的界面进行错误修正
-             */
-            function exceptionHandler(proxy, type, action, options, res, arg) {
-                var id;
-                if (action === 'destroy') {
-                    if (arg.lastIndex === store.getTotalCount() - 1) {
-                        id = store.getCount();
-                    } else {
-                        id = arg.lastIndex;
-                    }
-                    setTimeout(function () {
-                        rsm.selectRow(id);
+                /**
+                 * 处理删除之后的操作
+                 */
+                function afterDelete(store, action, result, res, rs) {
+                    var nextIndex,
+                        index = rs.lastIndex,
+                        count = store.getCount();
+                    if (action === 'destroy') {
+                        if (count === 0) {
+                            Ext.getCmp(btnConf.delete.id).disable();
+                            return;
+                        }
+                        if (index === 0) {
+                            nextIndex = 0;
+                        } else if (index === count) {
+                            nextIndex = index - 1;
+                        } else {
+                            nextIndex = index;
+                        }
+                        rsm.selectRow(nextIndex);
                         Ext.getCmp(btnConf.delete.id).enable();
-                    }, 400);
+                    } else {
+                        changeBtnStatu(rsm.getSelected());
+                    }
                 }
-            }
 
-            rsm = new Ext.grid.RowSelectionModel({
-                singleSelect: true,
-                listeners: {
-                    rowSelect: function (sm) {
-                        console.log('selectRow');
-                    },
-                    rowdeselect: function (sm) {
-                        console.log('deSelectRow');
+                /**
+                 * 对删除错误之后的界面进行错误修正
+                 */
+                function exceptionHandler(proxy, type, action, options, res, arg) {
+                    var id;
+                    if (action === 'destroy') {
+                        if (arg.lastIndex === store.getTotalCount() - 1) {
+                            id = store.getCount();
+                        } else {
+                            id = arg.lastIndex;
+                        }
+                        setTimeout(function () {
+                            rsm.selectRow(id);
+                            Ext.getCmp(btnConf.delete.id).enable();
+                        }, 400);
                     }
                 }
-            });
-            mainPanel = new Ext.grid.GridPanel({
-                id: config.id,
-                store: store,
-                loadMask: true,
-                border: false,
-                closable: true,
-                autoScroll: true,
-                enableHdMenu: false,
-                sm: rsm,
-                columns: config.columns,
-                //tbar: tbar,
-                listeners: {
-                    viewready: function () {
-                        //store.load();
-                    },
-                    destroy: function () {
-                        console.log('Grid [Ext.grid.GridPanel] destroy');
-                        //关闭窗口的时候删除绑定的处理函数，下一次重新绑定，避免闭包问题，即使用上一个窗口生成的变量，rsm
-                        store.removeListener('write', afterDelete);
-                        store.removeListener('exception', exceptionHandler);
-                    },
-                    rowdblclick: function (grid, rowIndex) {
-                       console.log('row double click');
+
+                rsm = new Ext.grid.RowSelectionModel({
+                    singleSelect: true,
+                    listeners: {
+                        rowSelect: function (sm) {
+                            console.log('selectRow');
+                        },
+                        rowdeselect: function (sm) {
+                            console.log('deSelectRow');
+                        }
                     }
-                }
-            });
-            return mainPanel;
+                });
+                mainPanel = new Ext.grid.GridPanel({
+                    id: config.id,
+                    store: store,
+                    loadMask: true,
+                    border: false,
+                    closable: true,
+                    autoScroll: true,
+                    enableHdMenu: false,
+                    sm: rsm,
+                    columns: config.columns,
+                    //tbar: tbar,
+                    listeners: {
+                        viewready: function () {
+                            //store.load();
+                        },
+                        destroy: function () {
+                            console.log('Grid [Ext.grid.GridPanel] destroy');
+                            //关闭窗口的时候删除绑定的处理函数，下一次重新绑定，避免闭包问题，即使用上一个窗口生成的变量，rsm
+                            store.removeListener('write', afterDelete);
+                            store.removeListener('exception', exceptionHandler);
+                        },
+                        rowdblclick: function (grid, rowIndex) {
+                           console.log('row double click');
+                        }
+                    }
+                });
+                return mainPanel;
+            };
         }
-    };
+    });
+    return View;
 });

@@ -11,7 +11,7 @@ define(function(require, exports) {
     'use strict';
     var Model = require('crud/Grid.CRUD.Model.js'),
         config = require('crud/Grid.CRUD.Config.js'),
-        view = require('crud/Grid.CRUD.View.js');
+        View = require('crud/Grid.CRUD.View.js');
 
     //create namespace
     Ext.ns('Ext.ux.CRUD');
@@ -80,6 +80,7 @@ define(function(require, exports) {
                 data: this.data || this.api,
                 fields: config.get('store','fields')
             });
+            var view = new View();
             model.on({
                 'success': function (action, result, res) {
                     //请求成功
