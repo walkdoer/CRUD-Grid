@@ -72,7 +72,7 @@ define(function(require, exports) {
         initComponent: function() {
             this.layout = 'fit',
             Ext.ux.CRUD.superclass.initComponent.apply(this, arguments);
-            //初始化配置
+            //初始化配置模块
             config.init(this.initialConfig);
             //初始化数据库
             var model = new Model({
@@ -93,6 +93,21 @@ define(function(require, exports) {
                 'error': function (action, record, msg) {
                     //请求失败404 500 或者 DataReader配置有错
                     errorHandler[action](record, msg);
+                }
+            });
+
+            view.on({
+                'tbar-btn-delete': function () {
+                    //todo 编写删除
+                    console.log('删除');
+                },
+                'tbar-btn-refresh': function () {
+                    //todo 编写刷新
+                    console.log('刷新');
+                },
+                'tbar-btn-add': function () {
+                    //todo 编写添加
+                    console.log('添加');
                 }
             });
             

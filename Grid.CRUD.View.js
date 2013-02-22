@@ -20,10 +20,22 @@ define(function (require, exports) {
      */
     'use strict';
 
-    var Config = require('crud/Grid.CRUD.Config.js');
-
+    var config = require('crud/Grid.CRUD.Config.js');
+    
     var View = Ext.extend(Ext.util.Observable, {
         constructor: function () {
+            var that = this,
+                //获取顶部工具栏的配置方式
+                tbarConfig = config.get('grid','tbar');
+            //绑定顶部工具栏按钮的处理函数
+            for (var i = 0, len = tbarConfig.items.length; i < len; i++) {
+                var button = tbarConfig.items[i];
+                console.log(button, button.id);
+                this.addEvents(button.id);
+                button.handler = function (btn, event) {
+                    that.fireEvent(btn.id,[btn, event]);
+                };
+            }
             this.init = function (config) {
                 var store = config.store,
                     btnConf = config.buttons,
@@ -81,6 +93,8 @@ define(function (require, exports) {
                     }
                 }
 
+                //生成顶部工具栏
+                tbar = new Ext.Toolbar(tbarConfig);
                 rsm = new Ext.grid.RowSelectionModel({
                     singleSelect: true,
                     listeners: {
@@ -102,7 +116,7 @@ define(function (require, exports) {
                     enableHdMenu: false,
                     sm: rsm,
                     columns: config.columns,
-                    //tbar: tbar,
+                    tbar: tbar,
                     listeners: {
                         viewready: function () {
                             //store.load();

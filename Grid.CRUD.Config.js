@@ -23,6 +23,20 @@ define(function(require, exports) {
                 }
             }
         },
+        tbarButtons =  [{
+            id: 'tbar-btn-add',
+            text: '添加',
+            iconCls: 'icon-add'
+        }, {
+            id: 'tbar-btn-delete',
+            text: '删除',
+            iconCls: 'icon-delete',
+            disabled: true
+        }, {
+            id: 'tbar-btn-refresh',
+            text: '刷新',
+            iconCls: 'icon-refresh'
+        }],
         systemConfig = {},
         userConfig;
     /**
@@ -49,16 +63,9 @@ define(function(require, exports) {
         }
         userConfig[component][name] = val;
     }
-    /**
-     * 初始化用户配置
-     * @param  {object} config [用户配置]
-     */
-    function init(config) {
-        //初始化config
-        userConfig = {};
-        var storeField = [],
-            col, field,
-            columns = config.columns;
+
+    function getStoreField(columns) {
+        var col, field, storeField = [];
         for (var i = 0, len = columns.length; i < len; i++) {
             col = columns[i];
             if (!col.dataIndex) {
@@ -76,10 +83,32 @@ define(function(require, exports) {
             }
             storeField.push(field);
         }
+        return storeField;
+    }
+
+    function getTbarConfig() {
+        return {
+            items: tbarButtons
+        };
+    }
+    /**
+     * 初始化用户配置
+     * @param  {object} config [用户配置]
+     */
+    function init(config) {
+        //初始化config
+        userConfig = {};
+        var storeField,
+            tbarConfig,
+            columns = config.columns;
+        
 
         /* 将用户的配置转化为系统可用的配置 */
+        //从column配置中取得Store的字段配置
+        storeField = getStoreField(columns);
+        tbarConfig = getTbarConfig();
         set('store','fields', storeField);
-
+        set('grid', 'tbar', tbarConfig);
         //Buttons
         /*
         for (var i = 0; i < buttonsConf.length; i++) {
