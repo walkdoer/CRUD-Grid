@@ -36,6 +36,7 @@ define(function (require, exports) {
                     }
                 }),
                 autoSave: true,
+                autoDestroy: true,
                 reader: new Ext.data.JsonReader({
                     successProperty: 'success',
                     idProperty: 'id',
@@ -58,13 +59,17 @@ define(function (require, exports) {
             return store;
         } else {
             store = new Ext.data.ArrayStore({
-                fields: [
-                   {name: 'company'},
-                   {name: 'price',      type: 'float'},
-                   {name: 'change',     type: 'float'},
-                   {name: 'pctChange',  type: 'float'},
-                   {name: 'lastChange', type: 'date', dateFormat: 'n/j h:ia'}
-                ]
+                /**
+                 * 配置项是一个数组，例如
+                   [
+                       {name: 'company'},
+                       {name: 'price',      type: 'float'},
+                       {name: 'change',     type: 'float'},
+                       {name: 'pctChange',  type: 'float'},
+                       {name: 'lastChange', type: 'date', dateFormat: 'n/j h:ia'}
+                   ]
+                 */
+                fields: config.fields
             });
             store.loadData(data);
             return store;

@@ -10,7 +10,8 @@ define(function(require, exports) {
      */
     'use strict';
     var Model = require('crud/Grid.CRUD.Model.js'),
-        View = require('crud/Grid.CRUD.View.js');
+        config = require('crud/Grid.CRUD.Config.js'),
+        view = require('crud/Grid.CRUD.View.js');
 
     //create namespace
     Ext.ns('Ext.ux.CRUD');
@@ -69,15 +70,16 @@ define(function(require, exports) {
     };
     Ext.ux.CRUD = Ext.extend(Ext.Panel, {
         initComponent: function() {
-            Ext.ux.CRUD.superclass.initComponent.call(this, {
-                layout: 'fit'
-            });
+            this.layout = 'fit',
+            Ext.ux.CRUD.superclass.initComponent.apply(this, arguments);
+            //初始化配置
+            config.init(this.initialConfig);
             //初始化数据库
             var model = new Model({
                 storeId: 'mydata',
-                data: this.data || this.api
+                data: this.data || this.api,
+                fields: config.get('store','fields')
             });
-            
             model.on({
                 'success': function (action, result, res) {
                     //请求成功
@@ -92,8 +94,9 @@ define(function(require, exports) {
                     errorHandler[action](record, msg);
                 }
             });
+            
             //初始化界面
-            this.add(View.init({
+            this.add(view.init({
                 id: this.id,
                 store: model.getStore(),
                 columns: this.columns

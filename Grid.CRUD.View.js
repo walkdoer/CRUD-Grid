@@ -110,7 +110,7 @@ define(function (require, exports) {
                         //store.load();
                     },
                     destroy: function () {
-                        console.log('ucparam window destroy');
+                        console.log('Grid [Ext.grid.GridPanel] destroy');
                         //关闭窗口的时候删除绑定的处理函数，下一次重新绑定，避免闭包问题，即使用上一个窗口生成的变量，rsm
                         store.removeListener('write', afterDelete);
                         store.removeListener('exception', exceptionHandler);

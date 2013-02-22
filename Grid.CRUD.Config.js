@@ -32,7 +32,10 @@ define(function(require, exports) {
      * @return {Object}      [结果]
      */
     function get(component, name) {
-        return userConfig[name];
+        if (userConfig[component]) {
+            return userConfig[component][name];
+        }
+        
     }
 
     /**
@@ -40,21 +43,45 @@ define(function(require, exports) {
      * @param  {String} name [配置名]
      * @param  {Object}      [Value]
      */
-    function set(name, val) {
-        userConfig[name] = val;
+    function set(component, name, val) {
+        if (userConfig[component] === undefined) {
+            userConfig[component] = {};
+        }
+        userConfig[component][name] = val;
     }
     /**
      * 初始化用户配置
      * @param  {object} config [用户配置]
      */
     function init(config) {
-        userConfig = config;
-        var buttonsConf = userConfig.buttons,
-            gridConf = userConfig.grid,
-            windowsConf = userConfig.windows,
-            toolbarConf = userConfig.toolbar;
+        //初始化config
+        userConfig = {};
+        var storeField = [],
+            col, field,
+            columns = config.columns;
+        for (var i = 0, len = columns.length; i < len; i++) {
+            col = columns[i];
+            if (!col.dataIndex) {
+                continue;
+            }
+            field = {};
+            field.name = col.dataIndex;
+            //如果用户有定义类型 Type
+            if (!!col.type) {
+                field.type = col.type;
+            }
+            //如果用户有定义 dateFormat
+            if (!!col.dateFormat) {
+                field.dateFormat = col.dateFormat;
+            }
+            storeField.push(field);
+        }
+
         /* 将用户的配置转化为系统可用的配置 */
+        set('store','fields', storeField);
+
         //Buttons
+        /*
         for (var i = 0; i < buttonsConf.length; i++) {
             var conf = buttonsConf[i];
             console.log(conf.type, conf.handler);
@@ -62,15 +89,16 @@ define(function(require, exports) {
                 text: conf.text || defaultConfig.buttons[conf.type].text,
                 handler: conf.handler
             });
-        }
+        }*/
         //Grid
         //Window
         //Store
         //Toolbar
+        
     }
     return {
         init: init,
         get: get,
-        set: set,
+        set: set
     };
 });

@@ -71,41 +71,47 @@ define(function(require, exports) {
         var gridPanel = new Ext.ux.CRUD({
             id: id,
             title: title,
+            closable: true,
             data: myData,
             columns: [
                 {
-                    id       :'company',
-                    header   : 'Company', 
-                    width    : 160, 
-                    sortable : true, 
+                    id       : 'company',
+                    header   : 'Company',
+                    width    : 160,
+                    sortable : true,
                     dataIndex: 'company'
                 },
                 {
-                    header   : 'Price', 
-                    width    : 75, 
-                    sortable : true, 
-                    renderer : 'usMoney', 
+                    header   : 'Price',
+                    type     : 'float',
+                    width    : 75,
+                    sortable : true,
+                    renderer : 'usMoney',
                     dataIndex: 'price'
                 },
                 {
-                    header   : 'Change', 
-                    width    : 75, 
-                    sortable : true, 
-                    renderer : change, 
+                    header   : 'Change',
+                    type     : 'float',
+                    width    : 75,
+                    sortable : true,
+                    renderer : change,
                     dataIndex: 'change'
                 },
                 {
-                    header   : '% Change', 
-                    width    : 75, 
-                    sortable : true, 
-                    renderer : pctChange, 
+                    header   : '% Change',
+                    type     : 'float',
+                    width    : 75,
+                    sortable : true,
+                    renderer : pctChange,
                     dataIndex: 'pctChange'
                 },
                 {
-                    header   : 'Last Updated', 
-                    width    : 85, 
-                    sortable : true, 
-                    renderer : Ext.util.Format.dateRenderer('m/d/Y'), 
+                    header   : 'Last Updated',
+                    type     : 'date',
+                    dateFormat: 'n/j h:ia',
+                    width    : 85,
+                    sortable : true,
+                    renderer : Ext.util.Format.dateRenderer('m/d/Y'),
                     dataIndex: 'lastChange'
                 },
                 {
@@ -134,13 +140,6 @@ define(function(require, exports) {
                         }
                     }]
                 }
-            ],
-            fields: [
-               {name: 'company'},
-               {name: 'price',      type: 'float'},
-               {name: 'change',     type: 'float'},
-               {name: 'pctChange',  type: 'float'},
-               {name: 'lastChange', type: 'date', dateFormat: 'n/j h:ia'}
             ]
         });
         return gridPanel;
