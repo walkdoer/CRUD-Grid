@@ -29,10 +29,10 @@ define(function (require, exports) {
             defaultConf = {
                 proxy: new Ext.data.HttpProxy({
                     api: {
-                        load: { url: config.read, method: 'POST' },
-                        create: { url: config.create, method: 'POST' },
-                        update: { url: config.update, method: 'POST' },
-                        destroy: { url: config.delete, method: 'POST' }
+                        load: { url: config.data.read, method: 'POST' },
+                        create: { url: config.data.create, method: 'POST' },
+                        update: { url: config.data.update, method: 'POST' },
+                        destroy: { url: config.data.delete, method: 'POST' }
                     }
                 }),
                 autoSave: true,
@@ -97,11 +97,11 @@ define(function (require, exports) {
                 }
                 //A valid response was returned from the server having successProperty === false. T
                 if (type === 'remote') {
-                    that.fireEvent('fail', [action, record, msg]);
+                    that.fireEvent('fail', action, record, msg);
                 //An invalid response from the server was returned: either 404, 500
                 //or the response meta-data does not match that defined in the DataReader
                 } else {
-                    that.fireEvent('error', [action, record, msg]);
+                    that.fireEvent('error', action, record, msg);
                 }
             });
             store.on('write', function (store, action, result, res, rs) {
@@ -109,7 +109,7 @@ define(function (require, exports) {
                 if (action === 'destroy') {
                     action = 'delete';
                 }
-                that.fireEvent('success', [store, action, result, res, rs]);
+                that.fireEvent('success', store, action, result, res, rs);
             });
             this.getStore = function () {
                 return store;

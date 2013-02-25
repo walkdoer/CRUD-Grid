@@ -9,9 +9,9 @@ define(function(require, exports) {
      *
      */
     'use strict';
-    require('crud/lib/RowEditor.js');
-    require('crud/Grid.CRUD.App.js');
-
+    require('crud/public/js/lib/RowEditor.js');
+    require('crud/public/js/Grid.CRUD.App.js');
+    /*
      var myData = [
         ['3m Co',                               71.72, 0.02,  0.03,  '9/1 12:00am'],
         ['Alcoa Inc',                           29.01, 0.42,  1.47,  '9/1 12:00am'],
@@ -42,7 +42,7 @@ define(function(require, exports) {
         ['United Technologies Corporation',     63.26, 0.55,  0.88,  '9/1 12:00am'],
         ['Verizon Communications',              35.57, 0.39,  1.11,  '9/1 12:00am'],
         ['Wal-Mart Stores, Inc.',               45.45, 0.73,  1.63,  '9/1 12:00am']
-    ];
+    ];*/
       /**
      * Custom function used for column renderer
      * @param {Object} val
@@ -75,7 +75,12 @@ define(function(require, exports) {
             //配置可以关闭
             closable: true,
             //local数据 也可以使用api配置项配置remote数据
-            data: myData,
+            api: {
+                update: Portal.data.proxyUrl('crud:todo:update'),
+                create: Portal.data.proxyUrl('crud:todo:create'),
+                delete: Portal.data.proxyUrl('crud:todo:delete'),
+                read: Portal.data.proxyUrl('crud:todo:read')
+            },
             /**
              * 选择编辑器, 如果不配置，默认使用rowEditor
              * editor: 'window' 表示编辑和添加的时候全部使用window来进行编辑
@@ -85,8 +90,33 @@ define(function(require, exports) {
                 add: 'rowEditor', //添加的时候使用rowEditor
                 edit: 'window' //编辑的时候使用窗口
             },
+            columns: [{
+                id: 'title',
+                type: 'string',
+                header: '标题',
+                sortable: true,
+                allowBlank: false,
+                width: 180,
+                dataIndex: 'title'
+            }, {
+                id: 'finished',
+                type: 'boolean',
+                header: '完成',
+                sortable: true,
+                width: 60,
+                dataIndex: 'finished'
+            },{
+                header   : '更新日期',
+                allowBlank: false,
+                type     : 'date',
+                dateFormat: 'n/j h:ia',
+                width    : 85,
+                sortable : true,
+                renderer : Ext.util.Format.dateRenderer('n/j h:ia'),
+                dataIndex: 'post_date'
+            }]
             //grid的列
-            columns: [
+            /*columns: [
                 {
                     id       : 'company',
                     type: 'string',
@@ -154,7 +184,7 @@ define(function(require, exports) {
                         }
                     }]
                 }
-            ]
+            ]*/
         });
         return gridPanel;
     }

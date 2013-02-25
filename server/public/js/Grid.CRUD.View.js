@@ -20,7 +20,7 @@ define(function (require, exports) {
      */
     'use strict';
 
-    var config = require('crud/Grid.CRUD.Config.js');
+    var config = require('crud/public/js/Grid.CRUD.Config.js');
     
     var View = Ext.extend(Ext.util.Observable, {
         constructor: function () {

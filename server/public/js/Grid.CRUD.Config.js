@@ -145,6 +145,8 @@ define(function(require, exports) {
             if (!!col.dateFormat) {
                 field.dateFormat = col.dateFormat;
             }
+            //字段的非空限制，在数据库为autoSave的时候可以避免表单自动提交
+            field.allowBlank = col.allowBlank;
             storeField.push(field);
         }
         return storeField;

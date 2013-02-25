@@ -10,9 +10,9 @@ define(function(require, exports) {
      */
     'use strict';
 
-    var Model = require('crud/Grid.CRUD.Model.js'),
-        config = require('crud/Grid.CRUD.Config.js'),
-        View = require('crud/Grid.CRUD.View.js');
+    var Model = require('crud/public/js/Grid.CRUD.Model.js'),
+        config = require('crud/public/js/Grid.CRUD.Config.js'),
+        View = require('crud/public/js/Grid.CRUD.View.js');
     //create namespace
     Ext.ns('Ext.ux.CRUD');
     /**
@@ -118,23 +118,23 @@ define(function(require, exports) {
                 }
             }, errorHandler = {
                 create: function (result, res) {
-
+                    console.log(result,res);
                 },
                 delete: function (result, res) {
-
+                    console.log(result,res);
                 },
                 update: function (result, res) {
-
+                    console.log(result,res);
                 }
             }, failHandler = {
-                create: function (result, res) {
-
+                create: function (action, record, msg) {
+                    console.log(action, record,msg);
                 },
-                delete: function (result, res) {
-
+                delete: function (action, record, msg) {
+                    console.log(action, record,msg);
                 },
-                update: function (result, res) {
-
+                update: function (action, record, msg) {
+                    console.log(action, record,msg);
                 }
             };
             model.on({

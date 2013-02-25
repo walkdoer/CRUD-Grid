@@ -13,7 +13,7 @@ define(function (require,exports) {
 
     window.on_menu_click$crud$general = function (id, cls, title) {
         console.log('menu click');
-        Portal.data.loadPlugin('crud', '/crud.js', function (p) {
+        Portal.data.loadPlugin('crud', '/public/js/crud.js', function (p) {
             console.log('plugin loaded');
             onMenuClick(p.init)(id, cls, title);
         });
