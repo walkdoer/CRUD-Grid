@@ -9,6 +9,7 @@ define(function(require, exports) {
      *
      */
     'use strict';
+    require('crud/lib/RowEditor.js');
     require('crud/Grid.CRUD.App.js');
 
      var myData = [
@@ -39,7 +40,7 @@ define(function(require, exports) {
         ['The Home Depot, Inc.',                34.64, 0.35,  1.02,  '9/1 12:00am'],
         ['The Procter & Gamble Company',        61.91, 0.01,  0.02,  '9/1 12:00am'],
         ['United Technologies Corporation',     63.26, 0.55,  0.88,  '9/1 12:00am'],
-        ['Verizon Communications',              35.57, 0.39,  1.11,  '9/1 12:00am'],            
+        ['Verizon Communications',              35.57, 0.39,  1.11,  '9/1 12:00am'],
         ['Wal-Mart Stores, Inc.',               45.45, 0.73,  1.63,  '9/1 12:00am']
     ];
       /**
@@ -71,11 +72,24 @@ define(function(require, exports) {
         var gridPanel = new Ext.ux.CRUD({
             id: id,
             title: title,
+            //配置可以关闭
             closable: true,
+            //local数据 也可以使用api配置项配置remote数据
             data: myData,
+            /**
+             * 选择编辑器, 如果不配置，默认使用rowEditor
+             * editor: 'window' 表示编辑和添加的时候全部使用window来进行编辑
+             * 或者可以像下面一样分开选择
+             */
+            editor: {
+                add: 'rowEditor', //添加的时候使用rowEditor
+                edit: 'window' //编辑的时候使用窗口
+            },
+            //grid的列
             columns: [
                 {
                     id       : 'company',
+                    type: 'string',
                     header   : 'Company',
                     width    : 160,
                     sortable : true,
@@ -111,7 +125,7 @@ define(function(require, exports) {
                     dateFormat: 'n/j h:ia',
                     width    : 85,
                     sortable : true,
-                    renderer : Ext.util.Format.dateRenderer('m/d/Y'),
+                    renderer : Ext.util.Format.dateRenderer('n/j h:ia'),
                     dataIndex: 'lastChange'
                 },
                 {
