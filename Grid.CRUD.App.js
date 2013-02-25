@@ -1,127 +1,3 @@
-<<<<<<< HEAD
-/**
- * Ext.ux.grid.CRUD组件 Controller层-- Grid.CRUD.Controller.js
- * zhangmhao@gmail.com
- * 2012-12-18 10:36:40
- */
-define(function(require, exports) {
-    /**
-     * 组件的Controller层，协调Model层和View层
-     *
-     */
-    'use strict';
-    var Model = require('crud/Grid.CRUD.Model.js'),
-        config = require('crud/Grid.CRUD.Config.js'),
-        View = require('crud/Grid.CRUD.View.js');
-
-    //create namespace
-    Ext.ns('Ext.ux.CRUD');
-
-    /*************************************************
-     *----------------使用实例
-      //Ext.uc.CRUD的使用方法如下：
-        var gridPanel = new Ext.ux.CRUD({
-            id: 'System:Module:SubModule',
-            title: 'MyCrudPanel' ,
-            //.... 其他配置项依旧类似于原生Grid配置
-            //自定义的配置项
-            api: {
-                update: 'path/to/update',
-                delete: 'path/to/delete',
-                create: 'path/to/create',
-                read: 'path/to/read'
-            },
-            toolbar: {
-                searchBar: false,//不需要搜索框
-                buttons: ['create', 'delete', 'refresh']
-            }
-        });
-     *****************************************************/
-    
-    var successHandler = {
-        create: function (result, res) {
-
-        },
-        delete: function (result, res) {
-
-        },
-        update: function (result, res) {
-
-        }
-    }, errorHandler = {
-        create: function (result, res) {
-
-        },
-        delete: function (result, res) {
-
-        },
-        update: function (result, res) {
-
-        }
-    }, failHandler = {
-        create: function (result, res) {
-
-        },
-        delete: function (result, res) {
-
-        },
-        update: function (result, res) {
-
-        }
-    };
-    Ext.ux.CRUD = Ext.extend(Ext.Panel, {
-        initComponent: function() {
-            this.layout = 'fit',
-            Ext.ux.CRUD.superclass.initComponent.apply(this, arguments);
-            //初始化配置模块
-            config.init(this.initialConfig);
-            //初始化数据库
-            var model = new Model({
-                storeId: 'mydata',
-                data: this.data || this.api,
-                fields: config.get('store','fields')
-            });
-            var view = new View();
-            model.on({
-                'success': function (action, result, res) {
-                    //请求成功
-                    successHandler[action](result, res);
-                },
-                'fail': function (action, record, msg) {
-                    //请求成功，只是返回一个失败的结果
-                    failHandler[action](record, msg);
-                },
-                'error': function (action, record, msg) {
-                    //请求失败404 500 或者 DataReader配置有错
-                    errorHandler[action](record, msg);
-                }
-            });
-
-            view.on({
-                'tbar-btn-delete': function () {
-                    //todo 编写删除
-                    console.log('删除');
-                },
-                'tbar-btn-refresh': function () {
-                    //todo 编写刷新
-                    console.log('刷新');
-                },
-                'tbar-btn-add': function () {
-                    //todo 编写添加
-                    console.log('添加');
-                }
-            });
-            
-            //初始化界面
-            this.add(view.init({
-                id: this.id,
-                store: model.getStore(),
-                columns: this.columns
-            }));
-        }
-    });
-});
-=======
 /**
  * Ext.ux.grid.CRUD组件 Controller层-- Grid.CRUD.Controller.js
  * zhangmhao@gmail.com
@@ -188,40 +64,15 @@ define(function(require, exports) {
         });
      *****************************************************/
     
-    var successHandler = {
-        create: function (result, res) {
-
-        },
-        delete: function (result, res) {
-
-        },
-        update: function (result, res) {
-
-        }
-    }, errorHandler = {
-        create: function (result, res) {
-
-        },
-        delete: function (result, res) {
-
-        },
-        update: function (result, res) {
-
-        }
-    }, failHandler = {
-        create: function (result, res) {
-
-        },
-        delete: function (result, res) {
-
-        },
-        update: function (result, res) {
-
-        }
-    };
-    
     Ext.ux.CRUD = Ext.extend(Ext.Panel, {
         initComponent: function() {
+            var that = this,
+                reloadMethod; //store.reload() or store.loadData()
+            if (!!that.data) {
+                reloadMethod = 'loadData';
+            } else if (!!that.api) {
+                reloadMethod = 'reload';
+            }
             this.layout = 'fit',
             Ext.ux.CRUD.superclass.initComponent.apply(this, arguments);
             //初始化配置模块
@@ -233,10 +84,63 @@ define(function(require, exports) {
                 fields: config.get('store','fields')
             });
             var view = new View();
+            //声明处理函数
+            var successHandler = {
+                create: function (store,action, result, res, rs) {
+                    //todo
+                    console.log('创建成功');
+                },
+                delete: function (store,action, result, res, rs) {
+                    var nextIndex,
+                        index = rs.lastIndex,
+                        count = store.getCount();
+                    if (action === 'destroy') {
+                        if (count === 0) {
+                            view.changeBtnStatu();
+                            return;
+                        }
+                        if (index === 0) {
+                            nextIndex = 0;
+                        } else if (index === count) {
+                            nextIndex = index - 1;
+                        } else {
+                            nextIndex = index;
+                        }
+                        view.selectRow(nextIndex);
+                        view.changeBtnStatu();
+                    } else {
+                        view.changeBtnStatu();
+                    }
+                },
+                update: function (store,action, result, res, rs) {
+                    //todo
+                    console.log('更新成功');
+                }
+            }, errorHandler = {
+                create: function (result, res) {
+
+                },
+                delete: function (result, res) {
+
+                },
+                update: function (result, res) {
+
+                }
+            }, failHandler = {
+                create: function (result, res) {
+
+                },
+                delete: function (result, res) {
+
+                },
+                update: function (result, res) {
+
+                }
+            };
             model.on({
-                'success': function (action, result, res) {
+                'success': function (store, action, result, res, rs) {
                     //请求成功
-                    successHandler[action](result, res);
+                    successHandler[action](store,action, result, res, rs);
                 },
                 'fail': function (action, record, msg) {
                     //请求成功，只是返回一个失败的结果
@@ -247,20 +151,21 @@ define(function(require, exports) {
                     errorHandler[action](record, msg);
                 }
             });
-            var viewlisteners = {
-                'tbar-btn-delete': function () {
-                    //todo 编写删除
-                    console.log('删除');
-                },
-                'tbar-btn-refresh': function () {
-                    //todo 编写刷新
-                    console.log('刷新');
-                },
-                'tbar-btn-add': function () {
-                    //todo 编写添加
-                    console.log('添加');
-                    view.addRecord();
-                }
+            var idOfTbar = config.getId('grid','tbar'),
+                viewlisteners = {};
+            viewlisteners[idOfTbar.add] = function () {
+                //todo 编写添加
+                console.log('添加');
+                view.addRecord();
+            };
+            viewlisteners[idOfTbar.refresh] = function () {
+                //todo 编写刷新
+                console.log('刷新');
+                model.getStore()[reloadMethod](that.data || that.api);
+            };
+            viewlisteners[idOfTbar.delete] = function (record) {
+                //删除记录
+                model.getStore().remove(record);
             };
             viewlisteners[config.getEvent('view','ROW_DBL_CLICK')] = function () {
                 console.log('双击row');
@@ -281,4 +186,3 @@ define(function(require, exports) {
 /**
  * 日志的规范 [组建名][组件类型][日志内容][备注]
  */
->>>>>>> 结合rowEditor的编辑器

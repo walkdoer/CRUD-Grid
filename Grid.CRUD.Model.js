@@ -104,12 +104,12 @@ define(function (require, exports) {
                     that.fireEvent('error', [action, record, msg]);
                 }
             });
-            store.on('write', function (store, action, result, res /*rs*/) {
+            store.on('write', function (store, action, result, res, rs) {
                 store.sort('id', 'ASC');
                 if (action === 'destroy') {
                     action = 'delete';
                 }
-                that.fireEvent('success', [action, result, res]);
+                that.fireEvent('success', [store, action, result, res, rs]);
             });
             this.getStore = function () {
                 return store;
