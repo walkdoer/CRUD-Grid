@@ -1,3 +1,4 @@
+'use strict';
 var db = require('./common/db');
 var url = require('url');
 function result(succsss, msg, data) {
@@ -28,10 +29,11 @@ exports.new = function(req, res, next) {
     console.log('newController');
     var query = url.parse(req.url, true).query,
         title = query.title;
-    console.log("###########333"+ title);
     title = title.trim();
     if(!title) {
-        msg = '标题是必须的';
+        res.write(JSON.stringify(result(false, '添加失败')));
+        res.end();
+        return;
     }
     db.todo.save({
         title: title,
@@ -40,7 +42,7 @@ exports.new = function(req, res, next) {
         if(err) {
             return next(err);
         }
-        res.write(JSON.stringify(result(true, '添加成功')));
+        res.write(JSON.stringify(result(true, '添加成功', row)));
         res.end();
     });
 };
