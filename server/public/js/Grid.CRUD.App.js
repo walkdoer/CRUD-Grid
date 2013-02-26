@@ -117,14 +117,17 @@ define(function(require, exports) {
                     console.log('更新成功');
                 }
             }, errorHandler = {
-                create: function (result, res) {
-                    console.log(result,res);
+                create: function (action, record, msg) {
+                    console.log(action, record, msg);
                 },
-                delete: function (result, res) {
-                    console.log(result,res);
+                delete: function (action, record, msg) {
+                    console.log(action, record, msg);
                 },
-                update: function (result, res) {
-                    console.log(result,res);
+                update: function (action, record, msg) {
+                    console.log(action, record, msg);
+                },
+                read: function (action, record, msg) {
+                    console.log(action, record, msg);
                 }
             }, failHandler = {
                 create: function (action, record, msg) {
@@ -135,6 +138,9 @@ define(function(require, exports) {
                 },
                 update: function (action, record, msg) {
                     console.log(action, record,msg);
+                },
+                read: function (action, record, msg) {
+                    console.log(action, record, msg);
                 }
             };
             model.on({
@@ -161,7 +167,7 @@ define(function(require, exports) {
             viewlisteners[idOfTbar.refresh] = function () {
                 //todo 编写刷新
                 console.log('刷新');
-                model.getStore()[reloadMethod](that.data || that.api);
+                model.getStore()[reloadMethod](that.data);
             };
             viewlisteners[idOfTbar.delete] = function (record) {
                 //删除记录

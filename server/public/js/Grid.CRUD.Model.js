@@ -29,7 +29,7 @@ define(function (require, exports) {
             defaultConf = {
                 proxy: new Ext.data.HttpProxy({
                     api: {
-                        load: { url: config.data.read, method: 'POST' },
+                        read: { url: config.data.read, method: 'GET' },
                         create: { url: config.data.create, method: 'POST' },
                         update: { url: config.data.update, method: 'POST' },
                         destroy: { url: config.data.delete, method: 'POST' }
@@ -42,7 +42,7 @@ define(function (require, exports) {
                     idProperty: 'id',
                     messageProperty: 'msg',
                     totalProperty: 'count',
-                    root: 'list',
+                    root: 'data',
                     fields: config.fields
                 }),
                 writer: new Ext.data.JsonWriter({

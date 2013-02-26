@@ -130,7 +130,9 @@ define(function (require, exports) {
                     tbar: tbar,
                     listeners: {
                         viewready: function () {
-                            //store.load();
+                            if (config.get('mode') === 'remote') {
+                                store.load();
+                            }
                         },
                         destroy: function () {
                             console.log('Grid [Ext.grid.GridPanel]: Destroy');

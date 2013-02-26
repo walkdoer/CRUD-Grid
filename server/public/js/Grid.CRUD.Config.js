@@ -113,14 +113,20 @@ define(function(require, exports) {
      * @param  {String} name 配置名
      * @param  {Object}      Value
      */
-    function set(component, name, val) {
-        if (userConfig[component] === undefined) {
-            userConfig[component] = {};
-        }
-        if (!name) {
-            userConfig[component] = val;
-        } else {
-            userConfig[component][name] = val;
+    function set() {
+        var args = Array.prototype.slice.call(arguments),
+            conf;
+        if (args.length === 1) {
+            throw '[Grid.CRUD.Config] function set () : set  without value.';//出错
+        } else if (args.length > 1) {
+            conf = userConfig;
+            for (var i = 0; i < args.length - 2; i++) {
+                if (!conf[args[i]]) {
+                    conf[args[i]] = {};
+                }
+                conf = conf[args[i]];
+            }
+            conf[args[i]] = args[i + 1];
         }
     }
     /**
@@ -261,14 +267,20 @@ define(function(require, exports) {
         originConfig = config;
         var storeField,
             tbarConfig,
+            mode, //组件加载数据的模式
             columns = config.columns;
-        
-
+        //组件加载数据的模式
+        if (!!config.data) {
+            mode = 'local';
+        } else if (!!config.api) {
+            mode = 'remote';
+        }
         /* 将用户的配置转化为系统可用的配置 */
         //从column配置中取得Store的字段配置
         storeField = getStoreField(columns);
         tbarConfig = getTbarConfig();
         set('store','fields', storeField);
+        set('mode', mode);
         set('store','defaultData', getStoreDefaultData(columns));
         set('grid', 'tbar', tbarConfig);
         set('grid', 'noClicksToEdit', getNoClicksToEdit(config.editor));
