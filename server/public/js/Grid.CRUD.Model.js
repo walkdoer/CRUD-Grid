@@ -81,7 +81,7 @@ define(function (require, exports) {
         constructor: function (config) {
             //引用上下文
             var that = this;
-            //定义store
+            //创建store
             var store = createStore(config);
             store.on('beforeload', function () {
                 console.log('store load');

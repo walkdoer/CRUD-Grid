@@ -1,12 +1,5 @@
-/**
- * todo - conf/config.js
- * zhangmhao@gmail.com
- */
-'use strict';
-
-var config = require('../conf/config');
-var db = require('../common/db');
-var connect = require('connect');
+var db = require('./common/db');
+var url = require('url');
 function result(succsss, msg, data) {
     return {
         succsss: succsss,
@@ -25,6 +18,7 @@ exports.read = function(req, res, next) {
         if(err) {
             return next(err);
         }
+        console.log(JSON.stringify(result(true, '加载成功', rows)));
         res.write(JSON.stringify(result(true, '加载成功', rows)));
         res.end();
     });
@@ -32,7 +26,9 @@ exports.read = function(req, res, next) {
 
 exports.new = function(req, res, next) {
     console.log('newController');
-    var title = req.body.title || '', msg;
+    var query = url.parse(req.url, true).query,
+        title = query.title;
+    console.log("###########333"+ title);
     title = title.trim();
     if(!title) {
         msg = '标题是必须的';
@@ -45,6 +41,7 @@ exports.new = function(req, res, next) {
             return next(err);
         }
         res.write(JSON.stringify(result(true, '添加成功')));
+        res.end();
     });
 };
 
@@ -62,6 +59,7 @@ exports.edit = function(req, res, next) {
             return next();
         }
         res.write(JSON.stringify(result(true, '编辑成功', row)));
+        res.end();
     });
 };
 
@@ -83,6 +81,7 @@ exports.save = function(req, res, next) {
             return next(err);
         }
         res.write(JSON.stringify(result(true, '编辑成功', result)));
+        res.end();
     });
 };
 
@@ -92,7 +91,8 @@ exports.delete = function(req, res, next) {
         if(err) {
             return next(err);
         }
-        JSON.stringify(result(true, '删除成功'));
+        res.write(JSON.stringify(result(true, '删除成功')));
+        res.end();
     });
 };
 
@@ -107,6 +107,7 @@ exports.finish = function(req, res, next) {
         if(err) {
             return next(err);
         }
-        JSON.stringify(result(true, '改变状态成功', result));
+        res.write(JSON.stringify(result(true, '改变状态成功', result)));
+        res.end();
     });
 };

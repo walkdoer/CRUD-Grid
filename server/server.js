@@ -30,6 +30,7 @@ app.use(render({
  */
 var router = urlrouter(function (app) {
 	app.get('/todo', todo.read);
+	app.get('/todo/read', todo.read);
 	app.post('/todo/new', todo.new);
 	app.get('/todo/:id', todo.view);
 	app.get('/todo/:id/edit', todo.edit);
