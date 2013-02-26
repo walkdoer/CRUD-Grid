@@ -27,8 +27,7 @@ exports.read = function(req, res, next) {
 
 exports.new = function(req, res, next) {
     console.log('newController');
-    var query = url.parse(req.url, true).query,
-        title = query.title;
+    var title = req.body.data.title || '';
     title = title.trim();
     if(!title) {
         res.write(JSON.stringify(result(false, '添加失败')));
