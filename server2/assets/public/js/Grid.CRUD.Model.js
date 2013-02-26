@@ -41,7 +41,7 @@ define(function (require, exports) {
                     successProperty: 'succsss',
                     idProperty: '_id',
                     messageProperty: 'msg',
-                    totalProperty: 'count',
+                    //totalProperty: 'count',
                     root: 'data',
                     fields: config.fields
                 }),

@@ -42,18 +42,22 @@ define(function (require, exports) {
             
             this.init = function (conf) {
                 var store = conf.store,
-                    btnConf = conf.buttons,
                     idOfTbar = config.getId('grid', 'tbar'),
                     rsm, mainPanel, tbar, editor;
 
-                function changeBtnStatu(record) {
+                this.changeAllBtnStatu = function () {
+                    var record = this.rsm.getSelected();
                     var delBtn = Ext.getCmp(idOfTbar.delete);
                     if (!record) {
                         delBtn.disable();
                     } else {
                         delBtn.enable();
                     }
-                }
+                };
+                this.setBtnStatu = function (btn, status) {
+                    var ed = status ? 'enable' : 'disable';
+                    Ext.getCmp(idOfTbar[btn])[ed]();
+                };
                 editor = new Ext.ux.grid.RowEditor({
                     saveText: '保存',
                     cancelText: '取消',
@@ -79,17 +83,11 @@ define(function (require, exports) {
                     editor.startEditing(0);
                 };
                 /**
-                 * 处理删除之后的操作
-                 */
-                function afterDelete(store, action, result, res, rs) {
-                    
-                }
-
-                /**
                  * 对删除错误之后的界面进行错误修正
                  */
-                function exceptionHandler(proxy, type, action, options, res, arg) {
+                this.exceptionHandler = function(proxy, type, action, options, res, arg) {
                     var id;
+                    var that = this;
                     if (action === 'destroy') {
                         if (arg.lastIndex === store.getTotalCount() - 1) {
                             id = store.getCount();
@@ -97,22 +95,24 @@ define(function (require, exports) {
                             id = arg.lastIndex;
                         }
                         setTimeout(function () {
-                            rsm.selectRow(id);
-                            Ext.getCmp(btnConf.delete.id).enable();
+                            that.rsm.selectRow(id);
+                            Ext.getCmp(idOfTbar.delete).enable();
                         }, 400);
                     }
-                }
-
+                };
+                this.selectRow = function (rowIndex) {
+                    this.rsm.selectRow(rowIndex);
+                };
                 //生成顶部工具栏
                 tbar = new Ext.Toolbar(tbarConfig);
                 this.rsm = new Ext.grid.RowSelectionModel({
                     singleSelect: true,
                     listeners: {
-                        rowSelect: function (sm) {
-                            changeBtnStatu(sm.getSelected());
+                        rowSelect: function (/*sm*/) {
+                            that.changeAllBtnStatu();
                         },
-                        rowdeselect: function (sm) {
-                            changeBtnStatu(sm.getSelected());
+                        rowdeselect: function (/*sm*/) {
+                            that.changeAllBtnStatu();
                         }
                     }
                 });
@@ -137,8 +137,8 @@ define(function (require, exports) {
                         destroy: function () {
                             console.log('Grid [Ext.grid.GridPanel]: Destroy');
                             //关闭窗口的时候删除绑定的处理函数，下一次重新绑定，避免闭包问题，即使用上一个窗口生成的变量，rsm
-                            store.removeListener('write', afterDelete);
-                            store.removeListener('exception', exceptionHandler);
+                            //store.removeListener('write', afterDelete);
+                            //store.removeListener('exception', exceptionHandler);
                         },
                         rowdblclick: function (grid, rowIndex) {
                             console.log('Gird [Ext.grid.GridPanel]: Row double click');

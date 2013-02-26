@@ -94,7 +94,6 @@ define(function(require, exports) {
                     var nextIndex,
                         index = rs.lastIndex,
                         count = store.getCount();
-                    if (action === 'destroy') {
                         if (count === 0) {
                             view.changeBtnStatu();
                             return;
@@ -107,10 +106,7 @@ define(function(require, exports) {
                             nextIndex = index;
                         }
                         view.selectRow(nextIndex);
-                        view.changeBtnStatu();
-                    } else {
-                        view.changeBtnStatu();
-                    }
+                        view.changeAllBtnStatu();
                 },
                 update: function (store,action, result, res, rs) {
                     //todo
@@ -171,6 +167,7 @@ define(function(require, exports) {
             };
             viewlisteners[idOfTbar.delete] = function (record) {
                 //删除记录
+                view.setBtnStatu('delete', false);
                 model.getStore().remove(record);
             };
             viewlisteners[config.getEvent('view','ROW_DBL_CLICK')] = function () {

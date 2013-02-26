@@ -10,14 +10,18 @@ function isArray(a) {
 }
 
 function result(succsss, msg, data) {
-    if (!isArray(data)) {
-        data = [data];
-    }
-    return {
+    var result = {
         succsss: succsss,
-        msg: msg,
-        data: data
+        msg: msg
     };
+    if(isArray(data)) {
+        //是数组，不需要转化
+        result.data = data;
+    } else if (!!data) {
+        //不是数组，需要变成数组
+        result.data = [data];
+    }
+    return result;
 }
 exports.read = function(req, res, next) {
     console.log('read');
@@ -30,7 +34,6 @@ exports.read = function(req, res, next) {
         if(err) {
             return next(err);
         }
-        console.log(JSON.stringify(result(true, '加载成功', rows)));
         res.write(JSON.stringify(result(true, '加载成功', rows)));
         res.end();
     });
@@ -38,7 +41,7 @@ exports.read = function(req, res, next) {
 
 exports.new = function(req, res, next) {
     console.log('newController');
-    var data = JSON.parse(req.body.data),
+    var data = JSON.parse(req.params.data),
         title = data.title || '';
     console.log(title);
     title = title.trim();
@@ -100,8 +103,14 @@ exports.save = function(req, res, next) {
 };
 
 exports.delete = function(req, res, next) {
-    var id = req.params.id;
-    db.todo.removeById(id, function(err) {
+    var id = JSON.parse(req.params.data);
+    if (!id) {
+        res.write(JSON.stringify(result(false, '删除失败')));
+        res.end();
+        return;
+    }
+    console.log(id, id.length);
+    db.todo.removeById(db.ObjectID.createFromHexString(id), function(err) {
         if(err) {
             return next(err);
         }

@@ -32,6 +32,7 @@ function route(pathname, request, response) {
             request.on('end', function () {
                 var params = qs.parse(body);
                 request.body = params;
+                request.params = params;
                 method(request, response, function (err) {
                     handle.method('common', 'error')(request, response, err);
                 });

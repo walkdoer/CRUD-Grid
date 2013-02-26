@@ -11,6 +11,9 @@ var getHandler = {},
     commonHandler = {
         error: function (request, response, errorMsg) {
             response.writeHead(500, {'Content-Type': 'text/plain'});
+            if (typeof errorMsg !== 'string') {
+                errorMsg = errorMsg.toString();
+            }
             response.end(errorMsg);
         },
         pathNotExist: function (request, response, pathname) {
