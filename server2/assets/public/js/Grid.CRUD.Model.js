@@ -38,8 +38,8 @@ define(function (require, exports) {
                 autoSave: true,
                 autoDestroy: true,
                 reader: new Ext.data.JsonReader({
-                    successProperty: 'success',
-                    idProperty: 'id',
+                    successProperty: 'succsss',
+                    idProperty: '_id',
                     messageProperty: 'msg',
                     totalProperty: 'count',
                     root: 'data',

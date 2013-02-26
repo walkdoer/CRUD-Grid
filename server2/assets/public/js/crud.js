@@ -11,6 +11,7 @@ define(function(require, exports) {
     'use strict';
     require('crud/public/js/lib/RowEditor.js');
     require('crud/public/js/Grid.CRUD.App.js');
+    require('crud/public/js/lib/Examples.js');
       /**
      * Custom function used for column renderer
      * @param {Object} val

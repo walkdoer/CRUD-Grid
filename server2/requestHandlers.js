@@ -1,7 +1,18 @@
 'use strict';
 var db = require('./common/db');
 var url = require('url');
+
+function isArray(a) {
+    if (Object.prototype.toString.call(a).indexOf('Array') > 0) {
+        return true;
+    }
+    return false;
+}
+
 function result(succsss, msg, data) {
+    if (!isArray(data)) {
+        data = [data];
+    }
     return {
         succsss: succsss,
         msg: msg,
@@ -27,7 +38,9 @@ exports.read = function(req, res, next) {
 
 exports.new = function(req, res, next) {
     console.log('newController');
-    var title = req.body.data.title || '';
+    var data = JSON.parse(req.body.data),
+        title = data.title || '';
+    console.log(title);
     title = title.trim();
     if(!title) {
         res.write(JSON.stringify(result(false, '添加失败')));
