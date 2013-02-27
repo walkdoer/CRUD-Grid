@@ -21,7 +21,50 @@ define(function (require, exports) {
     'use strict';
 
     var config = require('crud/public/js/Grid.CRUD.Config.js');
-    
+
+    /**
+     * 创建window
+     * @param  {Object} config 配置
+     * @return {Ext.Window}        窗口
+     */
+    function createWindow(conf) {
+        var win, formPanel, fieldType = config.get('fieldType');
+        //创建formpanel的字段
+        var fieldConfig = conf.fields, fields = [], field;
+        for (var i = 0; i < fieldConfig.length; i++) {
+            field = fieldConfig[i];
+            if (field.editable) {
+                //可编辑字段根据数据类型创建field
+                fields.push(new fieldType[field.type](field));
+            }
+        }
+        if (!conf.title) {
+            conf.title = "窗口";
+        }
+        //创建FormPanel
+        conf.buttons = [{
+            text: '保存',
+            disable: true,
+            handler: function () {
+                //todo
+            }
+        }, {
+            text: '取消',
+            handler: function () {
+                win.hide();
+            }
+        }];
+        formPanel = new Ext.form.FormPanel({
+            baseCls: 'x-plain',
+            labelWidth: 45,
+            labelSeparator: ':',
+            items: fields
+        });
+        conf.items = formPanel;
+        //创建窗口
+        win = new Ext.Window(conf);
+        return win;
+    }
     var View = Ext.extend(Ext.util.Observable, {
         constructor: function () {
             var that = this,
@@ -45,6 +88,9 @@ define(function (require, exports) {
                     idOfTbar = config.getId('grid', 'tbar'),
                     rsm, mainPanel, tbar, editor;
 
+                /**
+                 * 改变所有按钮的状态
+                 */
                 this.changeAllBtnStatu = function () {
                     var record = this.rsm.getSelected();
                     var delBtn = Ext.getCmp(idOfTbar.delete);
@@ -54,10 +100,16 @@ define(function (require, exports) {
                         delBtn.enable();
                     }
                 };
+                /**
+                 * 设置按钮状态
+                 * @param {String} btn    按钮的ID
+                 * @param {Boolean} status [description]
+                 */
                 this.setBtnStatu = function (btn, status) {
                     var ed = status ? 'enable' : 'disable';
                     Ext.getCmp(idOfTbar[btn])[ed]();
                 };
+                //行编辑器
                 editor = new Ext.ux.grid.RowEditor({
                     saveText: '保存',
                     cancelText: '取消',
@@ -67,13 +119,14 @@ define(function (require, exports) {
                     listeners: {
                         canceledit: function (rowEditor, press) {
                             // 取消时候需要的操作
-                            console.log(rowEditor.record.data);
-                            if (rowEditor.record.data.id === '') {
+                            console.log(rowEditor.record.id);
+                            if (!rowEditor.record.get(config.get('store','reader').idProperty)) {
                                 store.removeAt(0);
                             }
                         }
                     }
                 });
+                
                 this.addRecord = function () {
                     //这里使用clone的原因是 或得到的DefaultData会被改变，
                     //下一次add的时候获得的就是上一次改变过的数据
@@ -102,6 +155,26 @@ define(function (require, exports) {
                 };
                 this.selectRow = function (rowIndex) {
                     this.rsm.selectRow(rowIndex);
+                };
+
+                /**
+                 * 打开编辑窗口
+                 * @param  {Ext.data.Record} record 记录
+                 */
+                this.openEditWindow = function (record) {
+                    //窗口编辑器
+                    var editWindow = createWindow({
+                        title: '编辑记录',
+                        width: 210,
+                        height: 300,
+                        plain: true,
+                        bodyStyle: 'padding:5px',
+                        closeAction: 'close',
+                        fields: config.get('window', 'edit')
+                    });
+                    var formPanel = editWindow.items.get(0);
+                    formPanel.getForm().loadRecord(record);
+                    editWindow.show();
                 };
                 //生成顶部工具栏
                 tbar = new Ext.Toolbar(tbarConfig);
@@ -142,7 +215,8 @@ define(function (require, exports) {
                         },
                         rowdblclick: function (grid, rowIndex) {
                             console.log('Gird [Ext.grid.GridPanel]: Row double click');
-                            that.fireEvent(event.ROW_DBL_CLICK);
+                            var record = that.rsm.getSelected();
+                            that.fireEvent(event.ROW_DBL_CLICK, record);
                         }
                     }
                 });

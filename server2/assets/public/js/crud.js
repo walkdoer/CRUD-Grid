@@ -50,6 +50,9 @@ define(function(require, exports) {
                 delete: Portal.data.proxyUrl('crud:todo:delete'),
                 read: Portal.data.proxyUrl('crud:todo:read')
             },
+            store: {
+                idProperty: '_id'
+            },
             /**
              * 选择编辑器, 如果不配置，默认使用rowEditor
              * editor: 'window' 表示编辑和添加的时候全部使用window来进行编辑
@@ -57,12 +60,22 @@ define(function(require, exports) {
              */
             editor: {
                 add: 'rowEditor', //添加的时候使用rowEditor
-                edit: 'window' //编辑的时候使用窗口
+                edit: 'rowEditor' //编辑的时候使用窗口
             },
             columns: [{
+                id: 'id',
+                type: 'string',
+                dataIndex: '_id',
+                editable: false,
+                hidden: true
+            }, {
                 id: 'title',
                 type: 'string',
+                //editable 字段可编辑时可以不配置editable
+                //因为默认就是可编辑的
+                //editable: true, 
                 header: '标题',
+                fieldLabel: '标题',
                 sortable: true,
                 allowBlank: false,
                 width: 180,
@@ -70,13 +83,15 @@ define(function(require, exports) {
             }, {
                 id: 'finished',
                 type: 'boolean',
+                fieldLabel: '完成',
                 header: '完成',
                 sortable: true,
                 width: 60,
                 dataIndex: 'finished'
             },{
                 header   : '更新日期',
-                allowBlank: false,
+                fieldLabel: '更新日期',
+                allowBlank: true,
                 type     : 'date',
                 // dateFormat: 'n/j h:ia',
                 width    : 85,

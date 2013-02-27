@@ -11,7 +11,7 @@ function isArray(a) {
 
 function result(succsss, msg, data) {
     var result = {
-        succsss: succsss,
+        success: succsss,
         msg: msg
     };
     if(isArray(data)) {
@@ -41,9 +41,14 @@ exports.read = function(req, res, next) {
 
 exports.new = function(req, res, next) {
     console.log('newController');
-    var data = JSON.parse(req.params.data),
+    var data,
+        title;
+    try {
+        data = JSON.parse(req.params.data);
         title = data.title || '';
-    console.log(title);
+    } catch (e) {
+        return next(e);
+    }
     title = title.trim();
     if(!title) {
         res.write(JSON.stringify(result(false, '添加失败')));

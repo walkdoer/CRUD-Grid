@@ -81,7 +81,7 @@ define(function(require, exports) {
             var model = new Model({
                 storeId: 'mydata',
                 data: this.data || this.api,
-                fields: config.get('store','fields')
+                reader: config.get('store','reader')
             });
             var view = new View();
             //声明处理函数
@@ -95,7 +95,7 @@ define(function(require, exports) {
                         index = rs.lastIndex,
                         count = store.getCount();
                         if (count === 0) {
-                            view.changeBtnStatu();
+                            view.changeAllBtnStatu();
                             return;
                         }
                         if (index === 0) {
@@ -170,11 +170,12 @@ define(function(require, exports) {
                 view.setBtnStatu('delete', false);
                 model.getStore().remove(record);
             };
-            viewlisteners[config.getEvent('view','ROW_DBL_CLICK')] = function () {
-                console.log('双击row');
+            viewlisteners[config.getEvent('view','ROW_DBL_CLICK')] = function (record) {
+                if (config.get('grid', 'noClicksToEdit')) {
+                    view.openEditWindow(record);
+                }
             };
             view.on(viewlisteners);
-            
             //初始化界面
             this.add(view.init({
                 id: this.id,

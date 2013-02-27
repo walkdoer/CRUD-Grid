@@ -36,7 +36,6 @@ define(function(require, exports) {
                 //Todo
             }
         },
-        
         tbarButtons =  [{
             id: id.grid.tbar_btn_add,
             text: '添加',
@@ -55,6 +54,15 @@ define(function(require, exports) {
             VIEW: {
                 ROW_DBL_CLICK: 'event_view_row_double_click'
             }
+        },
+        //文件类型
+        FIELD_TYPE = {
+            'string': Ext.form.TextField,
+            'bigString': Ext.form.TextArea,
+            'boolean': Ext.form.Checkbox,
+            'date': Ext.form.DateField,
+            'float': Ext.form.NumberField,
+            'int': Ext.form.NumberField
         },
         originConfig, //未经过处理的原始用户的配置
         userConfig; //经过处理后的用户配置
@@ -135,13 +143,8 @@ define(function(require, exports) {
      * @return {Array}         符合Ext规范的字段配置
      */
     function getStoreField(columns) {
-        var col, field, storeField = [];
-        for (var i = 0, len = columns.length; i < len; i++) {
-            col = columns[i];
-            if (!col.dataIndex) {
-                continue;
-            }
-            field = {};
+        return getConfigFromColumn(columns, function (col) {
+            var field = {};
             field.name = col.dataIndex;
             //如果用户有定义类型 Type
             if (!!col.type) {
@@ -153,11 +156,46 @@ define(function(require, exports) {
             }
             //字段的非空限制，在数据库为autoSave的时候可以避免表单自动提交
             field.allowBlank = col.allowBlank;
-            storeField.push(field);
-        }
-        return storeField;
+            return field;
+        });
     }
-
+    /**
+     * 通过filter从columns配置中提取配置项
+     * @param  {Funtion} filter 过滤器
+     * @return {Object}         结果
+     */
+    function getConfigFromColumn(columns, filter) {
+        var col, field, fields = [];
+        for (var i = 0, len = columns.length; i < len; i++) {
+            col = columns[i];
+            if (!col.dataIndex) {
+                continue;
+            }
+            field = filter(col);
+            fields.push(field);
+        }
+        return fields;
+    }
+    function getWindowFieldConfig(columns) {
+        /**
+         * {
+         *     emptyText: '空的时候的提示',
+         *     fieldLabel: '标题',
+         *     allowblank: false
+         * }
+         */
+        return getConfigFromColumn(columns, function (col) {
+            var field = {};
+            return {
+                emptyText: col.emptyText,
+                type: col.type,
+                name: col.dataIndex,
+                editable: col.editable,
+                fieldLabel: col.fieldLabel || col.header,
+                allowBlank: col.allowBlank
+            };
+        });
+    }
     /**
      * 将obj中exception中的key值排除掉
      * @param  {Object} obj       待处理的对象
@@ -182,36 +220,25 @@ define(function(require, exports) {
      * @return {Array}         处理过后的用户配置
      */
     function getColumnsConfig(columns) {
-        var columnConfig = [], col, newCol,
-            numberFieldArray = ['float', 'int'],
-            dateFieldArray = ['date'],
-            textFieldArray = [ 'string'];//需要生成textField的字段类型
+        var columnConfig = [], col, newCol;
         for (var i = 0; i < columns.length; i++) {
             col = columns[i];
             newCol = except(col, ['type']);
-            
             if (!originConfig.editor || originConfig.editor === 'rowEditor'
                 || originConfig.editor.add === 'rowEditor') {
                 //生成编辑器
-                if (textFieldArray.indexOf(col.type) >= 0)  {
-                    newCol.editor = new Ext.form.TextField({
-                        name: newCol.dataIndex,
-                        allowBlank: newCol.allowBlank
-                    });
-                } else if(numberFieldArray.indexOf(col.type) >= 0){
-                    newCol.editor = new Ext.form.NumberField({
-                        name: newCol.dataIndex,
-                        allowBlank: newCol.allowBlank
-                    });
-                } else if (dateFieldArray.indexOf(col.type) >= 0) {
-                    newCol.editor = new Ext.form.DateField({
+                if (!FIELD_TYPE[col.type]) {
+                    throw '[Grid.CRUD.Config] function getColumnsConfig () : ' + col.id + '字段的类型' + col.type + '不合法.';//出错
+                }
+                if (col.editable) {
+                    newCol.editor = new FIELD_TYPE[col.type]({
                         name: newCol.dataIndex,
                         allowBlank: newCol.allowBlank,
-                        disabled: newCol.disabled
+                        disabled: newCol.disabled,
+                        hidden: newCol.hidden
                     });
                 }
             }
-            
             columnConfig.push(newCol);
         }
         return columnConfig;
@@ -258,6 +285,31 @@ define(function(require, exports) {
         }
     }
     /**
+     * 检查配置的合法性,不合法的进行修复
+     * @param  {Object} conf 配置
+     */
+    function checkConfig (conf) {
+        var columns = conf.columns, col, storeConfig;
+
+        for (var i = 0, len = columns.length; i < len; i++) {
+            col = columns[i];
+            //用户没有配置字段的可编辑限制，则默认为可编辑
+            if (typeof col.editable !== 'boolean') {
+                col.editable = true;
+            }
+        }
+        if (!conf.store) {
+            conf.store = {};
+        }
+        storeConfig = conf.store;
+        storeConfig.successProperty = storeConfig.successProperty || 'success';
+        storeConfig.idProperty = storeConfig.idProperty || 'id';
+        storeConfig.messageProperty = storeConfig.messageProperty || 'msg';
+        storeConfig.totalProperty = storeConfig.totalProperty || 'totalCount';
+        storeConfig.root = storeConfig.root || 'data';
+        storeConfig.fields = getStoreField(columns);
+    }
+    /**
      * 初始化用户配置
      * @param  {object} config 用户配置
      */
@@ -265,8 +317,7 @@ define(function(require, exports) {
         //初始化config
         userConfig = {};
         originConfig = config;
-        var storeField,
-            tbarConfig,
+        var tbarConfig,
             mode, //组件加载数据的模式
             columns = config.columns;
         //组件加载数据的模式
@@ -275,16 +326,18 @@ define(function(require, exports) {
         } else if (!!config.api) {
             mode = 'remote';
         }
+        checkConfig(config);
         /* 将用户的配置转化为系统可用的配置 */
-        //从column配置中取得Store的字段配置
-        storeField = getStoreField(columns);
         tbarConfig = getTbarConfig();
-        set('store','fields', storeField);
         set('mode', mode);
+        set('fieldType', FIELD_TYPE);
+        set('store', 'reader', config.store);
         set('store','defaultData', getStoreDefaultData(columns));
         set('grid', 'tbar', tbarConfig);
         set('grid', 'noClicksToEdit', getNoClicksToEdit(config.editor));
         set('event', 'view', EVENT.VIEW);
+        set('window', 'edit', getWindowFieldConfig(columns));
+        set('window', 'add', getWindowFieldConfig(columns));
 
         /************ Buttons *************/
         /*
@@ -301,7 +354,6 @@ define(function(require, exports) {
         /************ Window *************/
         /************ Store *************/
         /************ Toolbar *************/
-        
     }
     return {
         init: init,

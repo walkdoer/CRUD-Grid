@@ -9,7 +9,7 @@ define(function (require, exports) {
      *
      */
     'use strict';
-
+    
     function isArray(a) {
         if (Object.prototype.toString.call(a).indexOf('Array') > 0) {
             return true;
@@ -17,10 +17,10 @@ define(function (require, exports) {
         return false;
     }
     //引入StoreFactory
-    var createStore = function (config) {
+    var createStore = function (conf) {
         var store, defaultConf,
-            data = config.data,
-            store = Ext.StoreMgr.get(config.storeId);
+            data = conf.data,
+            store = Ext.StoreMgr.get(conf.storeId);
         if (store) {
             console.log('already have store');
             return store;
@@ -29,22 +29,15 @@ define(function (require, exports) {
             defaultConf = {
                 proxy: new Ext.data.HttpProxy({
                     api: {
-                        read: { url: config.data.read, method: 'GET' },
-                        create: { url: config.data.create, method: 'POST' },
-                        update: { url: config.data.update, method: 'POST' },
-                        destroy: { url: config.data.delete, method: 'POST' }
+                        read: { url: conf.data.read, method: 'GET' },
+                        create: { url: conf.data.create, method: 'POST' },
+                        update: { url: conf.data.update, method: 'POST' },
+                        destroy: { url: conf.data.delete, method: 'POST' }
                     }
                 }),
                 autoSave: true,
                 autoDestroy: true,
-                reader: new Ext.data.JsonReader({
-                    successProperty: 'succsss',
-                    idProperty: '_id',
-                    messageProperty: 'msg',
-                    //totalProperty: 'count',
-                    root: 'data',
-                    fields: config.fields
-                }),
+                reader: new Ext.data.JsonReader(conf.reader),
                 writer: new Ext.data.JsonWriter({
                     writeAllFields: true,
                     encode: true
@@ -69,7 +62,7 @@ define(function (require, exports) {
                        {name: 'lastChange', type: 'date', dateFormat: 'n/j h:ia'}
                    ]
                  */
-                fields: config.fields
+                fields: conf.fields
             });
             store.loadData(data);
             return store;
