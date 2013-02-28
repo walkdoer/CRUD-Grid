@@ -12,7 +12,7 @@ define(function(require, exports) {
     require('crud/public/js/lib/RowEditor.js');
     require('crud/public/js/Grid.CRUD.App.js');
     require('crud/public/js/lib/Examples.js');
-      /**
+    /**
      * Custom function used for column renderer
      * @param {Object} val
      */
@@ -60,7 +60,7 @@ define(function(require, exports) {
              */
             editor: {
                 add: 'rowEditor', //添加的时候使用rowEditor
-                edit: 'rowEditor' //编辑的时候使用窗口
+                edit: 'window' //编辑的时候使用窗口
             },
             columns: [{
                 id: 'id',
@@ -91,6 +91,7 @@ define(function(require, exports) {
             },{
                 header   : '更新日期',
                 fieldLabel: '更新日期',
+                editable: false,
                 allowBlank: true,
                 type     : 'date',
                 // dateFormat: 'n/j h:ia',

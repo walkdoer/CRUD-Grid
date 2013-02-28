@@ -84,36 +84,22 @@ define(function(require, exports) {
      */
     function get() {
         var args = Array.prototype.slice.call(arguments),
+            conf,
             component = args[0],
             name = args[1];
-        switch (args.length) {
-            case 1:
-                return userConfig[component];
-            case 2:
-                if (isObject(userConfig[component])) {
-                    return userConfig[component][name];
-                } else {
-                    return null;
-                }
-                break;
-            case 3:
-                if (isObject(userConfig[component])
-                    && isObject(userConfig[component][name])) {
-                    return userConfig[component][name][args[2]];
-                } else {
-                    return null;
-                }
-                break;
-            default:
-                return null;
-        }
-        if (!name) {
-            return userConfig[component];
-        } else if (!!component && !!userConfig[component]) {
-            return userConfig[component][name];
-        } else {
+        if (args.length === 0) {
             return null;
         }
+        conf = userConfig;
+        for (var i = 0, len = args.length; i < len; i++) {
+            conf = conf[args[i]];
+            //如果参数多于实际的配置,返回null
+            if (!isObject(conf) && i < len - 1) {
+                console.log('[Grid.CRUD.Config]没有该参数');
+                return null;
+            }
+        }
+        return conf;
     }
 
     /**
@@ -271,17 +257,27 @@ define(function(require, exports) {
      *    add: 'rowEditor', //添加的时候使用rowEditor
      *    edit: 'widow' //编辑的时候使用窗口
      * },
-     * @return {Boolean}
+     * @return {Object}
+     * 
      */
-    function getNoClicksToEdit(editor) {
-        if (!editor) {
-            return false;
-        } else if (editor === 'rowEditor'){
-            return true;
-        } else if (editor.edit === 'window') {
-            return true;
+    function getAddEditWay(editor) {
+        if (!editor || editor === 'rowEditor') {
+            return {
+                add: 'rowEditor',
+                edit: 'rowEditor'
+            };
+        } else if (editor === 'window') {
+            return {
+                add: 'window',
+                edit: 'window'
+            };
+        } else if (isObject(editor)) {
+            return {
+                add: editor.add || 'rowEditor',
+                edit: editor.edit || 'rowEditor'
+            };
         } else {
-            return false;
+            return null;
         }
     }
     /**
@@ -334,10 +330,12 @@ define(function(require, exports) {
         set('store', 'reader', config.store);
         set('store','defaultData', getStoreDefaultData(columns));
         set('grid', 'tbar', tbarConfig);
-        set('grid', 'noClicksToEdit', getNoClicksToEdit(config.editor));
+        set('grid', 'addEditWay', getAddEditWay(config.editor));
         set('event', 'view', EVENT.VIEW);
-        set('window', 'edit', getWindowFieldConfig(columns));
-        set('window', 'add', getWindowFieldConfig(columns));
+        set('window', 'edit', 'fields', getWindowFieldConfig(columns));
+        set('window', 'edit', 'id', config.id + ':window:edit');
+        set('window', 'add', 'fields', getWindowFieldConfig(columns));
+        set('window', 'add', 'id', config.id + ':window:add');
 
         /************ Buttons *************/
         /*

@@ -63,7 +63,6 @@ define(function(require, exports) {
             }
         });
      *****************************************************/
-    
     Ext.ux.CRUD = Ext.extend(Ext.Panel, {
         initComponent: function() {
             var that = this,
@@ -83,7 +82,19 @@ define(function(require, exports) {
                 data: this.data || this.api,
                 reader: config.get('store','reader')
             });
-            var view = new View();
+
+            var tbarConfig = config.get('grid','tbar');
+            tbarConfig.id = config.getId('grid', 'tbar');
+            var view = new View({
+                event: config.get('event', 'view'), //View模块用到的事件
+                tbar: tbarConfig,//顶部工具拦的配置
+                fieldType: config.get('fieldType'),//字段类型与对应Ext编辑字段的对应关系 string: Ext.form.TextField
+                idProperty: config.get('store','reader', 'idProperty'),// id字段
+                defaultData: config.get('store','defaultData'),//Grid数据的默认构造
+                window: config.get('window'),//窗口的配置
+                mode: config.get('mode'),// local 或者 remote
+                addEditWay: config.get('grid', 'addEditWay')
+            });
             //声明处理函数
             var successHandler = {
                 create: function (store,action, result, res, rs) {
@@ -156,22 +167,26 @@ define(function(require, exports) {
             var idOfTbar = config.getId('grid','tbar'),
                 viewlisteners = {};
             viewlisteners[idOfTbar.add] = function () {
-                //todo 编写添加
+                //添加
                 console.log('添加');
-                view.addRecord();
+                if (config.get('grid','addEditWay', 'add') === 'window') {
+                    view.addRecord();
+                } else {
+                    view.openAddWindow();
+                }
             };
             viewlisteners[idOfTbar.refresh] = function () {
-                //todo 编写刷新
+                //刷新
                 console.log('刷新');
                 model.getStore()[reloadMethod](that.data);
             };
             viewlisteners[idOfTbar.delete] = function (record) {
-                //删除记录
+                //记录
                 view.setBtnStatu('delete', false);
                 model.getStore().remove(record);
             };
             viewlisteners[config.getEvent('view','ROW_DBL_CLICK')] = function (record) {
-                if (config.get('grid', 'noClicksToEdit')) {
+                if (config.get('grid','addEditWay', 'edit') === 'window') {
                     view.openEditWindow(record);
                 }
             };
