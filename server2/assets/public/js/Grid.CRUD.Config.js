@@ -173,14 +173,16 @@ define(function(require, exports) {
          * }
          */
         return getConfigFromColumn(columns, function (col) {
-            var field = {};
+            var field = {}, listeners = {};
             return {
                 emptyText: col.emptyText,
                 type: col.type,
+                enableKeyEvents: true,
                 name: col.dataIndex,
                 editable: col.editable,
                 fieldLabel: col.fieldLabel || col.header,
-                allowBlank: col.allowBlank
+                allowBlank: col.allowBlank,
+                listeners: listeners
             };
         });
     }

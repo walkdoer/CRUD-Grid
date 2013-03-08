@@ -20,6 +20,43 @@ define(function (require, exports) {
      */
     'use strict';
 
+    //监听
+    var LISTENERS_TYPE = {
+        'string' : 'keyup',
+        'boolean' : 'check'
+    };
+    function serializeForm(form) {
+        var fElements = form.elements || (document.forms[form] || Ext.getDom(form)).elements, 
+            hasSubmit = false, 
+            encoder = encodeURIComponent, 
+            name, 
+            data = '', 
+            type, 
+            hasValue;
+
+        Ext.each(fElements, function (element) {
+            name = element.name;
+            type = element.type;
+    
+            if (!element.disabled && name) {
+                if (/select-(one|multiple)/i.test(type)) {
+                    Ext.each(element.options, function (opt) {
+                        if (opt.selected) {
+                            hasValue = opt.hasAttribute ? opt.hasAttribute('value') : opt.getAttributeNode('value').specified;
+                            data += String.format("{0}={1}&", encoder(name), encoder(hasValue ? opt.value : opt.text));
+                        }
+                    });
+                } else if (!(/file|undefined|reset|button/i.test(type))) {
+                    if (!(/radio|checkbox/i.test(type) && !element.checked) && !(type == 'submit' && hasSubmit)) {
+                        data += encoder(name) + '=' + encoder(element.value) + '&';
+                        hasSubmit = /submit/i.test(type);
+                    }
+                }
+            }
+        });
+        return data.substr(0, data.length - 1);
+    }
+
     function needRowEditor(conf) {
         if (conf.edit === 'rowEditor' || conf.add === 'rowEditor') {
             return true;
@@ -57,12 +94,20 @@ define(function (require, exports) {
              * @return {Ext.Window}        窗口
              */
             function createWindow(conf, record) {
-                var win, formPanel, fieldType = that.config.fieldType;
+                var win, formPanel, fieldType = that.config.fieldType,
+                    saveBtnId = conf.id + ':btn:save',
+                    cancelBtnId = conf.id + ':btn:cancel',
+                    beginFieldString;
                 //创建formpanel的字段
                 var fieldConfig = conf.fields, fields = [], field;
                 for (var i = 0; i < fieldConfig.length; i++) {
                     field = fieldConfig[i];
                     if (field.editable) {
+                        field.listeners = {};
+                        field.listeners[LISTENERS_TYPE[field.type]] = function () {
+                            console.log("field change");
+                            Ext.getCmp(saveBtnId).enable();
+                        };
                         //可编辑字段根据数据类型创建field
                         fields.push(new fieldType[field.type](field));
                     }
@@ -72,9 +117,9 @@ define(function (require, exports) {
                 }
                 //创建FormPanel
                 conf.buttons = [{
-                    id: conf.id + ':btn:save',
+                    id: saveBtnId,
                     text: '保存',
-                    disable: true,
+                    disabled: true,
                     handler: function () {
                         var basicForm = formPanel.getForm(),
                             saveRecord,
@@ -93,7 +138,7 @@ define(function (require, exports) {
                         that.fireEvent(conf.mEvent.ok, saveRecord, fieldValues);
                     }
                 }, {
-                    id: conf.id + ':btn:cancel',
+                    id: cancelBtnId,
                     text: '取消',
                     handler: function () {
                         win.close();
@@ -106,17 +151,38 @@ define(function (require, exports) {
                     items: fields
                 });
                 conf.items = formPanel;
-                conf.modal = !conf.multiWin;
+                conf.modal = !conf.mMultiWin;
                 conf.listeners = {
                     destroy: function () {
                         console.log('window ' + conf.id + 'destroy');
+                    },
+                    beforeclose: function () {
+                        if (win.fromSaveBtn) { return; }
+                        var endFieldString = serializeForm(formPanel.getForm().getEl());
+                        if (endFieldString !== beginFieldString) {
+                            //如果还没有确认过
+                            if (!win.alreadyConfirm) {
+                                Ext.Msg.confirm('请确认', '真的要退出吗？',
+                                function (button, text) {
+                                    if (button === "yes") {
+                                        win.alreadyConfirm = true;
+                                        win.close();
+                                    }
+                                });
+                                return false;
+                            }
+                            //已经确认，直接关闭
+                            return true;
+                        }
                     }
                 };
                 //创建窗口
                 win = new Ext.Window(conf);
+                win.show();
                 //如果有记录就将记录加载进窗口
                 if (record) {
                     formPanel.getForm().loadRecord(record);
+                    beginFieldString = serializeForm(formPanel.getForm().getEl());
                 }
                 return win;
             }
@@ -215,7 +281,6 @@ define(function (require, exports) {
                             ok: eventConfig.UPDATE_RECORD
                         }
                     }, record);
-                    editWindow.show();
                 };
                 /**
                  * 打开编辑窗口
@@ -236,7 +301,6 @@ define(function (require, exports) {
                             ok: eventConfig.SAVE_RECORD
                         }
                     });
-                    addWindow.show();
                 };
 
                 this.closeWindow = function (type, recordId) {
@@ -247,6 +311,7 @@ define(function (require, exports) {
                         id = that.config.window[type].id + ':' + recordId;
                     }
                     win = Ext.getCmp(id);
+                    win.fromSaveBtn = true;//强制关闭
                     win.close();
                 };
                 //生成顶部工具栏

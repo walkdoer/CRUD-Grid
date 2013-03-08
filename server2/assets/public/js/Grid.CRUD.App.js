@@ -21,19 +21,19 @@ define(function(require, exports) {
      * @return {Object/Array} Deep clone of an object or an array
      * @author Ing. Jozef Sakáloš
      */
-    Ext.ux.clone = function(o) {
-        if(!o || 'object' !== typeof o) {
+    Ext.ux.clone = function (o) {
+        if (!o || 'object' !== typeof o) {
             return o;
         }
-        if('function' === typeof o.clone) {
+        if ('function' === typeof o.clone) {
             return o.clone();
         }
         var c = '[object Array]' === Object.prototype.toString.call(o) ? [] : {};
         var p, v;
-        for(p in o) {
-            if(o.hasOwnProperty(p)) {
+        for (p in o) {
+            if (o.hasOwnProperty(p)) {
                 v = o[p];
-                if(v && 'object' === typeof v) {
+                if (v && 'object' === typeof v) {
                     c[p] = Ext.ux.util.clone(v);
                 }
                 else {
@@ -109,19 +109,19 @@ define(function(require, exports) {
                     var nextIndex,
                         index = rs.lastIndex,
                         count = store.getCount();
-                        if (count === 0) {
-                            view.changeAllBtnStatu();
-                            return;
-                        }
-                        if (index === 0) {
-                            nextIndex = 0;
-                        } else if (index === count) {
-                            nextIndex = index - 1;
-                        } else {
-                            nextIndex = index;
-                        }
-                        view.selectRow(nextIndex);
+                    if (count === 0) {
                         view.changeAllBtnStatu();
+                        return;
+                    }
+                    if (index === 0) {
+                        nextIndex = 0;
+                    } else if (index === count) {
+                        nextIndex = index - 1;
+                    } else {
+                        nextIndex = index;
+                    }
+                    view.selectRow(nextIndex);
+                    view.changeAllBtnStatu();
                 },
                 update: function (store, action, result, res, rs) {
                     //todo
@@ -144,13 +144,13 @@ define(function(require, exports) {
                 }
             }, failHandler = {
                 create: function (action, record, msg) {
-                    console.log(action, record,msg);
+                    console.log(action, record, msg);
                 },
                 delete: function (action, record, msg) {
-                    console.log(action, record,msg);
+                    console.log(action, record, msg);
                 },
                 update: function (action, record, msg) {
-                    console.log(action, record,msg);
+                    console.log(action, record, msg);
                 },
                 read: function (action, record, msg) {
                     console.log(action, record, msg);
@@ -159,7 +159,7 @@ define(function(require, exports) {
             model.on({
                 'success': function (store, action, result, res, rs) {
                     //请求成功
-                    successHandler[action](store,action, result, res, rs);
+                    successHandler[action](store, action, result, res, rs);
                 },
                 'fail': function (action, record, msg) {
                     //请求成功，只是返回一个失败的结果
@@ -170,12 +170,12 @@ define(function(require, exports) {
                     errorHandler[action](record, msg);
                 }
             });
-            var idOfTbar = config.getId('grid','tbar'),
+            var idOfTbar = config.getId('grid', 'tbar'),
                 viewlisteners = {};
             viewlisteners[idOfTbar.add] = function () {
                 //添加
                 console.log('添加');
-                if (config.get('grid','addEditWay', 'add') === 'rowEditor') {
+                if (config.get('grid', 'addEditWay', 'add') === 'rowEditor') {
                     view.addRecord();
                 } else {
                     view.openAddWindow();
