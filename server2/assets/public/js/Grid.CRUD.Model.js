@@ -108,6 +108,18 @@ define(function (require, exports) {
                 return store;
             };
             this.addEvents('success','error', 'fail');
+        },
+        saveRecord: function(record) {
+            var store = this.getStore();
+            store.insert(0, record);
+        },
+        updateRecord: function (record, fieldValues) {
+            var fieldName;
+            record.beginEdit();
+            for (fieldName in fieldValues) {
+                record.set(fieldName, fieldValues[fieldName]);
+            }
+            record.endEdit();
         }
     });
     return Model;

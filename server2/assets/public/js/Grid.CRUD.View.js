@@ -27,7 +27,7 @@ define(function (require, exports) {
         return false;
     }
     function needClicksToEdit(conf) {
-        if (conf.edit === 'window'){
+        if (conf.edit === 'window') {
             return true;
         }
         return false;
@@ -36,9 +36,7 @@ define(function (require, exports) {
         constructor: function (conf) {
             var that = this,
                 //事件
-                eventConfig= conf.event,
-                //窗口的编号
-                windowNum = 0,
+                eventConfig = conf.event,
                 //顶部工具栏的配置方式
                 tbarConfig = conf.tbar;
             //将config保存到对像中
@@ -50,7 +48,7 @@ define(function (require, exports) {
                 this.addEvents(button.id);
                 button.handler = function (btn, event) {
                     var record = that.rsm.getSelected();
-                    that.fireEvent(btn.id,[btn, event, record]);
+                    that.fireEvent(btn.id, [btn, event, record]);
                 };
             }
             /**
@@ -58,7 +56,7 @@ define(function (require, exports) {
              * @param  {Object} config 配置
              * @return {Ext.Window}        窗口
              */
-            function createWindow(conf) {
+            function createWindow(conf, record) {
                 var win, formPanel, fieldType = that.config.fieldType;
                 //创建formpanel的字段
                 var fieldConfig = conf.fields, fields = [], field;
@@ -69,19 +67,33 @@ define(function (require, exports) {
                         fields.push(new fieldType[field.type](field));
                     }
                 }
-                conf.id = conf.id + windowNum++;
-                console.log(conf.id);
                 if (!conf.title) {
                     conf.title = "窗口";
                 }
                 //创建FormPanel
                 conf.buttons = [{
+                    id: conf.id + ':btn:save',
                     text: '保存',
                     disable: true,
                     handler: function () {
-                        //todo
+                        var basicForm = formPanel.getForm(),
+                            saveRecord,
+                            fieldValues = basicForm.getFieldValues();
+                        //添加框是不带记录
+                        if (!record) {
+                            saveRecord = new that.config.recordType(Ext.ux.clone(that.config.defaultData));
+                            for (var key in fieldValues) {
+                                if (fieldValues.hasOwnProperty(key)) {
+                                    saveRecord.set(key, fieldValues[key]);
+                                }
+                            }
+                        } else {
+                            saveRecord = record;
+                        }
+                        that.fireEvent(conf.mEvent.ok, saveRecord, fieldValues);
                     }
                 }, {
+                    id: conf.id + ':btn:cancel',
                     text: '取消',
                     handler: function () {
                         win.close();
@@ -94,6 +106,7 @@ define(function (require, exports) {
                     items: fields
                 });
                 conf.items = formPanel;
+                conf.modal = !conf.multiWin;
                 conf.listeners = {
                     destroy: function () {
                         console.log('window ' + conf.id + 'destroy');
@@ -101,6 +114,10 @@ define(function (require, exports) {
                 };
                 //创建窗口
                 win = new Ext.Window(conf);
+                //如果有记录就将记录加载进窗口
+                if (record) {
+                    formPanel.getForm().loadRecord(record);
+                }
                 return win;
             }
             this.init = function (conf) {
@@ -130,7 +147,7 @@ define(function (require, exports) {
                     Ext.getCmp(idOfTbar[btn])[ed]();
                 };
                 //行编辑器
-                if (needRowEditor(that.config.addEditWay)){
+                if (needRowEditor(that.config.addEditWay)) {
                     editor = new Ext.ux.grid.RowEditor({
                         saveText: '保存',
                         cancelText: '取消',
@@ -158,7 +175,7 @@ define(function (require, exports) {
                 /**
                  * 对删除错误之后的界面进行错误修正
                  */
-                this.exceptionHandler = function(proxy, type, action, options, res, arg) {
+                this.exceptionHandler = function (proxy, type, action, options, res, arg) {
                     var id;
                     var that = this;
                     if (action === 'destroy') {
@@ -184,7 +201,7 @@ define(function (require, exports) {
                 this.openEditWindow = function (record) {
                     //窗口编辑器
                     var editWindow = createWindow({
-                        id: that.config.window.add.id,
+                        id: that.config.window.edit.id + ':' + record.id,
                         title: '编辑记录',
                         width: 210,
                         height: 300,
@@ -192,10 +209,12 @@ define(function (require, exports) {
                         plain: true,
                         bodyStyle: 'padding:5px',
                         closeAction: 'close',
-                        fields: that.config.window.edit.fields
-                    });
-                    var formPanel = editWindow.items.get(0);
-                    formPanel.getForm().loadRecord(record);
+                        fields: that.config.window.edit.fields,
+                        mMultiWin: true,//多窗口 ,自定义的字段全部带上m
+                        mEvent: {
+                            ok: eventConfig.UPDATE_RECORD
+                        }
+                    }, record);
                     editWindow.show();
                 };
                 /**
@@ -205,16 +224,30 @@ define(function (require, exports) {
                 this.openAddWindow = function () {
                     //窗口编辑器
                     var addWindow = createWindow({
-                        id: that.config.window.edit.id,
+                        id: that.config.window.add.id,
                         title: '添加记录',
                         width: 210,
                         height: 300,
                         plain: true,
                         bodyStyle: 'padding:5px',
                         closeAction: 'close',
-                        fields: that.config.window.add.fields
+                        fields: that.config.window.add.fields,
+                        mEvent: {
+                            ok: eventConfig.SAVE_RECORD
+                        }
                     });
                     addWindow.show();
+                };
+
+                this.closeWindow = function (type, recordId) {
+                    var id = that.config.window[type].id,
+                        win;
+
+                    if (!!recordId) {
+                        id = that.config.window[type].id + ':' + recordId;
+                    }
+                    win = Ext.getCmp(id);
+                    win.close();
                 };
                 //生成顶部工具栏
                 tbar = new Ext.Toolbar(tbarConfig);
@@ -260,7 +293,7 @@ define(function (require, exports) {
                         }
                     }
                 };
-                if (needRowEditor(that.config.addEditWay)){
+                if (needRowEditor(that.config.addEditWay)) {
                     mainPanelConfig.plugins = [editor];
                 }
                 mainPanel = new Ext.grid.GridPanel(mainPanelConfig);

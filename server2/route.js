@@ -31,7 +31,14 @@ function route(pathname, request, response) {
             });
             request.on('end', function () {
                 var params = qs.parse(body);
-                request.body = params;
+                request.body = body;
+                for (var key in params) {
+                    if (params.hasOwnProperty(key)) {
+                        if ((typeof key).toLowerCase() === 'string') {
+                            params[key] = JSON.parse(params[key]);
+                        }
+                    }
+                }
                 request.params = params;
                 method(request, response, function (err) {
                     handle.method('common', 'error')(request, response, err);

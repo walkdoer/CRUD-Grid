@@ -59,7 +59,7 @@ define(function(require, exports) {
              * 或者可以像下面一样分开选择
              */
             editor: {
-                add: 'rowEditor', //添加的时候使用rowEditor
+                add: 'window', //添加的时候使用rowEditor
                 edit: 'window' //编辑的时候使用窗口
             },
             columns: [{

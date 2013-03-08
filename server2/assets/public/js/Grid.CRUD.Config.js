@@ -52,7 +52,9 @@ define(function(require, exports) {
         }],
         EVENT = {
             VIEW: {
-                ROW_DBL_CLICK: 'event_view_row_double_click'
+                ROW_DBL_CLICK: 'event_view_row_double_click',
+                SAVE_RECORD: 'event_view_save_record',
+                UPDATE_RECORD: 'event_view_update_record'
             }
         },
         //文件类型

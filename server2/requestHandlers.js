@@ -44,7 +44,7 @@ exports.new = function(req, res, next) {
     var data,
         title;
     try {
-        data = JSON.parse(req.params.data);
+        data = req.params.data;
         title = data.title || '';
     } catch (e) {
         return next(e);
@@ -72,15 +72,24 @@ exports.view = function(req, res, next) {
 };
 
 exports.edit = function(req, res, next) {
-    var id = req.params.id;
-    db.todo.findById(id, function(err, row) {
-        if(err) {
+    var data = req.params.data;
+    var id = data._id;
+    console.log(id);
+    db.todo.update({
+        _id: db.ObjectID.createFromHexString(id)
+    }, {
+        $set: {
+            title: data.title,
+            finished: data.finished
+        }
+    }, {
+        raw: true
+    }, function (err, row) {
+        if (err) {
+            console.log(err);
             return next(err);
         }
-        if(!row) {
-            return next();
-        }
-        res.write(JSON.stringify(result(true, '编辑成功', row)));
+        res.write(JSON.stringify(result(true, '编辑成功', data)));
         res.end();
     });
 };
@@ -94,11 +103,12 @@ exports.save = function(req, res, next) {
             message: '标题是必须的'
         });
     }
-    db.todo.updateById(id, {
+    db.todo.update(id, {
         $set: {
             title: title
         }
     }, function(err, result) {
+        console.log('########' + err);
         if(err) {
             return next(err);
         }
@@ -127,7 +137,9 @@ exports.delete = function(req, res, next) {
 exports.finish = function(req, res, next) {
     var finished = req.query.status === 'yes' ? 1 : 0;
     var id = req.params.id;
-    db.todo.updateById(id, {
+    db.todo.update({
+        _id: db.ObjectID.createFromHexString(id)
+    }, {
         $set: {
             finished: finished
         }

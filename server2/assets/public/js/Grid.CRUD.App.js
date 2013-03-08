@@ -80,28 +80,32 @@ define(function(require, exports) {
             var model = new Model({
                 storeId: 'mydata',
                 data: this.data || this.api,
-                reader: config.get('store','reader')
+                reader: config.get('store', 'reader')
             });
 
-            var tbarConfig = config.get('grid','tbar');
+            var tbarConfig = config.get('grid', 'tbar');
             tbarConfig.id = config.getId('grid', 'tbar');
             var view = new View({
                 event: config.get('event', 'view'), //View模块用到的事件
                 tbar: tbarConfig,//顶部工具拦的配置
                 fieldType: config.get('fieldType'),//字段类型与对应Ext编辑字段的对应关系 string: Ext.form.TextField
-                idProperty: config.get('store','reader', 'idProperty'),// id字段
-                defaultData: config.get('store','defaultData'),//Grid数据的默认构造
+                idProperty: config.get('store', 'reader', 'idProperty'),// id字段
+                defaultData: config.get('store', 'defaultData'),//Grid数据的默认构造
                 window: config.get('window'),//窗口的配置
                 mode: config.get('mode'),// local 或者 remote
-                addEditWay: config.get('grid', 'addEditWay')
+                addEditWay: config.get('grid', 'addEditWay'),
+                recordType: model.getStore().recordType //对RecordType的引用
             });
             //声明处理函数
             var successHandler = {
-                create: function (store,action, result, res, rs) {
+                create: function (store, action, result, res, rs) {
                     //todo
                     console.log('创建成功');
+                    if (config.get('grid', 'addEditWay', 'add') === 'window') {
+                        view.closeWindow('add');
+                    }
                 },
-                delete: function (store,action, result, res, rs) {
+                delete: function (store, action, result, res, rs) {
                     var nextIndex,
                         index = rs.lastIndex,
                         count = store.getCount();
@@ -119,9 +123,11 @@ define(function(require, exports) {
                         view.selectRow(nextIndex);
                         view.changeAllBtnStatu();
                 },
-                update: function (store,action, result, res, rs) {
+                update: function (store, action, result, res, rs) {
                     //todo
                     console.log('更新成功');
+                    view.closeWindow('edit', rs.get(config.get('store', 'reader', 'idProperty')));
+                    console.log('edit window close');
                 }
             }, errorHandler = {
                 create: function (action, record, msg) {
@@ -169,7 +175,7 @@ define(function(require, exports) {
             viewlisteners[idOfTbar.add] = function () {
                 //添加
                 console.log('添加');
-                if (config.get('grid','addEditWay', 'add') === 'window') {
+                if (config.get('grid','addEditWay', 'add') === 'rowEditor') {
                     view.addRecord();
                 } else {
                     view.openAddWindow();
@@ -185,10 +191,19 @@ define(function(require, exports) {
                 view.setBtnStatu('delete', false);
                 model.getStore().remove(record);
             };
-            viewlisteners[config.getEvent('view','ROW_DBL_CLICK')] = function (record) {
-                if (config.get('grid','addEditWay', 'edit') === 'window') {
+            viewlisteners[config.getEvent('view', 'ROW_DBL_CLICK')] = function (record) {
+                //使用Window进行编辑
+                if (config.get('grid', 'addEditWay', 'edit') === 'window') {
                     view.openEditWindow(record);
                 }
+                //mRowEditor 会自动启用
+            };
+            viewlisteners[config.getEvent('view', 'SAVE_RECORD')] = function (record, fieldValues) {
+                model.saveRecord(record);
+            };
+            viewlisteners[config.getEvent('view', 'UPDATE_RECORD')] = function (record, fieldValues) {
+                console.log('UPDATE_RECORD');
+                model.updateRecord(record, fieldValues);
             };
             view.on(viewlisteners);
             //初始化界面
