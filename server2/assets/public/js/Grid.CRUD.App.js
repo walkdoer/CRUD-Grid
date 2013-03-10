@@ -97,6 +97,21 @@ define(function(require, exports) {
                 addEditWay: config.get('grid', 'addEditWay'),
                 recordType: model.getStore().recordType //对RecordType的引用
             });
+            //处理删除错误
+            function handleErrorOrException(options, record, msg) {
+                view.error(msg);
+                var id, item, i, 
+                    store = model.getStore();
+                if (record.lastIndex === store.getTotalCount() - 1) {
+                    id = store.getCount();
+                } else {
+                    id = record.lastIndex;
+                }
+                setTimeout(function () {
+                    view.selectRow(id);
+                    view.changeAllBtnStatu();
+                }, 40);
+            }
             //声明处理函数
             var successHandler = {
                 create: function (store, action, result, res, rs) {
@@ -106,6 +121,7 @@ define(function(require, exports) {
                         view.isWindowOpen('add')) {
                         view.closeWindow('add');
                     }
+                    view.changeAllBtnStatu();
                 },
                 delete: function (store, action, result, res, rs) {
                     var nextIndex,
@@ -135,40 +151,39 @@ define(function(require, exports) {
                         view.isWindowOpen('edit', recordId)) {
                         view.closeWindow('edit', recordId);
                     }
+                    view.changeAllBtnStatu();
                 }
             }, errorHandler = {
-                create: function (record, msg) {
+                create: function (options, record, msg) {
                     view.error(msg);
-                    console.log(record, msg);
+                    console.log(options, record, msg);
                 },
-                delete: function (record, msg) {
-                    view.error(msg);
-                    console.log(record, msg);
+                delete: function (options, record, msg) {
+                    handleErrorOrException(options, record, msg);
                 },
-                update: function (record, msg) {
+                update: function (options, record, msg) {
                     view.error(msg);
-                    console.log(record, msg);
+                    console.log(options, record, msg);
                 },
-                read: function (record, msg) {
+                read: function (options, record, msg) {
                     view.error(msg);
-                    console.log(record, msg);
+                    console.log(options, record, msg);
                 }
             }, failHandler = {
-                create: function (record, msg) {
+                create: function (options, record, msg) {
                     view.error(msg);
-                    console.log(record, msg);
+                    console.log(options, record, msg);
                 },
-                delete: function (record, msg) {
-                    view.error(msg);
-                    console.log(record, msg);
+                delete: function (options, record, msg) {
+                    handleErrorOrException(options, record, msg);
                 },
-                update: function (record, msg) {
+                update: function (options, record, msg) {
                     view.error(msg);
-                    console.log(record, msg);
+                    console.log(options, record, msg);
                 },
-                read: function (record, msg) {
+                read: function (options, record, msg) {
                     view.error(msg);
-                    console.log(record, msg);
+                    console.log(options, record, msg);
                 }
             };
             model.on({
@@ -176,13 +191,13 @@ define(function(require, exports) {
                     //请求成功
                     successHandler[action](store, action, result, res, rs);
                 },
-                'fail': function (action, record, msg) {
+                'fail': function (action, options, record, msg) {
                     //请求成功，只是返回一个失败的结果
-                    failHandler[action](record, msg);
+                    failHandler[action](options, record, msg);
                 },
-                'error': function (action, record, msg) {
+                'error': function (action, options, record, msg) {
                     //请求失败404 500 或者 DataReader配置有错
-                    errorHandler[action](record, msg);
+                    errorHandler[action](options, record, msg);
                 }
             });
             var idOfTbar = config.getId('grid', 'tbar'),

@@ -58,7 +58,8 @@ define(function(require, exports) {
      * 初始化参数
      * @param  {String} appName 组件ID
      */
-    function initArgs(appName) {
+    function initArgs(conf) {
+        var appName = conf.id;
         if (ID === null) {
             ID = {
                 grid: {
@@ -73,6 +74,11 @@ define(function(require, exports) {
                     //Todo
                 }
             };
+            //根据用户的配置初始化ID
+            for (var i = 0, len = conf.buttons.length; i < len; i++) {
+                setId('grid', 'tbar', 'btn', conf.buttons[i].id,//ID保存的位置
+                    appName + 'grid-tbar-btn-' + conf.buttons[i].id);//ID的值
+            }
         }
         if (!tbarButtons) {
             tbarButtons = [{
@@ -89,7 +95,45 @@ define(function(require, exports) {
                 text: '刷新',
                 iconCls: 'icon-refresh'
             }];
+            
+
         }
+
+        
+    }
+
+    function setId() {
+        var args = Array.prototype.slice.call(arguments);
+        if (args.length <= 1) { return; }
+        var idOfComponent = ID[args.shift()],
+            value = args.splice(args.length - 1, 1)[0],
+            key = args.join('_');
+        idOfComponent[key] = value;
+    }
+    /**
+     * [getId description]
+     * @return {[type]} [description]
+     */
+    function getId() {
+        var args = Array.prototype.slice.call(arguments),
+            idOfComponent = ID[args[0]],//组件的ID列表，如Grid
+            result = {};
+        if (!idOfComponent) { return result; }
+        //构造键值
+        args.shift();
+        var wantKey = args.join('_');//tbar_btn
+        for (var key in idOfComponent) {
+            // tbar_btn_delete 子模块_部件类型_动作
+            if (wantKey === key) {
+                return idOfComponent[wantKey];
+            }
+            if (key.indexOf(wantKey) === 0) {
+                var realkey = key.split('_');
+                result[realkey[realkey.length - 1]] = idOfComponent[key];
+                console.log(realkey[realkey.length - 1], idOfComponent[key]);
+            }
+        }
+        return result;
     }
     /**
      * 获取配置项
@@ -264,7 +308,7 @@ define(function(require, exports) {
 
         for (var i = 0; i < buttons.length; i++) {
             btn = buttons[i];
-            btn.id = config.id + ':' + btn.id;
+            btn.id = getId('grid', 'tbar', 'btn', btn.id);
             originHandler = btn.handler;
             btn.handler = function (btn, event) {
                 originHandler(config.app);
@@ -342,7 +386,7 @@ define(function(require, exports) {
         userConfig = {};
         originConfig = config;
         //初始化系统参数
-        initArgs(config.id);
+        initArgs(config);
         var tbarConfig,
             mode, //组件加载数据的模式
             columns = config.columns;
@@ -358,7 +402,7 @@ define(function(require, exports) {
         set('mode', mode);
         set('fieldType', FIELD_TYPE);
         set('store', 'reader', config.store);
-        set('store','defaultData', getStoreDefaultData(columns));
+        set('store', 'defaultData', getStoreDefaultData(columns));
         set('grid', 'tbar', tbarConfig);
         set('grid', 'addEditWay', getAddEditWay(config.editor));
         set('event', 'view', EVENT.VIEW);
@@ -387,24 +431,7 @@ define(function(require, exports) {
         init: init,
         get: get,
         set: set,
-        getId: function () {
-            var args = Array.prototype.slice.call(arguments),
-                idOfComponent = ID[args[0]],//组件的ID列表，如Grid
-                result = {};
-            if (!idOfComponent) { return result; }
-            //构造键值
-            args.shift();
-            var wantKey = args.join('_');//tbar_btn
-            for (var key in idOfComponent) {
-                // tbar_btn_delete 子模块_部件类型_动作
-                if (key.indexOf(wantKey) === 0) {
-                    var realkey = key.split('_');
-                    result[realkey[realkey.length - 1]] = idOfComponent[key];
-                    console.log(realkey[realkey.length - 1], idOfComponent[key]);
-                }
-            }
-            return result;
-        },
+        getId: getId,
         /**
          * 获取事件
          * @param  {stirng} module    模块名

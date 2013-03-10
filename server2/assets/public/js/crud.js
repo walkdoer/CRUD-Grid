@@ -65,11 +65,12 @@ define(function(require, exports) {
             buttons: [{
                 id: 'finishe',
                 disabled: true,
-                howtoEnable: function (btn, record) {
-                    if (record) {
-                        btn.enable();
+                whenEnable: function (record) {
+                    //演示该如何改变按钮状态
+                    if (record && !record.get('finished')) {
+                        return true;
                     } else {
-                        btn.disable();
+                        return false;
                     }
                 },
                 text: '完成',

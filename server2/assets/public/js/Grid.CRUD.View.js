@@ -188,6 +188,8 @@ define(function (require, exports) {
                 }
                 return win;
             }
+
+
             this.init = function (conf) {
                 var store = conf.store,
                     idOfTbar = tbarConfig.id,
@@ -197,15 +199,25 @@ define(function (require, exports) {
                  * 改变所有按钮的状态
                  */
                 this.changeAllBtnStatu = function () {
+                    console.log('########改变按钮状态');
                     var record = this.rsm.getSelected();
-                    var delBtn = Ext.getCmp(idOfTbar.delete);
+                    var delBtn = Ext.getCmp(idOfTbar.delete),
+                        needEnable;
                     if (!record) {
                         delBtn.disable();
                     } else {
                         delBtn.enable();
                     }
                     for (var btnName in idOfTbar) {
-                        console.log(btnName + ':' + idOfTbar[btnName]);
+                        var btn = Ext.getCmp(idOfTbar[btnName]);
+                        if (!btn) { continue; }
+                        needEnable = btn.initialConfig.whenEnable;
+                        if (!needEnable) { continue; }
+                        if (needEnable(record)) {
+                            btn.enable();
+                        } else {
+                            btn.disable();
+                        }
                     }
                 };
 

@@ -90,11 +90,11 @@ define(function (require, exports) {
                 }
                 //A valid response was returned from the server having successProperty === false. T
                 if (type === 'remote') {
-                    that.fireEvent('fail', action, record, msg);
+                    that.fireEvent('fail', action, options, record, msg);
                 //An invalid response from the server was returned: either 404, 500
                 //or the response meta-data does not match that defined in the DataReader
                 } else {
-                    that.fireEvent('error', action, record, msg);
+                    that.fireEvent('error', action, options, record, msg);
                 }
             });
             store.on('write', function (store, action, result, res, rs) {
