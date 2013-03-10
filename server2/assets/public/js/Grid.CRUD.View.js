@@ -83,8 +83,8 @@ define(function (require, exports) {
             //绑定顶部工具栏按钮的处理函数
             for (var i = 0, len = tbarConfig.items.length; i < len; i++) {
                 var button = tbarConfig.items[i];
-                console.log(button, button.id);
                 this.addEvents(button.id);
+                if (!!button.handler) {continue;}
                 button.handler = function (btn, event) {
                     var record = that.rsm.getSelected();
                     that.fireEvent(btn.id, [btn, event, record]);
@@ -204,6 +204,13 @@ define(function (require, exports) {
                     } else {
                         delBtn.enable();
                     }
+                    for (var btnName in idOfTbar) {
+                        console.log(btnName + ':' + idOfTbar[btnName]);
+                    }
+                };
+
+                this.getCurrentRecord = function () {
+                    return this.rsm.getSelected();
                 };
                 /**
                  * 设置按钮状态
@@ -313,8 +320,21 @@ define(function (require, exports) {
                         id = that.config.window[type].id + ':' + recordId;
                     }
                     win = Ext.getCmp(id);
+                    if (!win) { return; }
                     win.fromSaveBtn = true;//强制关闭
                     win.close();
+                };
+
+                this.isWindowOpen = function (type, recordId) {
+                    var id = that.config.window[type].id,
+                        win;
+
+                    if (!!recordId) {
+                        id = that.config.window[type].id + ':' + recordId;
+                    }
+                    win = Ext.getCmp(id);
+                    if (!win) { return false; }
+                    return true;
                 };
                 //生成顶部工具栏
                 tbar = new Ext.Toolbar(tbarConfig);
@@ -349,9 +369,6 @@ define(function (require, exports) {
                         },
                         destroy: function () {
                             console.log('Grid [Ext.grid.GridPanel]: Destroy');
-                            //关闭窗口的时候删除绑定的处理函数，下一次重新绑定，避免闭包问题，即使用上一个窗口生成的变量，rsm
-                            //store.removeListener('write', afterDelete);
-                            //store.removeListener('exception', exceptionHandler);
                         },
                         rowdblclick: function (grid, rowIndex) {
                             console.log('Gird [Ext.grid.GridPanel]: Row double click');

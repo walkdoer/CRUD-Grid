@@ -23,33 +23,8 @@ define(function(require, exports) {
                 }
             }
         },
-        id = {
-            grid: {
-                'tbar_btn_delete': 'grid-tbar-btn-delete',
-                'tbar_btn_add': 'grid-tbar-btn-add',
-                'tbar_btn_refresh': 'grid-tbar-btn-refresh'
-            },
-            addWindow: {
-                //Todo
-            },
-            editWindow: {
-                //Todo
-            }
-        },
-        tbarButtons =  [{
-            id: id.grid.tbar_btn_add,
-            text: '添加',
-            iconCls: 'icon-add'
-        }, {
-            id: id.grid.tbar_btn_delete,
-            text: '删除',
-            iconCls: 'icon-delete',
-            disabled: true
-        }, {
-            id: id.grid.tbar_btn_refresh,
-            text: '刷新',
-            iconCls: 'icon-refresh'
-        }],
+        ID = null,
+        tbarButtons = null,
         EVENT = {
             VIEW: {
                 ROW_DBL_CLICK: 'event_view_row_double_click',
@@ -77,6 +52,44 @@ define(function(require, exports) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * 初始化参数
+     * @param  {String} appName 组件ID
+     */
+    function initArgs(appName) {
+        if (ID === null) {
+            ID = {
+                grid: {
+                    'tbar_btn_delete': appName + 'grid-tbar-btn-delete',
+                    'tbar_btn_add': appName + 'grid-tbar-btn-add',
+                    'tbar_btn_refresh': appName + 'grid-tbar-btn-refresh'
+                },
+                addWindow: {
+                    //Todo
+                },
+                editWindow: {
+                    //Todo
+                }
+            };
+        }
+        if (!tbarButtons) {
+            tbarButtons = [{
+                id: ID.grid.tbar_btn_add,
+                text: '添加',
+                iconCls: 'icon-add'
+            }, {
+                id: ID.grid.tbar_btn_delete,
+                text: '删除',
+                iconCls: 'icon-delete',
+                disabled: true
+            }, {
+                id: ID.grid.tbar_btn_refresh,
+                text: '刷新',
+                iconCls: 'icon-refresh'
+            }];
+        }
     }
     /**
      * 获取配置项
@@ -246,7 +259,18 @@ define(function(require, exports) {
      * 获取顶部工具栏的配置
      * @return {Object} 配置
      */
-    function getTbarConfig() {
+    function getTbarConfig(config) {
+        var buttons = config.buttons, btn, originHandler;
+
+        for (var i = 0; i < buttons.length; i++) {
+            btn = buttons[i];
+            btn.id = config.id + ':' + btn.id;
+            originHandler = btn.handler;
+            btn.handler = function (btn, event) {
+                originHandler(config.app);
+            };
+            tbarButtons.push(btn);
+        }
         return {
             items: tbarButtons
         };
@@ -317,6 +341,8 @@ define(function(require, exports) {
         //初始化config
         userConfig = {};
         originConfig = config;
+        //初始化系统参数
+        initArgs(config.id);
         var tbarConfig,
             mode, //组件加载数据的模式
             columns = config.columns;
@@ -328,7 +354,7 @@ define(function(require, exports) {
         }
         checkConfig(config);
         /* 将用户的配置转化为系统可用的配置 */
-        tbarConfig = getTbarConfig();
+        tbarConfig = getTbarConfig(config);
         set('mode', mode);
         set('fieldType', FIELD_TYPE);
         set('store', 'reader', config.store);
@@ -361,16 +387,20 @@ define(function(require, exports) {
         init: init,
         get: get,
         set: set,
-        getId: function (component, subComponent) {
-            if (!component) {
-                return null;
-            }
-            var idOfComponent = id[component],
+        getId: function () {
+            var args = Array.prototype.slice.call(arguments),
+                idOfComponent = ID[args[0]],//组件的ID列表，如Grid
                 result = {};
-            for(var key in idOfComponent) {
-                var idConfig = key.split('_');// tbar_btn_delete 子模块_部件类型_动作
-                if (idConfig[0] === subComponent) {
-                    result[idConfig[2]] = idOfComponent[key];
+            if (!idOfComponent) { return result; }
+            //构造键值
+            args.shift();
+            var wantKey = args.join('_');//tbar_btn
+            for (var key in idOfComponent) {
+                // tbar_btn_delete 子模块_部件类型_动作
+                if (key.indexOf(wantKey) === 0) {
+                    var realkey = key.split('_');
+                    result[realkey[realkey.length - 1]] = idOfComponent[key];
+                    console.log(realkey[realkey.length - 1], idOfComponent[key]);
                 }
             }
             return result;

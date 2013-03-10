@@ -75,6 +75,7 @@ define(function(require, exports) {
             this.layout = 'fit',
             Ext.ux.CRUD.superclass.initComponent.apply(this, arguments);
             //初始化配置模块
+            this.initialConfig.app = this;
             config.init(this.initialConfig);
             //初始化数据库
             var model = new Model({
@@ -99,9 +100,10 @@ define(function(require, exports) {
             //声明处理函数
             var successHandler = {
                 create: function (store, action, result, res, rs) {
-                    //todo
                     console.log('创建成功');
-                    if (config.get('grid', 'addEditWay', 'add') === 'window') {
+                    //如果用户选择了添加方式为窗口编辑 且 窗口已经打开
+                    if (config.get('grid', 'addEditWay', 'add') === 'window' &&
+                        view.isWindowOpen('add')) {
                         view.closeWindow('add');
                     }
                 },
@@ -126,8 +128,13 @@ define(function(require, exports) {
                 update: function (store, action, result, res, rs) {
                     //todo
                     console.log('更新成功');
-                    view.closeWindow('edit', rs.get(config.get('store', 'reader', 'idProperty')));
-                    console.log('edit window close');
+
+                    var recordId = rs.get(config.get('store', 'reader', 'idProperty'));
+                    //如果用户选择了更新方式为窗口编辑 且 窗口已经打开
+                    if (config.get('grid', 'addEditWay', 'edit') === 'window' &&
+                        view.isWindowOpen('edit', recordId)) {
+                        view.closeWindow('edit', recordId);
+                    }
                 }
             }, errorHandler = {
                 create: function (record, msg) {
@@ -221,6 +228,19 @@ define(function(require, exports) {
                 columns: config.get('grid', 'columns'),
                 noClicksToEdit: config.get('grid', 'noClicksToEdit')
             }));
+            /**
+             * 更新记录
+             * @param  {Object} obj 需要更新的数据
+             * @return {Boolean} 更新成功与否     
+             */
+            this.updateRecord = function (obj) {
+                if (!obj) {
+                    return false;
+                }
+                //取出要更新的记录
+                var record = view.getCurrentRecord();
+                model.updateRecord(record, obj);
+            };
         }
     });
 });

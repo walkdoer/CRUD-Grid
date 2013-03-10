@@ -62,6 +62,25 @@ define(function(require, exports) {
                 add: 'window', //添加的时候使用rowEditor
                 edit: 'window' //编辑的时候使用窗口
             },
+            buttons: [{
+                id: 'finishe',
+                disabled: true,
+                howtoEnable: function (btn, record) {
+                    if (record) {
+                        btn.enable();
+                    } else {
+                        btn.disable();
+                    }
+                },
+                text: '完成',
+                iconCls: 'icon-edit',
+                handler: function (app) {
+                    //改变记录的状态
+                    app.updateRecord({
+                        finished: true
+                    });
+                }
+            }],
             columns: [{
                 id: 'id',
                 type: 'string',
@@ -88,7 +107,7 @@ define(function(require, exports) {
                 sortable: true,
                 width: 60,
                 dataIndex: 'finished'
-            },{
+            }, {
                 header   : '更新日期',
                 fieldLabel: '更新日期',
                 editable: false,
