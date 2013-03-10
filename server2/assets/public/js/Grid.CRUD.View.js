@@ -23,8 +23,10 @@ define(function (require, exports) {
     //监听
     var LISTENERS_TYPE = {
         'string' : 'keyup',
+        'bigString': 'keyup',
         'boolean' : 'check'
     };
+    
     function serializeForm(form) {
         var fElements = form.elements || (document.forms[form] || Ext.getDom(form)).elements, 
             hasSubmit = false, 
@@ -364,6 +366,9 @@ define(function (require, exports) {
                 mainPanel = new Ext.grid.GridPanel(mainPanelConfig);
                 return mainPanel;
             };
+        },
+        error: function (msg) {
+            Ext.Msg.alert('错误', msg);
         }
     });
     return View;

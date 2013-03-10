@@ -130,30 +130,38 @@ define(function(require, exports) {
                     console.log('edit window close');
                 }
             }, errorHandler = {
-                create: function (action, record, msg) {
-                    console.log(action, record, msg);
+                create: function (record, msg) {
+                    view.error(msg);
+                    console.log(record, msg);
                 },
-                delete: function (action, record, msg) {
-                    console.log(action, record, msg);
+                delete: function (record, msg) {
+                    view.error(msg);
+                    console.log(record, msg);
                 },
-                update: function (action, record, msg) {
-                    console.log(action, record, msg);
+                update: function (record, msg) {
+                    view.error(msg);
+                    console.log(record, msg);
                 },
-                read: function (action, record, msg) {
-                    console.log(action, record, msg);
+                read: function (record, msg) {
+                    view.error(msg);
+                    console.log(record, msg);
                 }
             }, failHandler = {
-                create: function (action, record, msg) {
-                    console.log(action, record, msg);
+                create: function (record, msg) {
+                    view.error(msg);
+                    console.log(record, msg);
                 },
-                delete: function (action, record, msg) {
-                    console.log(action, record, msg);
+                delete: function (record, msg) {
+                    view.error(msg);
+                    console.log(record, msg);
                 },
-                update: function (action, record, msg) {
-                    console.log(action, record, msg);
+                update: function (record, msg) {
+                    view.error(msg);
+                    console.log(record, msg);
                 },
-                read: function (action, record, msg) {
-                    console.log(action, record, msg);
+                read: function (record, msg) {
+                    view.error(msg);
+                    console.log(record, msg);
                 }
             };
             model.on({
