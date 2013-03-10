@@ -106,9 +106,14 @@ define(function (require, exports) {
                     field = fieldConfig[i];
                     if (field.editable) {
                         field.listeners = {};
-                        field.listeners[LISTENERS_TYPE[field.type]] = function () {
-                            console.log("field change");
-                            Ext.getCmp(saveBtnId).enable();
+                        field.listeners[LISTENERS_TYPE[field.type]] = function (field, o) {
+                            var btn = Ext.getCmp(saveBtnId);
+                            if (field.getValue() === record.get(field.getName())) {
+                                btn.disable();
+                            } else {
+                                btn.enable();
+                            }
+                            
                         };
                         //可编辑字段根据数据类型创建field
                         fields.push(new fieldType[field.type](field));
