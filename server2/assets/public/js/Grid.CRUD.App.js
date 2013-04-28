@@ -10,6 +10,7 @@ define(function(require, exports) {
      */
     'use strict';
 
+    var _ = require('crud/public/js/Grid.CRUD.Common.js');
     var Model = require('crud/public/js/Grid.CRUD.Model.js'),
         config = require('crud/public/js/Grid.CRUD.Config.js'),
         View = require('crud/public/js/Grid.CRUD.View.js');
@@ -84,12 +85,35 @@ define(function(require, exports) {
                 reader: config.get('store', 'reader')
             });
 
-            var tbarConfig = config.get('grid', 'tbar');
-            tbarConfig.id = config.getId('grid', 'tbar');
+            var buttonsBarConfig = config.get('grid', 'tbar', 'buttons'),
+                searchBarConfig = config.get('grid', 'tbar', 'search', 'property'),
+                pageConfig = config.get('grid', 'page');
+            if (searchBarConfig) {
+                searchBarConfig.id = config.getId('grid', 'tbar', 'search');
+            }
+            //取出所有btn
+            if (buttonsBarConfig) {
+                buttonsBarConfig.mIdList = config.getId('grid', 'tbar', 'buttons', 'btn');
+                buttonsBarConfig.id = config.getId('grid', 'tbar', 'buttons');
+            }
+            
+            //结合其他配置项构造翻页配置
+            pageConfig = _.extend({
+                store: model.getStore(),
+                pageSize: 20,
+                displayInfo: true,
+                prependButtons: true
+            }, pageConfig);
+
+            var lowerCaseParam = config.get('grid', 'tbar', 'search', 'lowerCaseParam');
             var view = new View({
                 event: config.get('event', 'view'), //View模块用到的事件
-                tbar: tbarConfig,//顶部工具拦的配置
-                fieldType: config.get('fieldType'),//字段类型与对应Ext编辑字段的对应关系 string: Ext.form.TextField
+                buttonsBarConfig: buttonsBarConfig,//顶部工具拦的配置
+                singleSelect: config.get('origin', 'singleSelect'), //单选
+                checkbox: config.get('origin', 'checkbox'),//checkbox
+                pageToolbarConfig: pageConfig,
+                initialParam: config.get('store', 'params'),
+                searchBarConfig: searchBarConfig,
                 idProperty: config.get('store', 'reader', 'idProperty'),// id字段
                 defaultData: config.get('store', 'defaultData'),//Grid数据的默认构造
                 window: config.get('window'),//窗口的配置
@@ -100,7 +124,7 @@ define(function(require, exports) {
             //处理删除错误
             function handleErrorOrException(options, record, msg) {
                 view.error(msg);
-                var id, item, i, 
+                var id, 
                     store = model.getStore();
                 if (record.lastIndex === store.getTotalCount() - 1) {
                     id = store.getCount();
@@ -200,34 +224,59 @@ define(function(require, exports) {
                     errorHandler[action](options, record, msg);
                 }
             });
-            var idOfTbar = config.getId('grid', 'tbar'),
+            var idOfTbar = config.getId('grid', 'tbar', 'buttons', 'btn'),
                 viewlisteners = {};
-            viewlisteners[idOfTbar.add] = function () {
-                //添加
-                console.log('添加');
-                if (config.get('grid', 'addEditWay', 'add') === 'rowEditor') {
-                    view.addRecord();
-                } else {
-                    view.openAddWindow();
-                }
-            };
-            viewlisteners[idOfTbar.refresh] = function () {
-                //刷新
-                console.log('刷新');
-                model.getStore()[reloadMethod](that.data);
-            };
-            viewlisteners[idOfTbar.delete] = function (record) {
-                //记录
-                view.setBtnStatu('delete', false);
-                model.getStore().remove(record);
-            };
+            
             viewlisteners[config.getEvent('view', 'ROW_DBL_CLICK')] = function (record) {
-                //使用Window进行编辑
-                if (config.get('grid', 'addEditWay', 'edit') === 'window') {
-                    view.openEditWindow(record);
+                //如果是可编辑状态
+                if (config.get('editable')) {
+                    //使用Window进行编辑
+                    if (config.get('grid', 'addEditWay', 'edit') === 'window') {
+                        view.openEditWindow(record);
+                    } else {
+                        //mRowEditor 会自动启用,不需要做处理
+                    }
                 }
-                //mRowEditor 会自动启用
             };
+            //绑定处理函数
+            if (buttonsBarConfig) {
+                if (idOfTbar.sysadd) {
+                    viewlisteners[idOfTbar.sysadd] = function () {
+                        //添加
+                        console.log('添加');
+                        if (config.get('grid', 'addEditWay', 'add') === 'rowEditor') {
+                            view.addRecord();
+                        } else {
+                            view.openAddWindow();
+                        }
+                    };
+                }
+                if (idOfTbar.sysrefresh) {
+                    viewlisteners[idOfTbar.sysrefresh] = function () {
+                        //刷新
+                        console.log('刷新');
+                        model.getStore()[reloadMethod](that.data);
+                    };
+                }
+                if (idOfTbar.sysdelete) {
+                    viewlisteners[idOfTbar.sysdelete] = function (btn, event, records) {
+                        //记录
+                        view.setBtnStatu('sysdelete', false);
+                        model.getStore().remove(records);
+                    };
+                }
+                (function (btns) {
+                    for (var i = 0, len = btns.length; i < len; i++) {
+                        var btn = btns[i];
+                        if (btns[i].belongToUser) {
+                            viewlisteners[btn.id] = function (btn, event, records, data, process) {
+                                console.log('################btn');
+                                process(that, records, data);
+                            };
+                        }
+                    }
+                })(buttonsBarConfig.items);
+            }
             viewlisteners[config.getEvent('view', 'SAVE_RECORD')] = function (record, fieldValues) {
                 model.saveRecord(record);
             };
@@ -235,6 +284,35 @@ define(function(require, exports) {
                 console.log('UPDATE_RECORD');
                 model.updateRecord(record, fieldValues);
             };
+            viewlisteners[config.getEvent('view', 'LOAD_DATA')] = function () {
+                var store = model.getStore(),
+                    paramsNew,
+                    params = config.get('store', 'params');
+
+                if (params) {
+                    params.limit = config.get('grid', 'page', 'pageSize');
+                    params.start = 0;
+                     if (lowerCaseParam) {
+                        paramsNew = _.lowerCaseObjectKey(params);
+                    } else {
+                        paramsNew = params;
+                    }
+                }
+                setBaseParam(store, paramsNew);
+                store.load();
+            };
+            viewlisteners[config.getEvent('view', 'SEARCH')] = function (params) {
+                console.log('======搜索....========');
+                var paramsNew;
+                if (lowerCaseParam) {
+                    paramsNew = _.lowerCaseObjectKey(params);
+                } else {
+                    paramsNew = params;
+                }
+                setBaseParam(model.getStore(), paramsNew);
+                model.getStore().load();
+            };
+            console.log("####bindListener处理函数");
             view.on(viewlisteners);
             //初始化界面
             this.add(view.init({
@@ -243,6 +321,19 @@ define(function(require, exports) {
                 columns: config.get('grid', 'columns'),
                 noClicksToEdit: config.get('grid', 'noClicksToEdit')
             }));
+
+            /**
+             * 设置BaseParam
+             * @param {Ext.data.Store} store  
+             * @param {Object}         params 参数
+             */
+            function setBaseParam(store, params) {
+                if (!params) { return; }
+                for (var key in params) {
+                    store.setBaseParam(key, params[key]);
+                }
+            }
+
             /**
              * 更新记录
              * @param  {Object} obj 需要更新的数据
@@ -255,6 +346,18 @@ define(function(require, exports) {
                 //取出要更新的记录
                 var record = view.getCurrentRecord();
                 model.updateRecord(record, obj);
+            };
+            this.alert =  function (msg) {
+                view.alert(msg);
+            };
+            this.info = function (msg) {
+                view.info(msg);
+            };
+            this.error = function (msg) {
+                view.error(msg);
+            };
+            this.reload = function () {
+                model.getStore().reload();
             };
         }
     });

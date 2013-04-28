@@ -10,22 +10,17 @@ define(function (require, exports) {
      */
     'use strict';
     
-    function isArray(a) {
-        if (Object.prototype.toString.call(a).indexOf('Array') > 0) {
-            return true;
-        }
-        return false;
-    }
+    var _ = require('crud/public/js/Grid.CRUD.Common.js');
     //引入StoreFactory
     var createStore = function (conf) {
-        var store, defaultConf,
+        var defaultConf,
             data = conf.data,
             store = Ext.StoreMgr.get(conf.storeId);
         if (store) {
             console.log('already have store');
             return store;
         }
-        if (!isArray(data)) {
+        if (!_.isArray(data)) {
             defaultConf = {
                 proxy: new Ext.data.HttpProxy({
                     api: {
@@ -104,22 +99,36 @@ define(function (require, exports) {
                 }
                 that.fireEvent('success', store, action, result, res, rs);
             });
+
+            store.on('beforesave', function (store, data) {
+                console.info(store, data);
+            });
+            store.on('beforewrite', function (store, action, rs, arg) {
+                console.log(rs);
+            });
+            
             this.getStore = function () {
                 return store;
             };
-            this.addEvents('success','error', 'fail');
+            this.addEvents('success', 'error', 'fail');
         },
         saveRecord: function(record) {
             var store = this.getStore();
             store.insert(0, record);
         },
-        updateRecord: function (record, fieldValues) {
-            var fieldName;
-            record.beginEdit();
-            for (fieldName in fieldValues) {
-                record.set(fieldName, fieldValues[fieldName]);
+        updateRecord: function (records, fieldValues) {
+            var fieldName, rec;
+            if (!_.isArray(records)) {
+                records = [].concat(records);
             }
-            record.endEdit();
+            for (var i = 0; i < records.length; i++) {
+                rec = records[i];
+                rec.beginEdit();
+                for (fieldName in fieldValues) {
+                    rec.set(fieldName, fieldValues[fieldName]);
+                }
+                rec.endEdit();
+            }
         }
     });
     return Model;

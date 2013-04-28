@@ -4,6 +4,8 @@
  * 2012-12-18 10:36:40
  */
 define(function(require, exports) {
+    'use strict';
+    var _ = require('crud/public/js/Grid.CRUD.Common.js');
     /**
      * Config模块
      */
@@ -24,82 +26,79 @@ define(function(require, exports) {
             }
         },
         ID = null,
+        systemName = '',
+        defaultButtons = null,
         tbarButtons = null,
         EVENT = {
             VIEW: {
                 ROW_DBL_CLICK: 'event_view_row_double_click',
                 SAVE_RECORD: 'event_view_save_record',
-                UPDATE_RECORD: 'event_view_update_record'
+                SEARCH: 'event_view_search_record',
+                UPDATE_RECORD: 'event_view_update_record',
+                LOAD_DATA: 'event_view_load_data'
             }
         },
         //文件类型
-        FIELD_TYPE = {
-            'string': Ext.form.TextField,
-            'bigString': Ext.form.TextArea,
-            'boolean': Ext.form.Checkbox,
-            'date': Ext.form.DateField,
-            'float': Ext.form.NumberField,
-            'int': Ext.form.NumberField
-        },
+        FIELD_TYPE = _.FIELD_TYPE,
         originConfig, //未经过处理的原始用户的配置
         userConfig; //经过处理后的用户配置
+    
 
     /**
-     * 是不是对象
-     */
-    function isObject(a) {
-        if (Object.prototype.toString.call(a).indexOf('Object') > 0) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * 初始化参数
-     * @param  {String} appName 组件ID
+     * 初始化参数, 该函数对用户的参数进行预处理
+     * @param  {String} systemName 组件ID
      */
     function initArgs(conf) {
-        var appName = conf.id;
-        if (ID === null) {
-            ID = {
-                grid: {
-                    'tbar_btn_delete': appName + 'grid-tbar-btn-delete',
-                    'tbar_btn_add': appName + 'grid-tbar-btn-add',
-                    'tbar_btn_refresh': appName + 'grid-tbar-btn-refresh'
+        systemName = conf.id;
+        conf.mEditable = conf.mEditable === undefined ? true : conf.mEditable;
+        ID = {
+            grid: {
+                //默认自带的删除，添加，刷新按钮
+                'tbar_buttons_btn_sysdelete': systemName + '-grid-tbar-btn-system-delete',
+                'tbar_buttons_btn_sysadd': systemName + '-grid-tbar-btn-system-add',
+                'tbar_buttons_btn_sysrefresh': systemName + '-grid-tbar-btn-system-refresh'
+            },
+            addWindow: {
+                //Todo
+            },
+            editWindow: {
+                //Todo
+            }
+        };
+        //根据用户的配置初始化ID
+        for (var i = 0, len = !conf.mButtons ? 0 : conf.mButtons.length; i < len; i++) {
+            if (typeof conf.mButtons[i] === 'string') { continue; }
+            setId('grid', 'tbar', 'buttons', 'btn', conf.mButtons[i].id,//ID保存的位置
+                systemName + '-grid-tbar-buttons-btn-' + conf.mButtons[i].id);//ID的值
+        }
+        
+        if (!defaultButtons) {
+            defaultButtons = {
+                add: {
+                    id: ID.grid.tbar_btn_sysadd,
+                    text: '添加',
+                    iconCls: 'icon-add'
                 },
-                addWindow: {
-                    //Todo
+                delete: {
+                    id: ID.grid.tbar_btn_sysdelete,
+                    text: '删除',
+                    iconCls: 'icon-delete',
+                    disabled: true
                 },
-                editWindow: {
-                    //Todo
+                refresh: {
+                    id: ID.grid.tbar_btn_sysrefresh,
+                    text: '刷新',
+                    iconCls: 'icon-refresh'
                 }
             };
-            //根据用户的配置初始化ID
-            for (var i = 0, len = conf.buttons.length; i < len; i++) {
-                setId('grid', 'tbar', 'btn', conf.buttons[i].id,//ID保存的位置
-                    appName + 'grid-tbar-btn-' + conf.buttons[i].id);//ID的值
-            }
         }
-        if (!tbarButtons) {
-            tbarButtons = [{
-                id: ID.grid.tbar_btn_add,
-                text: '添加',
-                iconCls: 'icon-add'
-            }, {
-                id: ID.grid.tbar_btn_delete,
-                text: '删除',
-                iconCls: 'icon-delete',
-                disabled: true
-            }, {
-                id: ID.grid.tbar_btn_refresh,
-                text: '刷新',
-                iconCls: 'icon-refresh'
-            }];
-            
-
+        if (conf.search && _.isArray(conf.search)) {
+            var property = conf.search;
+            conf.search = {
+                lowerCaseParam: false,
+                property: property
+            };
         }
-
-        
     }
 
     function setId() {
@@ -143,9 +142,7 @@ define(function(require, exports) {
      */
     function get() {
         var args = Array.prototype.slice.call(arguments),
-            conf,
-            component = args[0],
-            name = args[1];
+            conf;
         if (args.length === 0) {
             return null;
         }
@@ -153,7 +150,7 @@ define(function(require, exports) {
         for (var i = 0, len = args.length; i < len; i++) {
             conf = conf[args[i]];
             //如果参数多于实际的配置,返回null
-            if (!isObject(conf) && i < len - 1) {
+            if (!_.isObject(conf) && i < len - 1) {
                 console.log('[Grid.CRUD.Config]没有该参数');
                 return null;
             }
@@ -190,7 +187,7 @@ define(function(require, exports) {
     function getStoreField(columns) {
         return getConfigFromColumn(columns, function (col) {
             var field = {};
-            field.name = col.dataIndex;
+            field.name = col.id;
             //如果用户有定义类型 Type
             if (!!col.type) {
                 field.type = col.type;
@@ -200,7 +197,9 @@ define(function(require, exports) {
                 field.dateFormat = col.dateFormat;
             }
             //字段的非空限制，在数据库为autoSave的时候可以避免表单自动提交
-            field.allowBlank = col.allowBlank;
+            field.mapping = col.dataIndex;
+            field.allowBlank = (col.allowBlank === undefined || col.allowBlank === null) ? true : col.allowBlank;
+            console.dir(field);
             return field;
         });
     }
@@ -230,37 +229,16 @@ define(function(require, exports) {
          * }
          */
         return getConfigFromColumn(columns, function (col) {
-            var field = {}, listeners = {};
-            return {
-                emptyText: col.emptyText,
-                type: col.type,
-                enableKeyEvents: true,
-                name: col.dataIndex,
-                editable: col.editable,
-                fieldLabel: col.fieldLabel || col.header,
-                allowBlank: col.allowBlank,
-                listeners: listeners
-            };
+            var config = _.except(col, [
+                'sortable',
+                'header'
+            ]);
+            config.id = ':window:field:' + config.id;
+            config.fieldLabel = col.fieldLabel || col.header;
+            return config;
         });
     }
-    /**
-     * 将obj中exception中的key值排除掉
-     * @param  {Object} obj       待处理的对象
-     * @param  {Array} exception  要排除的key数组
-     * @return {Object}           需要处理的对象
-     */
-    function except(obj, exception) {
-        var newObj = {};
-        for (var key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                //key值在排除项外，则可以获得
-                if (exception.indexOf(obj) < 0) {
-                    newObj[key] = obj[key];
-                }
-            }
-        }
-        return newObj;
-    }
+    
     /**
      * 获取Grid的栏目配置
      * @param  {Array} columns 用户的Column配置
@@ -270,9 +248,11 @@ define(function(require, exports) {
         var columnConfig = [], col, newCol;
         for (var i = 0; i < columns.length; i++) {
             col = columns[i];
-            newCol = except(col, ['type']);
-            if (!originConfig.editor || originConfig.editor === 'rowEditor'
-                || originConfig.editor.add === 'rowEditor') {
+            //没有header就是不进行处理
+            if (!col.header) { continue; }
+            newCol = _.except(col, ['type']);
+            if (!originConfig.mEditor || originConfig.mEditor === 'rowEditor'
+                || originConfig.mEditor.add === 'rowEditor') {
                 //生成编辑器
                 if (!FIELD_TYPE[col.type]) {
                     throw '[Grid.CRUD.Config] function getColumnsConfig () : ' + col.id + '字段的类型' + col.type + '不合法.';//出错
@@ -299,24 +279,130 @@ define(function(require, exports) {
         }
         return defaultData;
     }
+
+    function getColumnById(id, columns) {
+        var i = 0, length = columns.length;
+        while (i < length) {
+            if (columns[i].id === id) {
+                return columns[i];
+            }
+            i++;
+        }
+        return null;
+    }
     /**
      * 获取顶部工具栏的配置
      * @return {Object} 配置
      */
     function getTbarConfig(config) {
-        var buttons = config.buttons, btn, originHandler;
-
+        /*if (!!tbarButtons) {
+            console.log("顶部工具按钮初始化");
+            return {
+                items: tbarButtons
+            };
+        }*/
+        console.log("初始化顶部工具按钮");
+        tbarButtons = [];
+        var buttons = config.mButtons, btn, btnName;
+        if (!config.mButtons) { return null; }
         for (var i = 0; i < buttons.length; i++) {
             btn = buttons[i];
-            btn.id = getId('grid', 'tbar', 'btn', btn.id);
-            originHandler = btn.handler;
-            btn.handler = function (btn, event) {
-                originHandler(config.app);
-            };
-            tbarButtons.push(btn);
+            if (typeof btn === 'string') {
+                btnName = btn;
+                btn = defaultButtons[btnName];
+                if (!!btn) {
+                    btn.id = getId('grid', 'tbar', 'buttons', 'btn', 'sys' + btnName);
+                    tbarButtons.push(btn);
+                }
+            } else {
+                btn.id = getId('grid', 'tbar', 'buttons', 'btn', btn.id);
+                btn.belongToUser = true;
+                tbarButtons.push(btn);
+            }
         }
         return {
             items: tbarButtons
+        };
+    }
+    /**
+     * 获取搜索栏目配置
+     * @param  {Object} searchConfig [搜索的用户配置]
+     * @param  {Object} ColumnConfig [字段的属性，需要根据字段的属性来生
+     *                                成不同的编辑类型Combobox,NumberField]
+     * @return {Object}              [配置]
+     */
+    function getSearchBarConfig(searchConfig, columnConfig) {
+        if (columnConfig.length === 0) { return null; }
+        var field, column, searchCondition, items = [];
+        var property = searchConfig.property;
+        //配置只能是数组
+        if (!_.isArray(property)) {
+            property = [].concat(property);
+        }
+        for (var i = 0; i < property.length; i++) {
+            (function (column) {
+                searchCondition = property[i];
+                column = getColumnById(searchCondition, columnConfig);
+                if (!column) { return; }
+                items.push(column.fieldLabel, ' ');
+                var id = systemName + ':grid:searchbar:' + column.id;
+                if (column.type === 'enum') {
+                    var mode = '';
+                    if (column.mLocalData) {
+                        mode = 'local';
+                    } else if (column.mStore) {
+                        mode = 'remote';
+                    }
+                    var selectPos = 0, param = get('store', 'params'), pos = 0;
+                    column.mLocalData.each(function (record) {
+                        if (parseInt(record.get(column.id), 10) === param[column.id]) {
+                            selectPos = pos;
+                        }
+                        pos += 1;
+                    });
+                    field = new FIELD_TYPE[column.type]({
+                        id: id,
+                        fieldLabel: column.fieldLabel,
+                        store: column.mLocalData || column.mStore, //direct array data
+                        typeAhead: true,
+                        triggerAction: 'all',
+                        width: column.width,
+                        mode: mode,
+                        emptyText: column.emptyText,
+                        valueField: column.valueField || column.id,
+                        displayField: column.displayField === undefined ? 'displayText'
+                                                                : column.displayField,
+                        editable: column.editable === undefined ? false
+                                                        : column.editable,
+                        valueNotFoundText: column.valueNotFoundText === undefined ? '没有该选项'
+                                                                        : column.valueNotFoundText,
+                        forceSelection: true,
+                        selectOnFocus: true,
+                        allowBlank: false,
+                        listeners: {
+                            afterrender: function (combo) {
+                                combo.setValue(combo.store.getAt(selectPos).data[column.id]);
+                            }
+                        }
+                    });
+                } else {
+                    //排除掉不需要的属性
+                    var conf = _.except(column, [
+                        'type',
+                        'sortable',
+                        'header',
+                        'editable',
+                        'dataIndex'
+                    ]);
+                    conf.id = id;
+                    console.dir(conf);
+                    field = new FIELD_TYPE[column.type](conf);
+                }
+                items.push(field, ' ');
+            })(column);
+        }
+        return {
+            items: items
         };
     }
 
@@ -332,7 +418,10 @@ define(function(require, exports) {
      * @return {Object}
      * 
      */
-    function getAddEditWay(editor) {
+    function getAddEditWay(editable, editor) {
+        if (!editable) {
+            return null;
+        }
         if (!editor || editor === 'rowEditor') {
             return {
                 add: 'rowEditor',
@@ -343,7 +432,7 @@ define(function(require, exports) {
                 add: 'window',
                 edit: 'window'
             };
-        } else if (isObject(editor)) {
+        } else if (_.isObject(editor)) {
             return {
                 add: editor.add || 'rowEditor',
                 edit: editor.edit || 'rowEditor'
@@ -357,7 +446,7 @@ define(function(require, exports) {
      * @param  {Object} conf 配置
      */
     function checkConfig (conf) {
-        var columns = conf.columns, col, storeConfig;
+        var columns = conf.mColumns, col, storeConfig;
 
         for (var i = 0, len = columns.length; i < len; i++) {
             col = columns[i];
@@ -389,7 +478,7 @@ define(function(require, exports) {
         initArgs(config);
         var tbarConfig,
             mode, //组件加载数据的模式
-            columns = config.columns;
+            columns = config.mColumns;
         //组件加载数据的模式
         if (!!config.data) {
             mode = 'local';
@@ -400,11 +489,23 @@ define(function(require, exports) {
         /* 将用户的配置转化为系统可用的配置 */
         tbarConfig = getTbarConfig(config);
         set('mode', mode);
-        set('fieldType', FIELD_TYPE);
+        set('editable', config.mEditable),
+        set('origin', originConfig);
+        set('store', 'params', config.store.mInitParams);
         set('store', 'reader', config.store);
         set('store', 'defaultData', getStoreDefaultData(columns));
-        set('grid', 'tbar', tbarConfig);
-        set('grid', 'addEditWay', getAddEditWay(config.editor));
+        
+        if (config.search) {
+            set('grid', 'tbar', 'search', 'property', getSearchBarConfig(config.search, columns));
+            setId('grid', 'tbar', 'search', systemName + '-grid-tbar-search');
+            set('grid', 'tbar', 'search', 'lowerCaseParam', config.search.lowerCaseParam);
+        }
+        if (config.mButtons) {
+            set('grid', 'tbar', 'buttons', tbarConfig);
+            setId('grid', 'tbar', 'buttons', systemName + 'grid-tbar-buttons');
+        }
+        set('grid', 'page', config.page);
+        set('grid', 'addEditWay', getAddEditWay(config.mEditable, config.mEditor));
         set('event', 'view', EVENT.VIEW);
         set('window', 'edit', 'fields', getWindowFieldConfig(columns));
         set('window', 'edit', 'id', config.id + ':window:edit');

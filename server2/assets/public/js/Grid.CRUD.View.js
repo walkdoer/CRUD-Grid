@@ -4,6 +4,7 @@
  * 2012-12-18 10:36:40
  */
 define(function (require, exports) {
+
     /**
      * View层主要做用户界面的响应和更新用户界面
      * 为了组件可以放置于不同的容器中，组件选择继承于Ext.Panel
@@ -20,12 +21,14 @@ define(function (require, exports) {
      */
     'use strict';
 
+    var _ = require('crud/public/js/Grid.CRUD.Common.js');
     //监听
     var LISTENERS_TYPE = {
-        'string' : 'keyup',
+        'string'   : 'keyup',
         'bigString': 'keyup',
-        'boolean' : 'check'
-    };
+        'enum'     : 'change',      
+        'boolean'  : 'check'
+    }, FIELD_TYPE = _.FIELD_TYPE;
     
     function serializeForm(form) {
         var fElements = form.elements || (document.forms[form] || Ext.getDom(form)).elements, 
@@ -60,6 +63,9 @@ define(function (require, exports) {
     }
 
     function needRowEditor(conf) {
+        if (!conf) {
+            return false;
+        }
         if (conf.edit === 'rowEditor' || conf.add === 'rowEditor') {
             return true;
         }
@@ -71,24 +77,51 @@ define(function (require, exports) {
         }
         return false;
     }
+
+    function defaultNeedEnable(record) {
+        if (record) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     var View = Ext.extend(Ext.util.Observable, {
         constructor: function (conf) {
             var that = this,
                 //事件
                 eventConfig = conf.event,
                 //顶部工具栏的配置方式
-                tbarConfig = conf.tbar;
+                buttonsBarConfig = conf.buttonsBarConfig;
             //将config保存到对像中
             this.config = conf;
+            var getDataMethod = conf.singleSelect ? 'getSelected' : 'getSelections';
+
+            //添加事件
+            for (var eventName in eventConfig) {
+                this.addEvents(eventName);
+            }
             //绑定顶部工具栏按钮的处理函数
-            for (var i = 0, len = tbarConfig.items.length; i < len; i++) {
-                var button = tbarConfig.items[i];
+            for (var i = 0, len = !buttonsBarConfig ? 0 : buttonsBarConfig.items.length; i < len; i++) {
+                var button = buttonsBarConfig.items[i];
                 this.addEvents(button.id);
-                if (!!button.handler) {continue;}
-                button.handler = function (btn, event) {
-                    var record = that.rsm.getSelected();
-                    that.fireEvent(btn.id, [btn, event, record]);
-                };
+                //用户自定义的按钮
+                if (button.belongToUser) {
+                    console.info('初始化用户自定义按钮' + button.id);
+                    button.handler = (function (button) {
+                        var userHandler = button.handler;//用户的处理函数
+                        return function (btn, event) {
+                            var records, data;
+                            records = that.rsm[getDataMethod]();
+                            that.fireEvent(btn.id, btn, event, records, data, userHandler);
+                        };
+                    })(button);
+                } else {
+                    console.info('初始化系统自带按钮' + button.id);
+                    button.handler = function (btn, event) {
+                        var records = that.rsm[getDataMethod]();
+                        that.fireEvent(btn.id, btn, event, records);
+                    };
+                }
             }
             /**
              * 创建window
@@ -96,28 +129,70 @@ define(function (require, exports) {
              * @return {Ext.Window}        窗口
              */
             function createWindow(conf, record) {
-                var win, formPanel, fieldType = that.config.fieldType,
+                var win, formPanel,
                     saveBtnId = conf.id + ':btn:save',
                     cancelBtnId = conf.id + ':btn:cancel',
+                    orginFieldConfItem,
+                    fieldConfItem,
                     beginFieldString;
                 //创建formpanel的字段
-                var fieldConfig = conf.fields, fields = [], field;
+                var fieldConfig = conf.fields, fields = [];
                 for (var i = 0; i < fieldConfig.length; i++) {
-                    field = fieldConfig[i];
-                    if (field.editable) {
-                        field.listeners = {};
-                        field.listeners[LISTENERS_TYPE[field.type]] = function (field, o) {
-                            var btn = Ext.getCmp(saveBtnId);
-                            if (field.getValue() === record.get(field.getName())) {
-                                btn.disable();
+                    (function(orginFieldConfItem){
+                        if (orginFieldConfItem.editable) {
+                            orginFieldConfItem.listeners = {};
+                            if (orginFieldConfItem.type === 'enum') {
+                                var mode = '';
+                                if (orginFieldConfItem.mLocalData) {
+                                    mode = 'local';
+                                } else if (orginFieldConfItem.mStore) {
+                                    mode = 'remote';
+                                }
+                                fieldConfItem = {
+                                    id: conf.id + orginFieldConfItem.id,
+                                    fieldLabel: orginFieldConfItem.fieldLabel,
+                                    store: orginFieldConfItem.mLocalData || orginFieldConfItem.mStore, //direct array data
+                                    typeAhead: true,
+                                    triggerAction: 'all',
+                                    width: orginFieldConfItem.width,
+                                    mode: mode,
+                                    emptyText: orginFieldConfItem.emptyText,
+                                    valueField: orginFieldConfItem.valueField || orginFieldConfItem.dataIndex,
+                                    displayField: orginFieldConfItem.displayField === undefined ? 'displayText'
+                                                                            : orginFieldConfItem.displayField,
+                                    editable: orginFieldConfItem.editable === undefined ? false
+                                                                    : orginFieldConfItem.editable,
+                                    valueNotFoundText: orginFieldConfItem.valueNotFoundText === undefined ? '没有该选项'
+                                                                                    : orginFieldConfItem.valueNotFoundText,
+                                    forceSelection: true,
+                                    dataIndex: orginFieldConfItem.dataIndex,
+                                    name: orginFieldConfItem.dataIndex,
+                                    selectOnFocus: true,
+                                    allowBlank: false,
+                                    listeners: {
+                                        afterrender: function (combo) {
+                                            //combo.setValue(combo.store.getAt(selectPos).data[orginFieldConfItem.dataIndex]);
+                                        }
+                                    }
+                                };
                             } else {
-                                btn.enable();
+                                fieldConfItem = _.except(orginFieldConfItem, ['type', 'editable']);
+                                fieldConfItem.id = conf.id + fieldConfItem.id;
+                                fieldConfItem.name = orginFieldConfItem.dataIndex;
                             }
-                            
-                        };
-                        //可编辑字段根据数据类型创建field
-                        fields.push(new fieldType[field.type](field));
-                    }
+                            fieldConfItem.listeners[LISTENERS_TYPE[orginFieldConfItem.type]] = function (field) {
+                                var btn = Ext.getCmp(saveBtnId);
+                                if (field.getValue() === record.get(field.getName())) {
+                                    btn.disable();
+                                } else {
+                                    btn.enable();
+                                }
+                            };
+                            //可编辑字段根据数据类型创建field
+                            fields.push(new FIELD_TYPE[orginFieldConfItem.type](fieldConfItem));
+                        }
+                    })(fieldConfig[i]);
+                    
                 }
                 if (!conf.title) {
                     conf.title = "窗口";
@@ -194,30 +269,30 @@ define(function (require, exports) {
                 return win;
             }
 
-
+            console.log('#######初始化init函数');
             this.init = function (conf) {
                 var store = conf.store,
-                    idOfTbar = tbarConfig.id,
-                    rsm, tbar, editor, mainPanel, mainPanelConfig;
+                    idOfBtnTbar = buttonsBarConfig && buttonsBarConfig.mIdList,
+                    columnModel,
+                    tbar, editor, mainPanel, mainPanelConfig;
 
                 /**
                  * 改变所有按钮的状态
                  */
                 this.changeAllBtnStatu = function () {
-                    console.log('########改变按钮状态');
                     var record = this.rsm.getSelected();
-                    var delBtn = Ext.getCmp(idOfTbar.delete),
+                    var delBtn = Ext.getCmp(idOfBtnTbar.delete),
                         needEnable;
-                    if (!record) {
-                        delBtn.disable();
+                    /*if (!record) {
+                        if (delBtn) { delBtn.disable(); }
                     } else {
-                        delBtn.enable();
-                    }
-                    for (var btnName in idOfTbar) {
-                        var btn = Ext.getCmp(idOfTbar[btnName]);
+                        if (delBtn) { delBtn.enable(); }
+                    }*/
+                    for (var btnName in idOfBtnTbar) {
+                        var btn = Ext.getCmp(idOfBtnTbar[btnName]);
                         if (!btn) { continue; }
                         needEnable = btn.initialConfig.whenEnable;
-                        if (!needEnable) { continue; }
+                        if (!needEnable) { needEnable = defaultNeedEnable; }
                         if (needEnable(record)) {
                             btn.enable();
                         } else {
@@ -227,7 +302,7 @@ define(function (require, exports) {
                 };
 
                 this.getCurrentRecord = function () {
-                    return this.rsm.getSelected();
+                    return this.rsm[getDataMethod]();
                 };
                 /**
                  * 设置按钮状态
@@ -236,10 +311,11 @@ define(function (require, exports) {
                  */
                 this.setBtnStatu = function (btn, status) {
                     var ed = status ? 'enable' : 'disable';
-                    Ext.getCmp(idOfTbar[btn])[ed]();
+                    Ext.getCmp(idOfBtnTbar[btn])[ed]();
                 };
                 //行编辑器
                 if (needRowEditor(that.config.addEditWay)) {
+                    console.log('needRowEditor');
                     editor = new Ext.ux.grid.RowEditor({
                         saveText: '保存',
                         cancelText: '取消',
@@ -278,7 +354,7 @@ define(function (require, exports) {
                         }
                         setTimeout(function () {
                             that.rsm.selectRow(id);
-                            Ext.getCmp(idOfTbar.delete).enable();
+                            Ext.getCmp(idOfBtnTbar.delete).enable();
                         }, 400);
                     }
                 };
@@ -354,19 +430,60 @@ define(function (require, exports) {
                     return true;
                 };
                 //生成顶部工具栏
-                tbar = new Ext.Toolbar(tbarConfig);
-                this.rsm = new Ext.grid.RowSelectionModel({
-                    singleSelect: true,
-                    listeners: {
-                        rowSelect: function (/*sm*/) {
+                var listeners;
+                if (buttonsBarConfig) {
+                    tbar = new Ext.Toolbar(buttonsBarConfig);
+                    listeners = {
+                        rowSelect: function (/*sm, rowIndex, record*/) {
                             that.changeAllBtnStatu();
                         },
-                        rowdeselect: function (/*sm*/) {
-                            that.changeAllBtnStatu();
+                        rowdeselect: function (/*sm, rowIndex, record*/) {
+                            //that.changeAllBtnStatu();
                         }
-                    }
-                });
+                    };
+                } else {
+                    listeners = {};
+                }
 
+                if (this.config.checkbox) {
+                    this.rsm = new Ext.grid.CheckboxSelectionModel({
+                        singleSelect: this.config.singleSelect,
+                        listeners: listeners
+                    });
+                    var cmConfig = [this.rsm].concat(conf.columns);
+                    columnModel = new Ext.grid.ColumnModel(cmConfig);
+                } else {
+                    this.rsm = new Ext.grid.RowSelectionModel({
+                        singleSelect: this.config.singleSelect,
+                        listeners: listeners
+                    });
+                    columnModel = new Ext.grid.ColumnModel(conf.columns);
+                }
+                
+
+                var searchBarConfig = that.config.searchBarConfig,
+                    searchBar;
+                if (!!searchBarConfig) {
+                    searchBarConfig.items.push({
+                        text: '搜索',
+                        icon: Portal.util.icon('magnifier.png'),
+                        handler: function () {
+                            var item, key, fieldName, params = {};
+                            console.log('search');
+                            for (key in searchBarConfig.items) {
+                                item = searchBarConfig.items[key];
+                                if (item.id) {
+                                    fieldName = item.id.substring(item.id.lastIndexOf(':') + 1);
+                                    if (fieldName) {
+                                        params[fieldName] = Ext.getCmp(item.id).getValue();
+                                    }
+                                }
+                            }
+                            that.fireEvent(eventConfig.SEARCH, params);
+                        }
+                    });
+                    searchBar = new Ext.Toolbar(searchBarConfig);
+                }
                 mainPanelConfig = {
                     id: conf.id + ':grid',
                     store: store,
@@ -376,12 +493,20 @@ define(function (require, exports) {
                     autoScroll: true,
                     enableHdMenu: false,
                     sm: this.rsm,
-                    columns: conf.columns,
-                    tbar: tbar,
+                    cm: columnModel,
+                    bbar: this.config.pageToolbarConfig ? 
+                        new Ext.PagingToolbar(this.config.pageToolbarConfig) 
+                            : null,
                     listeners: {
                         viewready: function () {
                             if (that.config.mode === 'remote') {
-                                store.load();
+                                that.fireEvent(eventConfig.LOAD_DATA);
+                            }
+                        },
+                        render: function () {
+                            if (searchBar && tbar && !tbar.used) {
+                                //如果有搜索栏则在搜索栏的下面加上工具栏
+                                tbar.render(this.tbar);
                             }
                         },
                         destroy: function () {
@@ -394,15 +519,24 @@ define(function (require, exports) {
                         }
                     }
                 };
+                mainPanelConfig.tbar =  searchBar || tbar;
+                mainPanelConfig.tbar.used = true;
                 if (needRowEditor(that.config.addEditWay)) {
                     mainPanelConfig.plugins = [editor];
                 }
                 mainPanel = new Ext.grid.GridPanel(mainPanelConfig);
                 return mainPanel;
             };
+            console.info('创建view对象');
         },
         error: function (msg) {
             Ext.Msg.alert('错误', msg);
+        },
+        info: function (msg) {
+            Ext.example.msg('成功', msg);
+        },
+        alert: function (msg) {
+            Ext.Msg.alert('警告', msg);
         }
     });
     return View;

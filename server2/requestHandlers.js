@@ -118,7 +118,7 @@ exports.save = function(req, res, next) {
 };
 
 exports.delete = function(req, res, next) {
-    var id = JSON.parse(req.params.data);
+    var id = req.params.data;
     if (!id) {
         res.write(JSON.stringify(result(false, '删除失败')));
         res.end();

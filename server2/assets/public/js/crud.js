@@ -58,11 +58,11 @@ define(function(require, exports) {
              * editor: 'window' 表示编辑和添加的时候全部使用window来进行编辑
              * 或者可以像下面一样分开选择
              */
-            editor: {
+            mEditor: {
                 add: 'rowEditor', //添加的时候使用rowEditor
                 edit: 'window' //编辑的时候使用窗口
             },
-            buttons: [{
+            mButtons: ['add', 'delete', 'refresh', {
                 id: 'finishe',
                 disabled: true,
                 whenEnable: function (record) {
@@ -82,7 +82,7 @@ define(function(require, exports) {
                     });
                 }
             }],
-            columns: [{
+            mColumns: [{
                 id: 'id',
                 type: 'string',
                 dataIndex: '_id',
