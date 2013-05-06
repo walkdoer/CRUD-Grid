@@ -90,6 +90,7 @@ define(function (require, exports) {
     exports.except = except;
     exports.FONT_WIDTH = 14;
     exports.WIN_SPAN = 40;
+    exports.WIN_HEIGHT_SPAN = 75;
     exports.FIELD_TYPE = FIELD_TYPE;
     exports.lowerCaseObjectKey = lowerCaseObjectKey;
     exports.is = is;

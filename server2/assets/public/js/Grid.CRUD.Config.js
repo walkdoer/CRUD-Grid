@@ -41,6 +41,7 @@ define(function(require, exports) {
         //文件类型
         FIELD_TYPE = _.FIELD_TYPE,
         FONT_WIDTH = _.FONT_WIDTH,
+        WIN_HEIGHT_SPAN = _.WIN_HEIGHT_SPAN,
         WIN_SPAN = _.WIN_SPAN,
         originConfig, //未经过处理的原始用户的配置
         userConfig; //经过处理后的用户配置
@@ -128,11 +129,11 @@ define(function(require, exports) {
                 if (col.height) {
                     height += col.height;
                 } else {
-                    height += 32;
+                    height += 26;
                 }
             }
         }
-        return height;
+        return height + WIN_HEIGHT_SPAN;
     }
 
     /**
