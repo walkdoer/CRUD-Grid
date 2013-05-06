@@ -293,6 +293,13 @@ define(function(require, exports) {
         });
     }
     
+    function getComboMode(col) {
+        if (col.mLocalData) {
+            return 'local';
+        } else if (col.mStore) {
+            return 'remote';
+        }
+    }
     /**
      * 获取Grid的栏目配置
      * @param  {Array} columns 用户的Column配置
@@ -312,12 +319,52 @@ define(function(require, exports) {
                     throw '[Grid.CRUD.Config] function getColumnsConfig () : ' + col.id + '字段的类型' + col.type + '不合法.';//出错
                 }
                 if (col.editable) {
-                    newCol.editor = new FIELD_TYPE[col.type]({
-                        name: newCol.dataIndex,
-                        allowBlank: newCol.allowBlank,
-                        disabled: newCol.disabled,
-                        hidden: newCol.hidden
-                    });
+                    if (col.type === 'enum') {
+                        var mode = getComboMode(col);
+                        newCol.editor = new FIELD_TYPE[col.type]({
+                            fieldLabel: col.fieldLabel,
+                            store: col.mLocalData || col.mStore, //direct array data
+                            typeAhead: true,
+                            triggerAction: 'all',
+                            width: col.width,
+                            mode: mode,
+                            emptyText: col.emptyText,
+                            valueField: col.valueField || col.dataIndex || col.id,
+                            displayField: col.displayField === undefined ? 'displayText'
+                                                                    : col.displayField,
+                            editable: col.editable === undefined ? false
+                                                            : col.editable,
+                            valueNotFoundText: col.valueNotFoundText === undefined ? '没有该选项'
+                                                                            : col.valueNotFoundText,
+                            forceSelection: true,
+                            selectOnFocus: true,
+                            allowBlank: col.allowBlank,
+                            listeners: {
+                                select: function (combo, record, index) {
+                                    console.log(record, index);
+                                }
+                            }
+                        });
+                        newCol.renderer = (function () {
+                            var combo = newCol.editor;
+                            return function (value) {
+                                if (value) {//传入的value不为空
+                                    var record = combo.findRecord(combo.valueField, value);
+                                    return record ? record.get(combo.displayField) : value;
+                                }
+                                else {//传入的value为空
+                                    return '无';
+                                }
+                            };
+                        })();
+                    } else {
+                        newCol.editor = new FIELD_TYPE[col.type]({
+                            name: newCol.dataIndex,
+                            allowBlank: newCol.allowBlank,
+                            disabled: newCol.disabled,
+                            hidden: newCol.hidden
+                        });
+                    }
                 }
             }
             columnConfig.push(newCol);
@@ -401,12 +448,7 @@ define(function(require, exports) {
                 items.push(column.fieldLabel, ' ');
                 var id = systemName + ':grid:searchbar:' + column.id;
                 if (column.type === 'enum') {
-                    var mode = '';
-                    if (column.mLocalData) {
-                        mode = 'local';
-                    } else if (column.mStore) {
-                        mode = 'remote';
-                    }
+                    var mode = getComboMode(column);
                     var selectPos = 0, param = get('store', 'params'), pos = 0;
                     if (param) {
                         column.mLocalData.each(function (record) {
