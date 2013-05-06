@@ -10,17 +10,17 @@ define(function(require, exports) {
      */
     'use strict';
 
-    var _ = require('crud/public/js/Grid.CRUD.Common.js');
-    var Model = require('crud/public/js/Grid.CRUD.Model.js'),
-        config = require('crud/public/js/Grid.CRUD.Config.js'),
-        View = require('crud/public/js/Grid.CRUD.View.js');
+    var _ = require('diwali/scripts/Grid.CRUD.Common.js');
+    var Model = require('diwali/scripts/Grid.CRUD.Model.js'),
+        config = require('diwali/scripts/Grid.CRUD.Config.js'),
+        View = require('diwali/scripts/Grid.CRUD.View.js');
     //create namespace
     Ext.ns('Ext.ux.CRUD');
     /**
      * Clone Function
      * @param {Object/Array} o Object or array to clone
      * @return {Object/Array} Deep clone of an object or an array
-     * @author Ing. Jozef Sakáloš
+     * @author Ing. Jozef Sakálo?
      */
     Ext.ux.clone = function (o) {
         if (!o || 'object' !== typeof o) {
@@ -98,12 +98,15 @@ define(function(require, exports) {
             }
             
             //结合其他配置项构造翻页配置
-            pageConfig = _.extend({
-                store: model.getStore(),
-                pageSize: 20,
-                displayInfo: true,
-                prependButtons: true
-            }, pageConfig);
+            if (pageConfig) {
+                pageConfig = _.extend({
+                    store: model.getStore(),
+                    pageSize: 20,
+                    displayInfo: true,
+                    prependButtons: true
+                }, pageConfig);
+            }
+            
 
             var lowerCaseParam = config.get('grid', 'tbar', 'search', 'lowerCaseParam');
             var view = new View({
@@ -186,6 +189,7 @@ define(function(require, exports) {
                     handleErrorOrException(options, record, msg);
                 },
                 update: function (options, record, msg) {
+                    record.reject();
                     view.error(msg);
                     console.log(options, record, msg);
                 },
@@ -202,6 +206,7 @@ define(function(require, exports) {
                     handleErrorOrException(options, record, msg);
                 },
                 update: function (options, record, msg) {
+                    record.reject();
                     view.error(msg);
                     console.log(options, record, msg);
                 },
@@ -288,15 +293,15 @@ define(function(require, exports) {
                 var store = model.getStore(),
                     paramsNew,
                     params = config.get('store', 'params');
-
-                if (params) {
-                    params.limit = config.get('grid', 'page', 'pageSize');
+                if (!params) { params = {}; }
+                params.limit = config.get('grid', 'page', 'pageSize');
+                if (params.limit !== undefined) {
                     params.start = 0;
-                     if (lowerCaseParam) {
-                        paramsNew = _.lowerCaseObjectKey(params);
-                    } else {
-                        paramsNew = params;
-                    }
+                }
+                if (lowerCaseParam) {
+                    paramsNew = _.lowerCaseObjectKey(params);
+                } else {
+                    paramsNew = params;
                 }
                 setBaseParam(store, paramsNew);
                 store.load();
@@ -339,13 +344,16 @@ define(function(require, exports) {
              * @param  {Object} obj 需要更新的数据
              * @return {Boolean} 更新成功与否     
              */
-            this.updateRecord = function (obj) {
+            this.updateRecord = function (obj, params, success, error) {
                 if (!obj) {
                     return false;
                 }
                 //取出要更新的记录
                 var record = view.getCurrentRecord();
-                model.updateRecord(record, obj);
+                model.updateRecord(record, obj, params, success, error);
+            };
+            this.getSelectRecord = function () {
+                return view.getCurrentRecord();
             };
             this.alert =  function (msg) {
                 view.alert(msg);

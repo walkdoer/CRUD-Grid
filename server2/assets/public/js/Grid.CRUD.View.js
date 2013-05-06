@@ -21,11 +21,14 @@ define(function (require, exports) {
      */
     'use strict';
 
-    var _ = require('crud/public/js/Grid.CRUD.Common.js');
+    var _ = require('diwali/scripts/Grid.CRUD.Common.js');
     //监听
     var LISTENERS_TYPE = {
         'string'   : 'keyup',
         'bigString': 'keyup',
+        'int'      : 'keyup',
+        'float'    : 'keyup',
+        'date'     : 'change',
         'enum'     : 'change',      
         'boolean'  : 'check'
     }, FIELD_TYPE = _.FIELD_TYPE;
@@ -128,17 +131,16 @@ define(function (require, exports) {
              * @param  {Object} config 配置
              * @return {Ext.Window}        窗口
              */
-            function createWindow(conf, record) {
+            function openWindow(conf, record) {
                 var win, formPanel,
                     saveBtnId = conf.id + ':btn:save',
                     cancelBtnId = conf.id + ':btn:cancel',
-                    orginFieldConfItem,
                     fieldConfItem,
                     beginFieldString;
                 //创建formpanel的字段
                 var fieldConfig = conf.fields, fields = [];
                 for (var i = 0; i < fieldConfig.length; i++) {
-                    (function(orginFieldConfItem){
+                    (function (orginFieldConfItem) {
                         if (orginFieldConfItem.editable) {
                             orginFieldConfItem.listeners = {};
                             if (orginFieldConfItem.type === 'enum') {
@@ -182,7 +184,7 @@ define(function (require, exports) {
                             }
                             fieldConfItem.listeners[LISTENERS_TYPE[orginFieldConfItem.type]] = function (field) {
                                 var btn = Ext.getCmp(saveBtnId);
-                                if (field.getValue() === record.get(field.getName())) {
+                                if (record && field.getValue() === record.get(field.getName())) {
                                     btn.disable();
                                 } else {
                                     btn.enable();
@@ -203,8 +205,12 @@ define(function (require, exports) {
                     text: '保存',
                     disabled: true,
                     handler: function () {
-                        var basicForm = formPanel.getForm(),
-                            saveRecord,
+                        var basicForm = formPanel.getForm();
+                        if (!basicForm.isValid()) {
+                            console.log('表单没有填写完整');
+                            return;
+                        }
+                        var saveRecord,
                             fieldValues = basicForm.getFieldValues();
                         //添加框是不带记录
                         if (!record) {
@@ -228,7 +234,7 @@ define(function (require, exports) {
                 }];
                 formPanel = new Ext.form.FormPanel({
                     baseCls: 'x-plain',
-                    labelWidth: 45,
+                    labelWidth: conf.labelWidth,
                     labelSeparator: ':',
                     items: fields
                 });
@@ -280,14 +286,8 @@ define(function (require, exports) {
                  * 改变所有按钮的状态
                  */
                 this.changeAllBtnStatu = function () {
-                    var record = this.rsm.getSelected();
-                    var delBtn = Ext.getCmp(idOfBtnTbar.delete),
-                        needEnable;
-                    /*if (!record) {
-                        if (delBtn) { delBtn.disable(); }
-                    } else {
-                        if (delBtn) { delBtn.enable(); }
-                    }*/
+                    var record = this.rsm[getDataMethod]();
+                    var needEnable;
                     for (var btnName in idOfBtnTbar) {
                         var btn = Ext.getCmp(idOfBtnTbar[btnName]);
                         if (!btn) { continue; }
@@ -367,12 +367,14 @@ define(function (require, exports) {
                  * @param  {Ext.data.Record} record 记录
                  */
                 this.openEditWindow = function (record) {
+                    var windowConfig = that.config.window.edit;
                     //窗口编辑器
-                    var editWindow = createWindow({
-                        id: that.config.window.edit.id + ':' + record.id,
+                    var editWindow = openWindow({
+                        id: windowConfig.id + ':' + record.id,
                         title: '编辑记录',
-                        width: 210,
-                        height: 300,
+                        width: windowConfig.width,
+                        height: windowConfig.height,
+                        labelWidth: windowConfig.labelWidth,
                         draggable: true,
                         plain: true,
                         bodyStyle: 'padding:5px',
@@ -389,16 +391,18 @@ define(function (require, exports) {
                  * @param  {Ext.data.Record} record 记录
                  */
                 this.openAddWindow = function () {
+                    var windowConfig = that.config.window.add;
                     //窗口编辑器
-                    var addWindow = createWindow({
-                        id: that.config.window.add.id,
+                    var addWindow = openWindow({
+                        id: windowConfig.id,
                         title: '添加记录',
-                        width: 210,
-                        height: 300,
+                        labelWidth: windowConfig.labelWidth,
+                        width: windowConfig.width,
+                        height: windowConfig.height,
                         plain: true,
                         bodyStyle: 'padding:5px',
                         closeAction: 'close',
-                        fields: that.config.window.add.fields,
+                        fields: windowConfig.fields,
                         mEvent: {
                             ok: eventConfig.SAVE_RECORD
                         }

@@ -5,7 +5,7 @@
  */
 define(function(require, exports) {
     'use strict';
-    var _ = require('crud/public/js/Grid.CRUD.Common.js');
+    var _ = require('diwali/scripts/Grid.CRUD.Common.js');
     /**
      * Config模块
      */
@@ -40,6 +40,8 @@ define(function(require, exports) {
         },
         //文件类型
         FIELD_TYPE = _.FIELD_TYPE,
+        FONT_WIDTH = _.FONT_WIDTH,
+        WIN_SPAN = _.WIN_SPAN,
         originConfig, //未经过处理的原始用户的配置
         userConfig; //经过处理后的用户配置
     
@@ -99,6 +101,55 @@ define(function(require, exports) {
                 property: property
             };
         }
+    }
+
+    function getFieldLabelWidth (columnsConfig) {
+        var col, maxWidth = 0, width;
+        for (var i = 0; i < columnsConfig.length; i++) {
+            col = columnsConfig[i];
+            if (col.editable && col.fieldLabel) {
+                width = FONT_WIDTH * col.fieldLabel.length;
+                if (width > maxWidth) {
+                    maxWidth = width;
+                }
+            }
+        }
+        return maxWidth;
+    }
+    /**
+     * 获得窗口的高度
+     * @return {Int} Height
+     */
+    function getWindowHeight(columnsConfig) {
+        var col, height = 0;
+        for (var i = 0; i < columnsConfig.length; i++) {
+            col = columnsConfig[i];
+            if (col.editable) {
+                if (col.height) {
+                    height += col.height;
+                } else {
+                    height += 32;
+                }
+            }
+        }
+        return height;
+    }
+
+    /**
+     * 获得窗口的宽度
+     * @return {Int} Height
+     */
+    function getWindowWidth(columnsConfig) {
+        var col, maxWidth = 0;
+        for (var i = 0; i < columnsConfig.length; i++) {
+            col = columnsConfig[i];
+            if (col.editable) {
+                if (col.width && col.width > maxWidth) {
+                    maxWidth = col.width;
+                }
+            }
+        }
+        return maxWidth + WIN_SPAN + getFieldLabelWidth(columnsConfig);
     }
 
     function setId() {
@@ -235,6 +286,7 @@ define(function(require, exports) {
             ]);
             config.id = ':window:field:' + config.id;
             config.fieldLabel = col.fieldLabel || col.header;
+            config.enableKeyEvents = true;
             return config;
         });
     }
@@ -354,12 +406,14 @@ define(function(require, exports) {
                         mode = 'remote';
                     }
                     var selectPos = 0, param = get('store', 'params'), pos = 0;
-                    column.mLocalData.each(function (record) {
-                        if (parseInt(record.get(column.id), 10) === param[column.id]) {
-                            selectPos = pos;
-                        }
-                        pos += 1;
-                    });
+                    if (param) {
+                        column.mLocalData.each(function (record) {
+                            if (parseInt(record.get(column.id), 10) === param[column.id]) {
+                                selectPos = pos;
+                            }
+                            pos += 1;
+                        });
+                    }
                     field = new FIELD_TYPE[column.type]({
                         id: id,
                         fieldLabel: column.fieldLabel,
@@ -369,7 +423,7 @@ define(function(require, exports) {
                         width: column.width,
                         mode: mode,
                         emptyText: column.emptyText,
-                        valueField: column.valueField || column.id,
+                        valueField: column.valueField || column.dataIndex || column.id,
                         displayField: column.displayField === undefined ? 'displayText'
                                                                 : column.displayField,
                         editable: column.editable === undefined ? false
@@ -378,10 +432,16 @@ define(function(require, exports) {
                                                                         : column.valueNotFoundText,
                         forceSelection: true,
                         selectOnFocus: true,
-                        allowBlank: false,
+                        allowBlank: column.allowBlank,
                         listeners: {
                             afterrender: function (combo) {
-                                combo.setValue(combo.store.getAt(selectPos).data[column.id]);
+                                var record = combo.store.getAt(selectPos);
+                                if (record) {
+                                    combo.setValue(record.data[column.id]);
+                                }
+                            },
+                            select: function (combo, record, index) {
+                                console.log(record, index);
                             }
                         }
                     });
@@ -504,13 +564,23 @@ define(function(require, exports) {
             set('grid', 'tbar', 'buttons', tbarConfig);
             setId('grid', 'tbar', 'buttons', systemName + 'grid-tbar-buttons');
         }
+        var winHeight = getWindowHeight(columns),
+            winLabelWidth = getFieldLabelWidth(columns),
+            winWidth = getWindowWidth(columns);
+
         set('grid', 'page', config.page);
         set('grid', 'addEditWay', getAddEditWay(config.mEditable, config.mEditor));
         set('event', 'view', EVENT.VIEW);
         set('window', 'edit', 'fields', getWindowFieldConfig(columns));
         set('window', 'edit', 'id', config.id + ':window:edit');
+        set('window', 'edit', 'height', winHeight);
+        set('window', 'edit', 'width', winWidth);
+        set('window', 'edit', 'labelWidth', winLabelWidth);
         set('window', 'add', 'fields', getWindowFieldConfig(columns));
         set('window', 'add', 'id', config.id + ':window:add');
+        set('window', 'add', 'height', winHeight);
+        set('window', 'add', 'labelWidth', winLabelWidth);
+        set('window', 'add', 'width', winWidth);
 
         /************ Buttons *************/
         /*

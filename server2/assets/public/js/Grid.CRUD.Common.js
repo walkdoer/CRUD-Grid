@@ -88,6 +88,8 @@ define(function (require, exports) {
         'enum': Ext.form.ComboBox
     };
     exports.except = except;
+    exports.FONT_WIDTH = 14;
+    exports.WIN_SPAN = 40;
     exports.FIELD_TYPE = FIELD_TYPE;
     exports.lowerCaseObjectKey = lowerCaseObjectKey;
     exports.is = is;

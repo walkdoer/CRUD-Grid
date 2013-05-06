@@ -10,7 +10,7 @@ define(function (require, exports) {
      */
     'use strict';
     
-    var _ = require('crud/public/js/Grid.CRUD.Common.js');
+    var _ = require('diwali/scripts/Grid.CRUD.Common.js');
     //引入StoreFactory
     var createStore = function (conf) {
         var defaultConf,
@@ -30,7 +30,7 @@ define(function (require, exports) {
                         destroy: { url: conf.data.delete, method: 'POST' }
                     }
                 }),
-                autoSave: true,
+                autoSave: false,
                 autoDestroy: true,
                 reader: new Ext.data.JsonReader(conf.reader),
                 writer: new Ext.data.JsonWriter({
@@ -46,6 +46,18 @@ define(function (require, exports) {
             store = new Ext.data.Store(defaultConf);
             return store;
         } else {
+            var dataFields = [], fields = conf.reader.fields, f, fn;
+            for (var i = 0; i < fields.length; i++) {
+                f = fields[i];
+                fn = {};
+                fn.name = f.name;
+                if (f.type === 'enum') {
+                    fn.type = 'string';
+                } else {
+                    fn.type = f.type;
+                }
+                dataFields.push(fn);
+            }
             store = new Ext.data.ArrayStore({
                 /**
                  * 配置项是一个数组，例如
@@ -57,13 +69,14 @@ define(function (require, exports) {
                        {name: 'lastChange', type: 'date', dateFormat: 'n/j h:ia'}
                    ]
                  */
-                fields: conf.fields
+                fields: dataFields
             });
             store.loadData(data);
             return store;
         }
     };
 
+    var successFunc = {}, errorFunc = {};
     //根据config.api的配置来生成具备增删改查的 Store [Ext.data.Store]
     var Model = Ext.extend(Ext.util.Observable, {
         constructor: function (config) {
@@ -71,6 +84,7 @@ define(function (require, exports) {
             var that = this;
             //创建store
             var store = createStore(config);
+
             store.on('beforeload', function () {
                 console.log('store load');
             });
@@ -91,11 +105,17 @@ define(function (require, exports) {
                 } else {
                     that.fireEvent('error', action, options, record, msg);
                 }
+                if (errorFunc[action] && typeof errorFunc[action] === 'function') { 
+                    errorFunc[action](); 
+                }
             });
             store.on('write', function (store, action, result, res, rs) {
                 store.sort('id', 'ASC');
                 if (action === 'destroy') {
                     action = 'delete';
+                }
+                if (successFunc[action] && typeof successFunc[action] === 'function') { 
+                    successFunc[action]();
                 }
                 that.fireEvent('success', store, action, result, res, rs);
             });
@@ -103,8 +123,9 @@ define(function (require, exports) {
             store.on('beforesave', function (store, data) {
                 console.info(store, data);
             });
-            store.on('beforewrite', function (store, action, rs, arg) {
-                console.log(rs);
+
+            store.on('beforewrite', function (store, action, record, arg) {
+                console.log("record:", record);
             });
             
             this.getStore = function () {
@@ -112,23 +133,28 @@ define(function (require, exports) {
             };
             this.addEvents('success', 'error', 'fail');
         },
-        saveRecord: function(record) {
+        saveRecord: function (record) {
             var store = this.getStore();
             store.insert(0, record);
+            store.save();
         },
-        updateRecord: function (records, fieldValues) {
-            var fieldName, rec;
+        updateRecord: function (records, fieldValues, params, success, error) {
+            var fieldName, rec, store = this.getStore(), key;
             if (!_.isArray(records)) {
                 records = [].concat(records);
             }
             for (var i = 0; i < records.length; i++) {
                 rec = records[i];
-                rec.beginEdit();
                 for (fieldName in fieldValues) {
                     rec.set(fieldName, fieldValues[fieldName]);
                 }
-                rec.endEdit();
             }
+            for (key in params) {
+                store.setBaseParam(key, params[key]);
+            }
+            successFunc.update = success;
+            errorFunc.update = error;
+            store.save();
         }
     });
     return Model;
