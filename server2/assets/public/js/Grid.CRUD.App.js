@@ -285,6 +285,9 @@ define(function(require, exports) {
             viewlisteners[config.getEvent('view', 'SAVE_RECORD')] = function (record, fieldValues) {
                 model.saveRecord(record);
             };
+            viewlisteners[config.getEvent('view', 'SAVE_RECORD_OF_ROWEDITOR')] = function () {
+                model.saveRecord();
+            };
             viewlisteners[config.getEvent('view', 'UPDATE_RECORD')] = function (record, fieldValues) {
                 console.log('UPDATE_RECORD');
                 model.updateRecord(record, fieldValues);

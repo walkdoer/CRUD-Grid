@@ -328,6 +328,10 @@ define(function (require, exports) {
                                 if (!rowEditor.record.get(that.config.idProperty)) {
                                     store.removeAt(0);
                                 }
+                            },
+                            afteredit: function (editor, changes, r) {
+                                
+                                that.fireEvent(eventConfig.SAVE_RECORD_OF_ROWEDITOR, r, changes);
                             }
                         }
                     });

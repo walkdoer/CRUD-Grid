@@ -135,7 +135,9 @@ define(function (require, exports) {
         },
         saveRecord: function (record) {
             var store = this.getStore();
-            store.insert(0, record);
+            if (record) {
+                store.insert(0, record);
+            }
             store.save();
         },
         updateRecord: function (records, fieldValues, params, success, error) {

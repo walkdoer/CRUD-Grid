@@ -35,7 +35,8 @@ define(function(require, exports) {
                 SAVE_RECORD: 'event_view_save_record',
                 SEARCH: 'event_view_search_record',
                 UPDATE_RECORD: 'event_view_update_record',
-                LOAD_DATA: 'event_view_load_data'
+                LOAD_DATA: 'event_view_load_data',
+                SAVE_RECORD_OF_ROWEDITOR: 'event_view_save_record_of_roweditor'
             }
         },
         //文件类型
