@@ -323,12 +323,14 @@ define(function(require, exports) {
             console.log("####bindListener处理函数");
             view.on(viewlisteners);
             //初始化界面
-            this.add(view.init({
+            var grid = view.init({
                 id: this.id,
                 store: model.getStore(),
                 columns: config.get('grid', 'columns'),
                 noClicksToEdit: config.get('grid', 'noClicksToEdit')
-            }));
+            });
+            
+            this.add(grid);
 
             /**
              * 设置BaseParam
@@ -369,6 +371,9 @@ define(function(require, exports) {
             };
             this.reload = function () {
                 model.getStore().reload();
+            };
+            this.getGridPanel = function () {
+                return grid;
             };
         }
     });

@@ -416,7 +416,9 @@ define(function(require, exports) {
                     tbarButtons.push(btn);
                 }
             } else {
-                btn.id = getId('grid', 'tbar', 'buttons', 'btn', btn.id);
+                if (btn.id) {
+                    btn.id = getId('grid', 'tbar', 'buttons', 'btn', btn.id);
+                }
                 btn.belongToUser = true;
                 tbarButtons.push(btn);
             }
