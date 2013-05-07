@@ -63,7 +63,7 @@ define(function(require, exports) {
                 edit: 'rowEditor' //编辑的时候使用窗口
             },
             search: {
-                property: ['title']
+                property: ['title', 'finished']
             },
             mButtons: ['add', 'delete', 'refresh', {
                 id: 'finishe',

@@ -283,7 +283,8 @@ define(function(require, exports) {
         return getConfigFromColumn(columns, function (col) {
             var config = _.except(col, [
                 'sortable',
-                'header'
+                'header',
+                'renderer'
             ]);
             config.id = ':window:field:' + config.id;
             config.fieldLabel = col.fieldLabel || col.header;

@@ -87,6 +87,11 @@ define(function (require, exports) {
         'int': Ext.form.NumberField,
         'enum': Ext.form.ComboBox
     };
+
+    exports.isEmpty = function (a) {
+        return a === undefined || a === null || a === '';
+    };
+
     exports.except = except;
     exports.FONT_WIDTH = 14;
     exports.WIN_SPAN = 40;

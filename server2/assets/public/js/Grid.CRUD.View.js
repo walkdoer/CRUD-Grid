@@ -135,12 +135,18 @@ define(function (require, exports) {
                 var win, formPanel,
                     saveBtnId = conf.id + ':btn:save',
                     cancelBtnId = conf.id + ':btn:cancel',
-                    fieldConfItem,
+                    defaultValues = {},
                     beginFieldString;
                 //创建formpanel的字段
                 var fieldConfig = conf.fields, fields = [];
                 for (var i = 0; i < fieldConfig.length; i++) {
+                    var item = fieldConfig[i];
+                    if (!_.isEmpty(item.defaultValues)) {
+                        defaultValues[item.dataIndex] = item.defaultValue;
+                    }
+
                     (function (orginFieldConfItem) {
+                        var fieldConfItem;
                         if (orginFieldConfItem.editable) {
                             orginFieldConfItem.listeners = {};
                             if (orginFieldConfItem.type === 'enum') {
@@ -193,7 +199,7 @@ define(function (require, exports) {
                             //可编辑字段根据数据类型创建field
                             fields.push(new FIELD_TYPE[orginFieldConfItem.type](fieldConfItem));
                         }
-                    })(fieldConfig[i]);
+                    })(item);
                     
                 }
                 if (!conf.title) {
@@ -212,6 +218,13 @@ define(function (require, exports) {
                         }
                         var saveRecord,
                             fieldValues = basicForm.getFieldValues();
+                        //将没有在form表单编辑的默认值加入record
+                        for (var fieldName in defaultValues) {
+                            if (_.isEmpty(fieldValues[fieldName])) {
+                                fieldValues[fieldName] = defaultValues[fieldName];
+                            }
+                        }
+
                         //添加框是不带记录
                         if (!record) {
                             saveRecord = new that.config.recordType(Ext.ux.clone(that.config.defaultData));
@@ -243,6 +256,10 @@ define(function (require, exports) {
                 conf.listeners = {
                     destroy: function () {
                         console.log('window ' + conf.id + 'destroy');
+                    },
+                    afterrender: function () {
+                        var form = formPanel.getForm();
+                        form.setValues(defaultValues);    
                     },
                     beforeclose: function () {
                         if (win.fromSaveBtn) { return; }
