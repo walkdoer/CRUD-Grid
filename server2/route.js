@@ -34,7 +34,10 @@ function route(pathname, request, response) {
                 request.body = body;
                 for (var key in params) {
                     if (params.hasOwnProperty(key)) {
+                        console.dir(params);
                         if ((typeof key).toLowerCase() === 'string') {
+                            var p = params[key];
+                            if (!p) { continue; }
                             params[key] = JSON.parse(params[key]);
                         }
                     }

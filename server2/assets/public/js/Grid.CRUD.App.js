@@ -10,10 +10,10 @@ define(function(require, exports) {
      */
     'use strict';
 
-    var _ = require('diwali/scripts/Grid.CRUD.Common.js');
-    var Model = require('diwali/scripts/Grid.CRUD.Model.js'),
-        config = require('diwali/scripts/Grid.CRUD.Config.js'),
-        View = require('diwali/scripts/Grid.CRUD.View.js');
+    var _ = require('crud/public/js/Grid.CRUD.Common.js');
+    var Model = require('crud/public/js/Grid.CRUD.Model.js'),
+        config = require('crud/public/js/Grid.CRUD.Config.js'),
+        View = require('crud/public/js/Grid.CRUD.View.js');
     //create namespace
     Ext.ns('Ext.ux.CRUD');
     /**

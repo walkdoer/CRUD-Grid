@@ -5,7 +5,7 @@
  */
 define(function(require, exports) {
     'use strict';
-    var _ = require('diwali/scripts/Grid.CRUD.Common.js');
+    var _ = require('crud/public/js/Grid.CRUD.Common.js');
     /**
      * Config模块
      */
@@ -252,7 +252,6 @@ define(function(require, exports) {
             //字段的非空限制，在数据库为autoSave的时候可以避免表单自动提交
             field.mapping = col.dataIndex;
             field.allowBlank = (col.allowBlank === undefined || col.allowBlank === null) ? true : col.allowBlank;
-            console.dir(field);
             return field;
         });
     }
@@ -309,8 +308,13 @@ define(function(require, exports) {
         var columnConfig = [], col, newCol;
         for (var i = 0; i < columns.length; i++) {
             col = columns[i];
+            if (!col.id) { continue; }
             //没有header就是不进行处理
-            if (!col.header) { continue; }
+            if (!col.header) { col.header = col.id || col.dataIndex; }
+            //没有配置dataIndex，就默认用id为dataIndex
+            if (!col.dataIndex) {
+                col.dataIndex = col.id;
+            }
             newCol = _.except(col, ['type']);
             if (!originConfig.mEditor || originConfig.mEditor === 'rowEditor'
                 || originConfig.mEditor.add === 'rowEditor') {
@@ -367,6 +371,7 @@ define(function(require, exports) {
                     }
                 }
             }
+            newCol.dataIndex = newCol.id;
             columnConfig.push(newCol);
         }
         return columnConfig;

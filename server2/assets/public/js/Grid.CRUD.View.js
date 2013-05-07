@@ -21,7 +21,7 @@ define(function (require, exports) {
      */
     'use strict';
 
-    var _ = require('diwali/scripts/Grid.CRUD.Common.js');
+    var _ = require('crud/public/js/Grid.CRUD.Common.js');
     //监听
     var LISTENERS_TYPE = {
         'string'   : 'keyup',

@@ -39,7 +39,7 @@ define(function(require, exports) {
     }
     function init(id, cls, title) {
         var gridPanel = new Ext.ux.CRUD({
-            id: id,
+            id: 'tab' + id,
             title: title,
             //配置可以关闭
             closable: true,
@@ -51,7 +51,7 @@ define(function(require, exports) {
                 read: Portal.data.proxyUrl('crud:todo:read')
             },
             store: {
-                idProperty: '_id'
+                idProperty: 'id'
             },
             /**
              * 选择编辑器, 如果不配置，默认使用rowEditor
@@ -60,7 +60,10 @@ define(function(require, exports) {
              */
             mEditor: {
                 add: 'rowEditor', //添加的时候使用rowEditor
-                edit: 'window' //编辑的时候使用窗口
+                edit: 'rowEditor' //编辑的时候使用窗口
+            },
+            search: {
+                property: ['title']
             },
             mButtons: ['add', 'delete', 'refresh', {
                 id: 'finishe',
@@ -86,8 +89,7 @@ define(function(require, exports) {
                 id: 'id',
                 type: 'string',
                 dataIndex: '_id',
-                editable: false,
-                hidden: true
+                editable: false
             }, {
                 id: 'title',
                 type: 'string',
@@ -109,11 +111,12 @@ define(function(require, exports) {
                 width: 60,
                 dataIndex: 'finished'
             }, {
+                id: 'post_date',
                 header   : '更新日期',
                 fieldLabel: '更新日期',
                 editable: false,
                 allowBlank: true,
-                type     : 'date',
+                type     : 'string',
                 // dateFormat: 'n/j h:ia',
                 width    : 85,
                 sortable : true,

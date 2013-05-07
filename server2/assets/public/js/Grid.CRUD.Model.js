@@ -10,7 +10,7 @@ define(function (require, exports) {
      */
     'use strict';
     
-    var _ = require('diwali/scripts/Grid.CRUD.Common.js');
+    var _ = require('crud/public/js/Grid.CRUD.Common.js');
     //引入StoreFactory
     var createStore = function (conf) {
         var defaultConf,
