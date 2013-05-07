@@ -422,10 +422,11 @@ define(function(require, exports) {
                             };
                         })();
                     } else {
+                        if (_.isEmpty(newCol.disabled)) { newCol.disabled = false; }
                         newCol.editor = new FIELD_TYPE[col.type]({
                             name: newCol.dataIndex,
                             allowBlank: newCol.allowBlank,
-                            disabled: newCol.disabled,
+                            disabled: newCol.disabled || (col.mEditMode === ADD_EDITABLE),
                             hidden: newCol.hidden
                         });
                     }

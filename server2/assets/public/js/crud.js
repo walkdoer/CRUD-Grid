@@ -59,8 +59,8 @@ define(function(require, exports) {
              * 或者可以像下面一样分开选择
              */
             mEditor: {
-                add: 'window', //添加的时候使用rowEditor
-                edit: 'window' //编辑的时候使用窗口
+                add: 'rowEditor', //添加的时候使用rowEditor
+                edit: 'rowEditor' //编辑的时候使用窗口
             },
             search: {
                 property: ['title', 'finished']
@@ -115,16 +115,15 @@ define(function(require, exports) {
                 id: 'post_date',
                 header   : '更新日期',
                 fieldLabel: '更新日期',
-                editable: false,
                 mEdit: {
-                    add: false
+                    edit: false
                 },
                 allowBlank: true,
                 type     : 'string',
                 // dateFormat: 'n/j h:ia',
                 width    : 85,
                 sortable : true,
-                renderer : Ext.util.Format.dateRenderer('n/j h:ia Y'),
+                //renderer : Ext.util.Format.dateRenderer('n/j h:ia Y'),
                 dataIndex: 'post_date'
             }]
         });
