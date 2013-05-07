@@ -43,6 +43,10 @@ define(function(require, exports) {
         FIELD_TYPE = _.FIELD_TYPE,
         FONT_WIDTH = _.FONT_WIDTH,
         WIN_HEIGHT_SPAN = _.WIN_HEIGHT_SPAN,
+        ALL_EDITABLE = _.ALL_EDITABLE,
+        ADD_EDITABLE = _.ADD_EDITABLE,
+        EDIT_EDITABLE = _.EDIT_EDITABLE,
+        ALL_NOT_EDITABLE = _.ALL_NOT_EDITABLE,
         WIN_SPAN = _.WIN_SPAN,
         originConfig, //未经过处理的原始用户的配置
         userConfig; //经过处理后的用户配置
@@ -105,11 +109,12 @@ define(function(require, exports) {
         }
     }
 
-    function getFieldLabelWidth (columnsConfig) {
+    function getFieldLabelWidth(columnsConfig) {
         var col, maxWidth = 0, width;
         for (var i = 0; i < columnsConfig.length; i++) {
             col = columnsConfig[i];
-            if (col.editable && col.fieldLabel) {
+            //只要该字段在编辑和添加两个窗口一个可编辑，且有fieldLabel
+            if (col.mEditMode !== ALL_NOT_EDITABLE && col.fieldLabel) {
                 width = FONT_WIDTH * col.fieldLabel.length;
                 if (width > maxWidth) {
                     maxWidth = width;
@@ -122,11 +127,18 @@ define(function(require, exports) {
      * 获得窗口的高度
      * @return {Int} Height
      */
-    function getWindowHeight(columnsConfig) {
-        var col, height = 0;
+    function getWindowHeight(columnsConfig, winType) {
+        var col, height = 0,
+            editMode = '';
+        if (winType === 'add') {
+            editMode = ADD_EDITABLE;
+        } else if (winType === 'edit') {
+            editMode = EDIT_EDITABLE;
+        }
         for (var i = 0; i < columnsConfig.length; i++) {
             col = columnsConfig[i];
-            if (col.editable) {
+            if (col.mEditMode === ALL_EDITABLE ||
+                col.mEditMode === editMode) {
                 if (col.height) {
                     height += col.height;
                 } else {
@@ -141,11 +153,17 @@ define(function(require, exports) {
      * 获得窗口的宽度
      * @return {Int} Height
      */
-    function getWindowWidth(columnsConfig) {
-        var col, maxWidth = 0;
+    function getWindowWidth(columnsConfig, winType) {
+        var col, maxWidth = 0, editMode = '';
+        if (winType === 'add') {
+            editMode = ADD_EDITABLE;
+        } else if (winType === 'edit') {
+            editMode = EDIT_EDITABLE;
+        }
         for (var i = 0; i < columnsConfig.length; i++) {
             col = columnsConfig[i];
-            if (col.editable) {
+            if (col.mEditMode === editMode ||
+                col.mEditMode === ALL_EDITABLE) {
                 if (col.width && col.width > maxWidth) {
                     maxWidth = col.width;
                 }
@@ -154,6 +172,12 @@ define(function(require, exports) {
         return maxWidth + WIN_SPAN + getFieldLabelWidth(columnsConfig);
     }
 
+
+
+    /**
+     * 设置ID，参数个数不固定
+     * 用法: setId('grid', 'tbar', 'search', 'this_is_id_of_searchbar');
+     */
     function setId() {
         var args = Array.prototype.slice.call(arguments);
         if (args.length <= 1) { return; }
@@ -300,6 +324,42 @@ define(function(require, exports) {
             return 'remote';
         }
     }
+
+    /**
+     * 字段的可编辑性
+     * @param  {Object/Boolean} editable 
+     * @return {Int}            0 全部可编辑， 1 添加窗口编辑，2 编辑窗口可编辑 
+     */
+    function getEditMode(editMode) {
+        var flag = 0;
+        if (_.isObject(editMode)) {
+            //添加窗口可编辑
+            if (_.isEmpty(editMode.add) || editMode.add) {
+                flag += 2;
+            }
+            //编辑窗口可编辑
+            if (_.isEmpty(editMode.edit) || editMode.edit) {
+                flag += 3;
+            }
+            switch (flag) {
+            case 0:
+                return ALL_NOT_EDITABLE;
+            case 2:
+                return ADD_EDITABLE;
+            case 3:
+                return EDIT_EDITABLE;
+            case 5:
+                return ALL_EDITABLE;
+            }
+        } else if (_.isEmpty(editMode) || editMode) {
+            //没有配置默认该字段在所有位置都可以编辑
+            return ALL_EDITABLE;
+        } else {
+            //editMode: false
+            return ALL_NOT_EDITABLE;
+        }
+    }
+
     /**
      * 获取Grid的栏目配置
      * @param  {Array} columns 用户的Column配置
@@ -323,7 +383,7 @@ define(function(require, exports) {
                 if (!FIELD_TYPE[col.type]) {
                     throw '[Grid.CRUD.Config] function getColumnsConfig () : ' + col.id + '字段的类型' + col.type + '不合法.';//出错
                 }
-                if (col.editable) {
+                if (col.mEditMode !== ALL_NOT_EDITABLE) {
                     if (col.type === 'enum') {
                         var mode = getComboMode(col);
                         newCol.editor = new FIELD_TYPE[col.type]({
@@ -337,8 +397,7 @@ define(function(require, exports) {
                             valueField: col.valueField || col.dataIndex || col.id,
                             displayField: col.displayField === undefined ? 'displayText'
                                                                     : col.displayField,
-                            editable: col.editable === undefined ? false
-                                                            : col.editable,
+                            editable: col.editable,
                             valueNotFoundText: col.valueNotFoundText === undefined ? '没有该选项'
                                                                             : col.valueNotFoundText,
                             forceSelection: true,
@@ -478,8 +537,7 @@ define(function(require, exports) {
                         valueField: column.valueField || column.dataIndex || column.id,
                         displayField: column.displayField === undefined ? 'displayText'
                                                                 : column.displayField,
-                        editable: column.editable === undefined ? false
-                                                        : column.editable,
+                        editable: column.editable,
                         valueNotFoundText: column.valueNotFoundText === undefined ? '没有该选项'
                                                                         : column.valueNotFoundText,
                         forceSelection: true,
@@ -504,6 +562,7 @@ define(function(require, exports) {
                         'sortable',
                         'header',
                         'editable',
+                        'mEditMode',
                         'dataIndex'
                     ]);
                     conf.id = id;
@@ -557,7 +616,7 @@ define(function(require, exports) {
      * 检查配置的合法性,不合法的进行修复
      * @param  {Object} conf 配置
      */
-    function checkConfig (conf) {
+    function checkConfig(conf) {
         var columns = conf.mColumns, col, storeConfig;
 
         for (var i = 0, len = columns.length; i < len; i++) {
@@ -566,6 +625,8 @@ define(function(require, exports) {
             if (typeof col.editable !== 'boolean') {
                 col.editable = true;
             }
+            col.mEditMode = getEditMode(col.mEdit);
+            console.log('字段' + col.id + '的编辑模式为' + col.mEditMode);
         }
         if (!conf.store) {
             conf.store = {};
@@ -616,23 +677,25 @@ define(function(require, exports) {
             set('grid', 'tbar', 'buttons', tbarConfig);
             setId('grid', 'tbar', 'buttons', systemName + 'grid-tbar-buttons');
         }
-        var winHeight = getWindowHeight(columns),
+        var addWinHeight = getWindowHeight(columns, 'add'),
             winLabelWidth = getFieldLabelWidth(columns),
-            winWidth = getWindowWidth(columns);
+            addWinWidth = getWindowWidth(columns, 'add'),
+            editWinHeight = getWindowHeight(columns, 'edit'),
+            editWinWidth = getWindowWidth(columns, 'edit');
 
         set('grid', 'page', config.page);
         set('grid', 'addEditWay', getAddEditWay(config.mEditable, config.mEditor));
         set('event', 'view', EVENT.VIEW);
         set('window', 'edit', 'fields', getWindowFieldConfig(columns));
         set('window', 'edit', 'id', config.id + ':window:edit');
-        set('window', 'edit', 'height', winHeight);
-        set('window', 'edit', 'width', winWidth);
+        set('window', 'edit', 'height', editWinHeight);
+        set('window', 'edit', 'width', editWinWidth);
         set('window', 'edit', 'labelWidth', winLabelWidth);
         set('window', 'add', 'fields', getWindowFieldConfig(columns));
         set('window', 'add', 'id', config.id + ':window:add');
-        set('window', 'add', 'height', winHeight);
+        set('window', 'add', 'height', addWinHeight);
         set('window', 'add', 'labelWidth', winLabelWidth);
-        set('window', 'add', 'width', winWidth);
+        set('window', 'add', 'width', addWinWidth);
 
         /************ Buttons *************/
         /*

@@ -133,10 +133,18 @@ define(function (require, exports) {
              */
             function openWindow(conf, record) {
                 var win, formPanel,
+                    isCreate = true,//是否创建为创建记录
+                    editMode, //编辑模式
                     saveBtnId = conf.id + ':btn:save',
                     cancelBtnId = conf.id + ':btn:cancel',
                     defaultValues = {},
                     beginFieldString;
+                if (record) {
+                    isCreate = false;
+                    editMode = _.EDIT_EDITABLE;//编辑框可编辑
+                } else {
+                    editMode = _.ADD_EDITABLE;//添加框可编辑
+                }
                 //创建formpanel的字段
                 var fieldConfig = conf.fields, fields = [];
                 for (var i = 0; i < fieldConfig.length; i++) {
@@ -145,50 +153,50 @@ define(function (require, exports) {
                         defaultValues[item.dataIndex] = item.defaultValue;
                     }
 
-                    (function (orginFieldConfItem) {
+                    (function (orgnFldItem) {
                         var fieldConfItem;
-                        if (orginFieldConfItem.editable) {
-                            orginFieldConfItem.listeners = {};
-                            if (orginFieldConfItem.type === 'enum') {
+                        if (orgnFldItem.mEditMode === editMode || 
+                            orgnFldItem.mEditMode === _.ALL_EDITABLE) {
+                            orgnFldItem.listeners = {};
+                            if (orgnFldItem.type === 'enum') {
                                 var mode = '';
-                                if (orginFieldConfItem.mLocalData) {
+                                if (orgnFldItem.mLocalData) {
                                     mode = 'local';
-                                } else if (orginFieldConfItem.mStore) {
+                                } else if (orgnFldItem.mStore) {
                                     mode = 'remote';
                                 }
                                 fieldConfItem = {
-                                    id: conf.id + orginFieldConfItem.id,
-                                    fieldLabel: orginFieldConfItem.fieldLabel,
-                                    store: orginFieldConfItem.mLocalData || orginFieldConfItem.mStore, //direct array data
+                                    id: conf.id + orgnFldItem.id,
+                                    fieldLabel: orgnFldItem.fieldLabel,
+                                    store: orgnFldItem.mLocalData || orgnFldItem.mStore, //direct array data
                                     typeAhead: true,
                                     triggerAction: 'all',
-                                    width: orginFieldConfItem.width,
+                                    width: orgnFldItem.width,
                                     mode: mode,
-                                    emptyText: orginFieldConfItem.emptyText,
-                                    valueField: orginFieldConfItem.valueField || orginFieldConfItem.dataIndex,
-                                    displayField: orginFieldConfItem.displayField === undefined ? 'displayText'
-                                                                            : orginFieldConfItem.displayField,
-                                    editable: orginFieldConfItem.editable === undefined ? false
-                                                                    : orginFieldConfItem.editable,
-                                    valueNotFoundText: orginFieldConfItem.valueNotFoundText === undefined ? '没有该选项'
-                                                                                    : orginFieldConfItem.valueNotFoundText,
+                                    emptyText: orgnFldItem.emptyText,
+                                    valueField: orgnFldItem.valueField || orgnFldItem.dataIndex,
+                                    displayField: orgnFldItem.displayField === undefined ? 'displayText'
+                                                                            : orgnFldItem.displayField,
+                                    editable: orgnFldItem.editable,
+                                    valueNotFoundText: orgnFldItem.valueNotFoundText === undefined ? '没有该选项'
+                                                                                    : orgnFldItem.valueNotFoundText,
                                     forceSelection: true,
-                                    dataIndex: orginFieldConfItem.dataIndex,
-                                    name: orginFieldConfItem.dataIndex,
+                                    dataIndex: orgnFldItem.dataIndex,
+                                    name: orgnFldItem.dataIndex,
                                     selectOnFocus: true,
                                     allowBlank: false,
                                     listeners: {
                                         afterrender: function (combo) {
-                                            //combo.setValue(combo.store.getAt(selectPos).data[orginFieldConfItem.dataIndex]);
+                                            //combo.setValue(combo.store.getAt(selectPos).data[orgnFldItem.dataIndex]);
                                         }
                                     }
                                 };
                             } else {
-                                fieldConfItem = _.except(orginFieldConfItem, ['type', 'editable']);
+                                fieldConfItem = _.except(orgnFldItem, ['type', 'editable', 'mEditMode']);
                                 fieldConfItem.id = conf.id + fieldConfItem.id;
-                                fieldConfItem.name = orginFieldConfItem.dataIndex;
+                                fieldConfItem.name = orgnFldItem.dataIndex;
                             }
-                            fieldConfItem.listeners[LISTENERS_TYPE[orginFieldConfItem.type]] = function (field) {
+                            fieldConfItem.listeners[LISTENERS_TYPE[orgnFldItem.type]] = function (field) {
                                 var btn = Ext.getCmp(saveBtnId);
                                 if (record && field.getValue() === record.get(field.getName())) {
                                     btn.disable();
@@ -197,7 +205,7 @@ define(function (require, exports) {
                                 }
                             };
                             //可编辑字段根据数据类型创建field
-                            fields.push(new FIELD_TYPE[orginFieldConfItem.type](fieldConfItem));
+                            fields.push(new FIELD_TYPE[orgnFldItem.type](fieldConfItem));
                         }
                     })(item);
                     

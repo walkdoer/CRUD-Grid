@@ -91,7 +91,10 @@ define(function (require, exports) {
     exports.isEmpty = function (a) {
         return a === undefined || a === null || a === '';
     };
-
+    exports.ALL_NOT_EDITABLE = 0;
+    exports.ADD_EDITABLE = 1;
+    exports.EDIT_EDITABLE = 2;
+    exports.ALL_EDITABLE = 3;
     exports.except = except;
     exports.FONT_WIDTH = 14;
     exports.WIN_SPAN = 40;

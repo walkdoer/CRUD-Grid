@@ -59,8 +59,8 @@ define(function(require, exports) {
              * 或者可以像下面一样分开选择
              */
             mEditor: {
-                add: 'rowEditor', //添加的时候使用rowEditor
-                edit: 'rowEditor' //编辑的时候使用窗口
+                add: 'window', //添加的时候使用rowEditor
+                edit: 'window' //编辑的时候使用窗口
             },
             search: {
                 property: ['title', 'finished']
@@ -88,6 +88,7 @@ define(function(require, exports) {
             mColumns: [{
                 id: 'id',
                 type: 'string',
+                mEdit: false,
                 dataIndex: '_id',
                 editable: false
             }, {
@@ -115,6 +116,9 @@ define(function(require, exports) {
                 header   : '更新日期',
                 fieldLabel: '更新日期',
                 editable: false,
+                mEdit: {
+                    add: false
+                },
                 allowBlank: true,
                 type     : 'string',
                 // dateFormat: 'n/j h:ia',
