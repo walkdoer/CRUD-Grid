@@ -78,7 +78,24 @@ define(function(require, exports) {
                 data: this.data || this.api,
                 reader: config.get('store', 'reader')
             });
+            /**
+             * 返回记录是否处于编辑状态
+             * @param  {Ext.data.Record}  record 打开的记录
+             * @return {Boolean}
+             
+            function isRecordEditing(record) {
+                return !_.isEmpty(editingRecords[record.id]);
+            }*/
 
+            /**
+             * 添加正在编辑的Record
+             * @param {Ext.data.Record} record
+             
+            function addEditingRecord(record) {
+                editingRecords[record.id] = record;
+            }*/
+
+            
             var buttonsBarConfig = config.get('grid', 'tbar', 'buttons'),
                 searchBarConfig = config.get('grid', 'tbar', 'search', 'property'),
                 pageConfig = config.get('grid', 'page');
@@ -106,8 +123,7 @@ define(function(require, exports) {
             var view = new View({
                 event: config.get('event', 'view'), //View模块用到的事件
                 buttonsBarConfig: buttonsBarConfig,//顶部工具拦的配置
-                singleSelect: config.get('origin', 'singleSelect'), //单选
-                checkbox: config.get('origin', 'checkbox'),//checkbox
+                singleSelect: config.get('grid', 'singleSelect'),//checkbox
                 pageToolbarConfig: pageConfig,
                 initialParam: config.get('store', 'params'),
                 searchBarConfig: searchBarConfig,
@@ -271,7 +287,6 @@ define(function(require, exports) {
                         var btn = btns[i];
                         if (btns[i].belongToUser) {
                             viewlisteners[btn.id] = function (btn, event, records, data, process) {
-                                console.log('################btn');
                                 process(that, records, data);
                             };
                         }
@@ -280,6 +295,10 @@ define(function(require, exports) {
             }
             viewlisteners[config.getEvent('view', 'SAVE_RECORD')] = function (record, fieldValues) {
                 model.saveRecord(record);
+            };
+            viewlisteners[config.getEvent('view', 'WINDOW_SHOW')] = function (win, record) {
+                console.info('select editing record after edit window show.');
+                view.selectRow(record.store.indexOf(record));
             };
             viewlisteners[config.getEvent('view', 'SAVE_RECORD_OF_ROWEDITOR')] = function () {
                 model.saveRecord();

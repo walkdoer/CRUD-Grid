@@ -92,6 +92,7 @@ define(function (require, exports) {
     var View = Ext.extend(Ext.util.Observable, {
         constructor: function (conf) {
             var that = this,
+                editWindowsIDs = {},
                 //事件
                 eventConfig = conf.event,
                 //顶部工具栏的配置方式
@@ -99,6 +100,23 @@ define(function (require, exports) {
             //将config保存到对像中
             this.config = conf;
             var getDataMethod = conf.singleSelect ? 'getSelected' : 'getSelections';
+
+            function getEditWindow(recordId) {
+                if (!_.isEmpty(editWindowsIDs[recordId])) {
+                    console.info('window ' + editWindowsIDs[recordId] +
+                        ' found for record[' + recordId + ']');
+                    return Ext.getCmp(editWindowsIDs[recordId]);
+                }
+                console.info('window not found for record[' + recordId + ']');
+                return null;
+            }
+
+            function removeEditWindow(recordId) {
+                delete editWindowsIDs[recordId];
+            }
+            function setEditWindow(recordId, winId) {
+                editWindowsIDs[recordId] = winId;
+            }
 
             //添加事件
             for (var eventName in eventConfig) {
@@ -132,7 +150,7 @@ define(function (require, exports) {
              * @param  {Object} config 配置
              * @return {Ext.Window}        窗口
              */
-            function openWindow(conf, record) {
+            function createWindow(conf, record) {
                 var win, formPanel,
                     isCreate = true,//是否创建为创建记录
                     editMode, //编辑模式
@@ -271,6 +289,17 @@ define(function (require, exports) {
                 conf.listeners = {
                     destroy: function () {
                         console.log('window ' + conf.id + 'destroy');
+                        if (record) {
+                            removeEditWindow(record.id);
+                        }
+                    },
+                    show: function () {
+                        //显示
+                        that.fireEvent(eventConfig.WINDOW_SHOW, win, record);
+                    },
+                    activate: function () {
+                        console.info('窗口' + conf.id + '激活');
+                        that.fireEvent(eventConfig.WINDOW_SHOW, win, record);
                     },
                     afterrender: function () {
                         var form = formPanel.getForm();
@@ -313,12 +342,13 @@ define(function (require, exports) {
                         }
                     }
                 };
-                win.show();
-                //如果有记录就将记录加载进窗口
-                if (record) {
-                    formPanel.getForm().loadRecord(record);
-                    beginFieldString = serializeForm(formPanel.getForm().getEl());
-                }
+                win.loadRecord = function (record) {
+                    //如果有记录就将记录加载进窗口
+                    if (record) {
+                        formPanel.getForm().loadRecord(record);
+                        beginFieldString = serializeForm(formPanel.getForm().getEl());
+                    }
+                };
                 return win;
             }
 
@@ -418,9 +448,15 @@ define(function (require, exports) {
                  * @param  {Ext.data.Record} record 记录
                  */
                 this.openEditWindow = function (record) {
+                    //如果窗口已经打开，则直接显示窗口
+                    var editWindow = getEditWindow(record.id);
+                    if (editWindow) {
+                        editWindow.show(true);
+                        return;
+                    }
                     var windowConfig = that.config.window.edit;
                     //窗口编辑器
-                    var editWindow = openWindow({
+                    editWindow = createWindow({
                         id: windowConfig.id + ':' + record.id,
                         title: '编辑记录',
                         width: windowConfig.width,
@@ -436,6 +472,9 @@ define(function (require, exports) {
                             ok: eventConfig.UPDATE_RECORD
                         }
                     }, record);
+                    editWindow.show();
+                    editWindow.loadRecord(record);
+                    setEditWindow(record.id, editWindow.id);
                     return editWindow;
                 };
                 /**
@@ -445,7 +484,7 @@ define(function (require, exports) {
                 this.openAddWindow = function () {
                     var windowConfig = that.config.window.add;
                     //窗口编辑器
-                    var addWindow = openWindow({
+                    var addWindow = createWindow({
                         id: windowConfig.id,
                         title: '添加记录',
                         labelWidth: windowConfig.labelWidth,
@@ -459,6 +498,7 @@ define(function (require, exports) {
                             ok: eventConfig.SAVE_RECORD
                         }
                     });
+                    addWindow.show();
                     return addWindow;
                 };
 
@@ -502,7 +542,7 @@ define(function (require, exports) {
                     listeners = {};
                 }
 
-                if (this.config.checkbox) {
+                if (!this.config.singleSelect) {
                     this.rsm = new Ext.grid.CheckboxSelectionModel({
                         singleSelect: this.config.singleSelect,
                         listeners: listeners

@@ -36,7 +36,8 @@ define(function(require, exports) {
                 SEARCH: 'event_view_search_record',
                 UPDATE_RECORD: 'event_view_update_record',
                 LOAD_DATA: 'event_view_load_data',
-                SAVE_RECORD_OF_ROWEDITOR: 'event_view_save_record_of_roweditor'
+                SAVE_RECORD_OF_ROWEDITOR: 'event_view_save_record_of_roweditor',
+                WINDOW_SHOW: 'event_view_window_show'
             }
         },
         //文件类型
@@ -683,8 +684,9 @@ define(function(require, exports) {
             addWinWidth = getWindowWidth(columns, 'add'),
             editWinHeight = getWindowHeight(columns, 'edit'),
             editWinWidth = getWindowWidth(columns, 'edit');
-
+        var singleSelect = config.checkbox ? false : true;
         set('grid', 'page', config.page);
+        set('grid', 'singleSelect', singleSelect);
         set('grid', 'addEditWay', getAddEditWay(config.mEditable, config.mEditor));
         set('event', 'view', EVENT.VIEW);
         set('window', 'edit', 'fields', getWindowFieldConfig(columns));
