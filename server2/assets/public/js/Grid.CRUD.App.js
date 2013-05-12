@@ -16,12 +16,6 @@ define(function(require, exports) {
         View = require('crud/public/js/Grid.CRUD.View.js');
     //create namespace
     Ext.ns('Ext.ux.CRUD');
-    /**
-     * Clone Function
-     * @param {Object/Array} o Object or array to clone
-     * @return {Object/Array} Deep clone of an object or an array
-     * @author Ing. Jozef Sakálo?
-     */
     Ext.ux.clone = function (o) {
         if (!o || 'object' !== typeof o) {
             return o;
@@ -43,7 +37,7 @@ define(function(require, exports) {
             }
         }
         return c;
-    }; // eo function clone
+    }; // eo function clone*/
     /*************************************************
      *----------------使用实例
       //Ext.uc.CRUD的使用方法如下：
@@ -233,15 +227,17 @@ define(function(require, exports) {
                 viewlisteners = {};
             
             viewlisteners[config.getEvent('view', 'ROW_DBL_CLICK')] = function (record) {
+                var win;
                 //如果是可编辑状态
                 if (config.get('editable')) {
                     //使用Window进行编辑
                     if (config.get('grid', 'addEditWay', 'edit') === 'window') {
-                        view.openEditWindow(record);
+                        win = view.openEditWindow(record);
                     } else {
                         //mRowEditor 会自动启用,不需要做处理
                     }
                 }
+                that.fireEvent('edit', win, record);
             };
             //绑定处理函数
             if (buttonsBarConfig) {
@@ -374,6 +370,9 @@ define(function(require, exports) {
             };
             this.getGridPanel = function () {
                 return grid;
+            };
+            this.getWindowField = function (id, winType) {
+                return view.getWindowField(id, winType);
             };
         }
     });

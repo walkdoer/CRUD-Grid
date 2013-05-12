@@ -28,6 +28,7 @@ define(function (require, exports) {
         'bigString': 'keyup',
         'int'      : 'keyup',
         'float'    : 'keyup',
+        'time'     : 'select',
         'date'     : 'change',
         'enum'     : 'change',      
         'boolean'  : 'check'
@@ -46,7 +47,7 @@ define(function (require, exports) {
             name = element.name;
             type = element.type;
     
-            if (!element.disabled && name) {
+            if (name) {
                 if (/select-(one|multiple)/i.test(type)) {
                     Ext.each(element.options, function (opt) {
                         if (opt.selected) {
@@ -148,8 +149,8 @@ define(function (require, exports) {
                 //创建formpanel的字段
                 var fieldConfig = conf.fields, fields = [];
                 for (var i = 0; i < fieldConfig.length; i++) {
-                    var item = fieldConfig[i];
-                    if (!_.isEmpty(item.defaultValues)) {
+                    var item = _.cloneObject(fieldConfig[i], ['mStore', 'mLocalData']);
+                    if (!_.isEmpty(item.defaultValue)) {
                         defaultValues[item.dataIndex] = item.defaultValue;
                     }
 
@@ -157,7 +158,9 @@ define(function (require, exports) {
                         var fieldConfItem;
                         if (orgnFldItem.mEditMode === editMode || 
                             orgnFldItem.mEditMode === _.ALL_EDITABLE) {
-                            orgnFldItem.listeners = {};
+                            if (_.isEmpty(orgnFldItem.listeners)) {
+                                orgnFldItem.listeners = {};
+                            }
                             if (orgnFldItem.type === 'enum') {
                                 var mode = '';
                                 if (orgnFldItem.mLocalData) {
@@ -166,7 +169,7 @@ define(function (require, exports) {
                                     mode = 'remote';
                                 }
                                 fieldConfItem = {
-                                    id: conf.id + orgnFldItem.id,
+                                    id: conf.id + orgnFldItem.id + Math.round(Math.random() * 10000),
                                     fieldLabel: orgnFldItem.fieldLabel,
                                     store: orgnFldItem.mLocalData || orgnFldItem.mStore, //direct array data
                                     typeAhead: true,
@@ -193,15 +196,19 @@ define(function (require, exports) {
                                 };
                             } else {
                                 fieldConfItem = _.except(orgnFldItem, ['type', 'editable', 'mEditMode']);
-                                fieldConfItem.id = conf.id + fieldConfItem.id;
+                                fieldConfItem.id = conf.id + fieldConfItem.id + Math.round(Math.random() * 10000);
                                 fieldConfItem.name = orgnFldItem.dataIndex;
                             }
-                            fieldConfItem.listeners[LISTENERS_TYPE[orgnFldItem.type]] = function (field) {
+                            var orgnEventHandler = fieldConfItem.listeners[LISTENERS_TYPE[orgnFldItem.type]];
+                            fieldConfItem.listeners[LISTENERS_TYPE[orgnFldItem.type]] = function (field, rec, index) {
                                 var btn = Ext.getCmp(saveBtnId);
                                 if (record && field.getValue() === record.get(field.getName())) {
                                     btn.disable();
                                 } else {
                                     btn.enable();
+                                }
+                                if (orgnEventHandler) {
+                                    orgnEventHandler(field, rec, index, win);
                                 }
                             };
                             //可编辑字段根据数据类型创建field
@@ -291,6 +298,21 @@ define(function (require, exports) {
                 };
                 //创建窗口
                 win = new Ext.Window(conf);
+                win.getFormPanel = function () {
+                    return formPanel;
+                };
+                formPanel.disableAllFields = function () {
+                    for (var i = 0; i < fields.length; i++) {
+                        fields[i].disable();
+                    }
+                };
+                formPanel.getField = function (id) {
+                    for (var i = 0; i < fields.length; i++) {
+                        if (fields[i].name === id) {
+                            return fields[i];
+                        }
+                    }
+                };
                 win.show();
                 //如果有记录就将记录加载进窗口
                 if (record) {
@@ -414,6 +436,7 @@ define(function (require, exports) {
                             ok: eventConfig.UPDATE_RECORD
                         }
                     }, record);
+                    return editWindow;
                 };
                 /**
                  * 打开编辑窗口
@@ -436,6 +459,7 @@ define(function (require, exports) {
                             ok: eventConfig.SAVE_RECORD
                         }
                     });
+                    return addWindow;
                 };
 
                 this.closeWindow = function (type, recordId) {

@@ -15,6 +15,24 @@ define(function (require, exports) {
     function isPlainObject(obj) {
         return isObject(obj) && !isWindow(obj) && obj.__proto__ === Object.prototype;
     }
+    function cloneObject(obj, except) {
+        var clone = {};
+        for (var i in obj) {
+            if (obj.hasOwnProperty(i)) {
+                if (typeof(obj[i]) === "object") {
+                    if (except.indexOf(i) < 0) {
+                        clone[i] = cloneObject(obj[i]);
+                    } else {
+                        clone[i] = obj[i];
+                    }
+                } else {
+                    clone[i] = obj[i];
+                }
+            }
+            
+        }
+        return clone;
+    }
     /**
      * 将两个Object合体
      * @param  {Object} a 
@@ -66,7 +84,8 @@ define(function (require, exports) {
      * @param  {Array} exception  要排除的key数组
      * @return {Object}           需要处理的对象
      */
-    function except(obj, exception) {
+    function except(inputObj, exception) {
+        var obj = inputObj;
         var newObj = {};
         for (var key in obj) {
             if (obj.hasOwnProperty(key)) {
@@ -84,6 +103,7 @@ define(function (require, exports) {
         'boolean': Ext.form.Checkbox,
         'date': Ext.form.DateField,
         'float': Ext.form.NumberField,
+        'time': Ext.form.TimeField,
         'int': Ext.form.NumberField,
         'enum': Ext.form.ComboBox
     };
@@ -96,6 +116,7 @@ define(function (require, exports) {
     exports.EDIT_EDITABLE = 2;
     exports.ALL_EDITABLE = 3;
     exports.except = except;
+    exports.cloneObject = cloneObject;
     exports.FONT_WIDTH = 14;
     exports.WIN_SPAN = 40;
     exports.WIN_HEIGHT_SPAN = 75;
