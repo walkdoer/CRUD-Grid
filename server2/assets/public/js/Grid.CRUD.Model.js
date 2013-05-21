@@ -140,6 +140,13 @@ define(function (require, exports) {
             }
             store.save();
         },
+        removeRecord: function (record) {
+            var store = this.getStore();
+            if (record) {
+                store.remove(record);
+                store.save();
+            }
+        },
         updateRecord: function (records, fieldValues, params, success, error) {
             var fieldName, rec, store = this.getStore(), key;
             if (!_.isArray(records)) {

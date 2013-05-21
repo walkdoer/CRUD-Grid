@@ -51,7 +51,7 @@ define(function(require, exports) {
                 read: Portal.data.proxyUrl('crud:todo:read')
             },
             store: {
-                idProperty: 'id'
+                idProperty: '_id'
             },
             /**
              * 选择编辑器, 如果不配置，默认使用rowEditor
@@ -63,7 +63,7 @@ define(function(require, exports) {
                 edit: 'window' //编辑的时候使用窗口
             },
             search: {
-                property: ['title', 'finished']
+                property: ['title', 'finished', 'type']
             },
             mButtons: ['add', 'delete', 'refresh', {
                 id: 'finishe',
@@ -125,6 +125,25 @@ define(function(require, exports) {
                 sortable : true,
                 //renderer : Ext.util.Format.dateRenderer('n/j h:ia Y'),
                 dataIndex: 'post_date'
+            }, {
+                id: 'type',
+                header: '任务类型',
+                fieldLabel: '类型',
+                type: 'enum',
+                /*displayField: 'id', //store的时候需要定义这两个
+                valueField: 'name'*/
+                /*
+                //可以使用本地的数据
+                mLocalData: {
+                    0: '生活Idea',
+                    1: '工作记录',
+                    2: '购物清单'
+                },*/
+                //也可以是连接地址
+                mUrl: Portal.data.proxyUrl('crud:category:read'),
+                displayField: 'name',
+                valueField: '_id',
+                hidden: true
             }]
         });
         return gridPanel;

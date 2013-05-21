@@ -38,7 +38,6 @@ var getHandler = {},
                         if (err) {
                             return next(err);
                         } else {
-                            console.log(file);
                             response.writeHead(200, {'Content-Type': contentType});
                             response.write(file, 'binary');
                             response.end();

@@ -321,9 +321,35 @@ define(function(require, exports) {
     function getComboMode(col) {
         if (col.mLocalData) {
             return 'local';
-        } else if (col.mStore) {
+        } else if (col.mStore || col.mUrl) {
             return 'remote';
         }
+    }
+
+    function getStoreFromComboConfig(combo) {
+        console.log("##getStoreFromComboConfig##");
+        var store;
+        if (combo.mStore) {
+            store = combo.mStore;
+        } else if (combo.mUrl) {
+            store = new Ext.data.JsonStore({ 
+                url: combo.mUrl,
+                fields: [{
+                    name: combo.valueField || combo.id, //优先使用用户自定义的valueField
+                    mapping: combo.valueField || combo.dataIndex
+                }, {
+                    name: combo.displayField || 'displayText',//优先使用用户自定义的displayField
+                    mapping: combo.displayField || 'displayText'
+                }],
+                root: 'data'
+            });
+        } else if (combo.mLocalData) {
+            store = new Ext.data.ArrayStore({
+                fields: [combo.id, 'displayText'],
+                data: getArrayFromObject(combo.mLocalData)
+            });
+        }
+        return store;
     }
 
     /**
@@ -362,6 +388,24 @@ define(function(require, exports) {
     }
 
     /**
+     * 从Object里面获取数组
+     * 例如 var a = {
+     *          '0': 'abc',
+     *          '1': 'def'
+     *      }
+     *
+     * 返回 [['0', 'abc'], ['1', 'def']]
+     */
+    function getArrayFromObject(obj) {
+        var array = [], tmp;
+        for (var key in obj) {
+            tmp = [key, obj[key]];
+            array.push(tmp);
+        }
+        return array;
+    }
+
+    /**
      * 获取Grid的栏目配置
      * @param  {Array} columns 用户的Column配置
      * @return {Array}         处理过后的用户配置
@@ -384,12 +428,14 @@ define(function(require, exports) {
                 if (!FIELD_TYPE[col.type]) {
                     throw '[Grid.CRUD.Config] function getColumnsConfig () : ' + col.id + '字段的类型' + col.type + '不合法.';//出错
                 }
+                var store = getStoreFromComboConfig(col);
+                
                 if (col.mEditMode !== ALL_NOT_EDITABLE) {
                     if (col.type === 'enum') {
                         var mode = getComboMode(col);
                         newCol.editor = new FIELD_TYPE[col.type]({
                             fieldLabel: col.fieldLabel,
-                            store: col.mLocalData || col.mStore, //direct array data
+                            store: store, //direct array data
                             typeAhead: true,
                             triggerAction: 'all',
                             width: col.width,
@@ -494,6 +540,19 @@ define(function(require, exports) {
             items: tbarButtons
         };
     }
+
+    function getSelectPos(column) {
+        var selectPos = 0, pos; 
+        if (column.mStore) {
+                column.mLocalData.each(function (record) {
+                if (parseInt(record.get(column.id), 10) === param[column.id]) {
+                    selectPos = pos;
+                }
+                pos += 1;
+            });
+        }
+        return selectPos;
+    }
     /**
      * 获取搜索栏目配置
      * @param  {Object} searchConfig [搜索的用户配置]
@@ -518,19 +577,15 @@ define(function(require, exports) {
                 var id = systemName + ':grid:searchbar:' + column.id;
                 if (column.type === 'enum') {
                     var mode = getComboMode(column);
-                    var selectPos = 0, param = get('store', 'params'), pos = 0;
+                    var selectPos = 0, param = get('store', 'params');
                     if (param) {
-                        column.mLocalData.each(function (record) {
-                            if (parseInt(record.get(column.id), 10) === param[column.id]) {
-                                selectPos = pos;
-                            }
-                            pos += 1;
-                        });
+                        selectPos = getSelectPos(column);
                     }
+                    var store = getStoreFromComboConfig(column);
                     field = new FIELD_TYPE[column.type]({
                         id: id,
                         fieldLabel: column.fieldLabel,
-                        store: column.mLocalData || column.mStore, //direct array data
+                        store: store,
                         typeAhead: true,
                         triggerAction: 'all',
                         width: column.width,

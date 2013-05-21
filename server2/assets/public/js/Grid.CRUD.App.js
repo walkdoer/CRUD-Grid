@@ -279,7 +279,7 @@ define(function(require, exports) {
                     viewlisteners[idOfTbar.sysdelete] = function (btn, event, records) {
                         //记录
                         view.setBtnStatu('sysdelete', false);
-                        model.getStore().remove(records);
+                        model.removeRecord(records);
                     };
                 }
                 (function (btns) {
@@ -297,8 +297,9 @@ define(function(require, exports) {
                 model.saveRecord(record);
             };
             viewlisteners[config.getEvent('view', 'WINDOW_SHOW')] = function (win, record) {
-                console.info('select editing record after edit window show.');
-                view.selectRow(record.store.indexOf(record));
+                if (record) {
+                    view.selectRow(record.store.indexOf(record));
+                }
             };
             viewlisteners[config.getEvent('view', 'SAVE_RECORD_OF_ROWEDITOR')] = function () {
                 model.saveRecord();

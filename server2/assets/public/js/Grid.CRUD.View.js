@@ -295,6 +295,7 @@ define(function (require, exports) {
                     },
                     show: function () {
                         //显示
+                        beginFieldString = serializeForm(formPanel.getForm().getEl());
                         that.fireEvent(eventConfig.WINDOW_SHOW, win, record);
                     },
                     activate: function () {
@@ -346,8 +347,8 @@ define(function (require, exports) {
                     //如果有记录就将记录加载进窗口
                     if (record) {
                         formPanel.getForm().loadRecord(record);
-                        beginFieldString = serializeForm(formPanel.getForm().getEl());
                     }
+                    beginFieldString = serializeForm(formPanel.getForm().getEl());
                 };
                 return win;
             }

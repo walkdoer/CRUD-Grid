@@ -1,45 +1,25 @@
 'use strict';
-var db = require('./common/db');
-var url = require('url');
+var db = require('./common/db'),
+    util = require('./common/util');
 
-function isArray(a) {
-    if (Object.prototype.toString.call(a).indexOf('Array') > 0) {
-        return true;
-    }
-    return false;
-}
-
-function result(succsss, msg, data) {
-    var result = {
-        success: succsss,
-        msg: msg
-    };
-    if(isArray(data)) {
-        //是数组，不需要转化
-        result.data = data;
-    } else if (!!data) {
-        //不是数组，需要变成数组
-        result.data = [data];
-    }
-    return result;
-}
-exports.read = function(req, res, next) {
+db.bind('todo');
+exports.read = function (req, res, next) {
     console.log('read');
     db.todo.findItems({}, {
         sort: {
             id: 1,
             finished: 1
         }
-    }, function(err, rows) {
-        if(err) {
+    }, function (err, rows) {
+        if (err) {
             return next(err);
         }
-        res.write(JSON.stringify(result(true, '加载成功', rows)));
+        res.write(JSON.stringify(util.result(true, '加载成功', rows)));
         res.end();
     });
 };
 
-exports.new = function(req, res, next) {
+exports.new = function (req, res, next) {
     console.log('newController');
     var data,
         title;
@@ -50,28 +30,28 @@ exports.new = function(req, res, next) {
         return next(e);
     }
     title = title.trim();
-    if(!title) {
-        res.write(JSON.stringify(result(false, '添加失败')));
+    if (!title) {
+        res.write(JSON.stringify(util.result(false, '添加失败')));
         res.end();
         return;
     }
     db.todo.save({
         title: title,
         post_date: new Date()
-    }, function(err, row) {
-        if(err) {
+    }, function (err, row) {
+        if (err) {
             return next(err);
         }
-        res.write(JSON.stringify(result(true, '添加成功', row)));
+        res.write(JSON.stringify(util.result(true, '添加成功', row)));
         res.end();
     });
 };
 
-exports.view = function(req, res, next) {
+exports.view = function (req, res, next) {
     console.log('viewController');
 };
 
-exports.edit = function(req, res, next) {
+exports.edit = function (req, res, next) {
     var data = req.params.data;
     var id = data._id;
     console.log(id);
@@ -84,21 +64,21 @@ exports.edit = function(req, res, next) {
         }
     }, {
         raw: true
-    }, function (err, row) {
+    }, function  (err, row) {
         if (err) {
             console.log(err);
             return next(err);
         }
-        res.write(JSON.stringify(result(true, '编辑成功', data)));
+        res.write(JSON.stringify(util.result(true, '编辑成功', data)));
         res.end();
     });
 };
 
-exports.save = function(req, res, next) {
+exports.save = function (req, res, next) {
     var id = req.params.id;
     var title = req.body.title || '';
     title = title.trim();
-    if(!title) {
+    if (!title) {
         return res.render('error.html', {
             message: '标题是必须的'
         });
@@ -107,34 +87,34 @@ exports.save = function(req, res, next) {
         $set: {
             title: title
         }
-    }, function(err, result) {
+    }, function (err, res) {
         console.log('########' + err);
-        if(err) {
+        if (err) {
             return next(err);
         }
-        res.write(JSON.stringify(result(true, '编辑成功', result)));
+        res.write(JSON.stringify(util.result(true, '编辑成功', res)));
         res.end();
     });
 };
 
-exports.delete = function(req, res, next) {
+exports.delete = function (req, res, next) {
     var id = req.params.data;
     if (!id) {
-        res.write(JSON.stringify(result(false, '删除失败')));
+        res.write(JSON.stringify(util.result(false, '删除失败')));
         res.end();
         return;
     }
     console.log(id, id.length);
-    db.todo.removeById(db.ObjectID.createFromHexString(id), function(err) {
-        if(err) {
+    db.todo.removeById(db.ObjectID.createFromHexString(id), function (err) {
+        if (err) {
             return next(err);
         }
-        res.write(JSON.stringify(result(true, '删除成功')));
+        res.write(JSON.stringify(util.result(true, '删除成功')));
         res.end();
     });
 };
 
-exports.finish = function(req, res, next) {
+exports.finish = function (req, res, next) {
     var finished = req.query.status === 'yes' ? 1 : 0;
     var id = req.params.id;
     db.todo.update({
@@ -143,11 +123,11 @@ exports.finish = function(req, res, next) {
         $set: {
             finished: finished
         }
-    }, function(err, result) {
-        if(err) {
+    }, function (err, res) {
+        if (err) {
             return next(err);
         }
-        res.write(JSON.stringify(result(true, '改变状态成功', result)));
+        res.write(JSON.stringify(util.result(true, '改变状态成功', res)));
         res.end();
     });
 };

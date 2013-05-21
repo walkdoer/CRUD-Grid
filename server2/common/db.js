@@ -12,7 +12,7 @@ var mongoskin = require('mongoskin'),
 		// body...
 	};
 
-db.bind('todo');
-db.todo.ensureIndex({finished: 1}, noop);
+//db.bind('todo');
+//db.todo.ensureIndex({finished: 1}, noop);
 
 module.exports = db;
