@@ -111,6 +111,9 @@ define(function (require, exports) {
     exports.isEmpty = function (a) {
         return a === undefined || a === null || a === '';
     };
+    exports.FIELD_TYPE_SIZE = {
+        'boolean': 17
+    };
     exports.ALL_NOT_EDITABLE = 0;
     exports.ADD_EDITABLE = 1;
     exports.EDIT_EDITABLE = 2;

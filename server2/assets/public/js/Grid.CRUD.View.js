@@ -155,19 +155,22 @@ define(function (require, exports) {
                     isCreate = true,//是否创建为创建记录
                     editMode, //编辑模式
                     saveBtnId = conf.id + ':btn:save',
+                    idPrefix = '',
                     cancelBtnId = conf.id + ':btn:cancel',
                     defaultValues = {},
                     beginFieldString;
                 if (record) {
                     isCreate = false;
+                    idPrefix = conf.id + ':window:edit:field:';
                     editMode = _.EDIT_EDITABLE;//编辑框可编辑
                 } else {
+                    idPrefix = conf.id + ':window:add:field:';
                     editMode = _.ADD_EDITABLE;//添加框可编辑
                 }
                 //创建formpanel的字段
                 var fieldConfig = conf.fields, fields = [];
                 for (var i = 0; i < fieldConfig.length; i++) {
-                    var item = _.cloneObject(fieldConfig[i], ['mStore', 'mLocalData']);
+                    var item = _.cloneObject(fieldConfig[i], ['mStore', 'mLocalData', 'store']);
                     if (!_.isEmpty(item.defaultValue)) {
                         defaultValues[item.dataIndex] = item.defaultValue;
                     }
@@ -179,21 +182,16 @@ define(function (require, exports) {
                             if (_.isEmpty(orgnFldItem.listeners)) {
                                 orgnFldItem.listeners = {};
                             }
+
                             if (orgnFldItem.type === 'enum') {
-                                var mode = '';
-                                if (orgnFldItem.mLocalData) {
-                                    mode = 'local';
-                                } else if (orgnFldItem.mStore) {
-                                    mode = 'remote';
-                                }
                                 fieldConfItem = {
-                                    id: conf.id + orgnFldItem.id + Math.round(Math.random() * 10000),
+                                    id: idPrefix + orgnFldItem.id + ':' + Math.round(Math.random() * 10000),
                                     fieldLabel: orgnFldItem.fieldLabel,
-                                    store: orgnFldItem.mLocalData || orgnFldItem.mStore, //direct array data
+                                    store: orgnFldItem.store, //direct array data
                                     typeAhead: true,
                                     triggerAction: 'all',
                                     width: orgnFldItem.width,
-                                    mode: mode,
+                                    mode: orgnFldItem.mMode,
                                     emptyText: orgnFldItem.emptyText,
                                     valueField: orgnFldItem.valueField || orgnFldItem.dataIndex,
                                     displayField: orgnFldItem.displayField === undefined ? 'displayText'
@@ -203,7 +201,7 @@ define(function (require, exports) {
                                                                                     : orgnFldItem.valueNotFoundText,
                                     forceSelection: true,
                                     dataIndex: orgnFldItem.dataIndex,
-                                    name: orgnFldItem.dataIndex,
+                                    name: orgnFldItem.id,
                                     selectOnFocus: true,
                                     allowBlank: false,
                                     listeners: {
@@ -214,7 +212,7 @@ define(function (require, exports) {
                                 };
                             } else {
                                 fieldConfItem = _.except(orgnFldItem, ['type', 'editable', 'mEditMode']);
-                                fieldConfItem.id = conf.id + fieldConfItem.id + Math.round(Math.random() * 10000);
+                                fieldConfItem.id = idPrefix + fieldConfItem.id + Math.round(Math.random() * 10000);
                                 fieldConfItem.name = orgnFldItem.dataIndex;
                             }
                             var orgnEventHandler = fieldConfItem.listeners[LISTENERS_TYPE[orgnFldItem.type]];

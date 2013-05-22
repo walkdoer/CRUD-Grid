@@ -35,8 +35,14 @@ exports.new = function (req, res, next) {
         res.end();
         return;
     }
+    if (!data.type_id) {
+        res.write(JSON.stringify(util.result(false, '添加失败, 没有选择类型')));
+        res.end();
+        return;
+    }
     db.todo.save({
         title: title,
+        type_id: data.type_id,
         post_date: new Date()
     }, function (err, row) {
         if (err) {

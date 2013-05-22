@@ -42,6 +42,7 @@ define(function(require, exports) {
         },
         //文件类型
         FIELD_TYPE = _.FIELD_TYPE,
+        FIELD_TYPE_SIZE = _.FIELD_TYPE_SIZE,
         FONT_WIDTH = _.FONT_WIDTH,
         WIN_HEIGHT_SPAN = _.WIN_HEIGHT_SPAN,
         ALL_EDITABLE = _.ALL_EDITABLE,
@@ -207,7 +208,7 @@ define(function(require, exports) {
             if (key.indexOf(wantKey) === 0) {
                 var realkey = key.split('_');
                 result[realkey[realkey.length - 1]] = idOfComponent[key];
-                console.log(realkey[realkey.length - 1], idOfComponent[key]);
+                //console.log(realkey[realkey.length - 1], idOfComponent[key]);
             }
         }
         return result;
@@ -311,7 +312,10 @@ define(function(require, exports) {
                 'header',
                 'renderer'
             ]);
-            config.id = ':window:field:' + config.id;
+            if (config.type === 'enum') {
+                config.store = getStoreFromComboConfig(col);
+                config.mMode = getComboMode(col);
+            }
             config.fieldLabel = col.fieldLabel || col.header;
             config.enableKeyEvents = true;
             return config;
@@ -357,8 +361,11 @@ define(function(require, exports) {
      * @param  {Object/Boolean} editable 
      * @return {Int}            0 全部可编辑， 1 添加窗口编辑，2 编辑窗口可编辑 
      */
-    function getEditMode(editMode) {
+    function getEditMode(editMode, hidden) {
         var flag = 0;
+        if (hidden) {
+            return ALL_NOT_EDITABLE;
+        }
         if (_.isObject(editMode)) {
             //添加窗口可编辑
             if (_.isEmpty(editMode.add) || editMode.add) {
@@ -541,10 +548,10 @@ define(function(require, exports) {
         };
     }
 
-    function getSelectPos(column) {
+    function getSelectPos(column, param) {
         var selectPos = 0, pos; 
         if (column.mStore) {
-                column.mLocalData.each(function (record) {
+            column.mLocalData.each(function (record) {
                 if (parseInt(record.get(column.id), 10) === param[column.id]) {
                     selectPos = pos;
                 }
@@ -552,6 +559,10 @@ define(function(require, exports) {
             });
         }
         return selectPos;
+    }
+
+    function getSearchBarItemWidth(type) {
+        return FIELD_TYPE_SIZE[type];
     }
     /**
      * 获取搜索栏目配置
@@ -579,7 +590,7 @@ define(function(require, exports) {
                     var mode = getComboMode(column);
                     var selectPos = 0, param = get('store', 'params');
                     if (param) {
-                        selectPos = getSelectPos(column);
+                        selectPos = getSelectPos(column, param);
                     }
                     var store = getStoreFromComboConfig(column);
                     field = new FIELD_TYPE[column.type]({
@@ -588,7 +599,7 @@ define(function(require, exports) {
                         store: store,
                         typeAhead: true,
                         triggerAction: 'all',
-                        width: column.width,
+                        width: getSearchBarItemWidth(column.type) || column.width,
                         mode: mode,
                         emptyText: column.emptyText,
                         valueField: column.valueField || column.dataIndex || column.id,
@@ -623,7 +634,7 @@ define(function(require, exports) {
                         'dataIndex'
                     ]);
                     conf.id = id;
-                    console.dir(conf);
+                    conf.width = getSearchBarItemWidth(column.type) || column.width;
                     field = new FIELD_TYPE[column.type](conf);
                 }
                 items.push(field, ' ');
@@ -682,8 +693,7 @@ define(function(require, exports) {
             if (typeof col.editable !== 'boolean') {
                 col.editable = true;
             }
-            col.mEditMode = getEditMode(col.mEdit);
-            console.log('字段' + col.id + '的编辑模式为' + col.mEditMode);
+            col.mEditMode = getEditMode(col.mEdit, col.hidden);
         }
         if (!conf.store) {
             conf.store = {};

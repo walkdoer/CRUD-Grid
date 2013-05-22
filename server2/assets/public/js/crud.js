@@ -143,7 +143,8 @@ define(function(require, exports) {
                 mUrl: Portal.data.proxyUrl('crud:category:read'),
                 displayField: 'name',
                 valueField: '_id',
-                hidden: true
+                mEdit: true,
+                dataIndex: 'type_id'
             }]
         });
         return gridPanel;
