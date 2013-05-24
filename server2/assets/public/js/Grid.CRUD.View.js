@@ -600,11 +600,6 @@ define(function (require, exports) {
                         viewready: function () {
                             that.loadResMask = new Ext.LoadMask(mainPanel.body.dom, {msg: "等一下下，加载资源中"});
                             that.fireEvent(eventConfig.VIEW_READY, that);
-                            //如果有什么东西需要预加载，则会弹出这个loadMask
-                            if (that.config.mode === 'remote') {
-                                that.fireEvent(eventConfig.LOAD_DATA);
-                            }
-
                         },
                         render: function () {
                             if (searchBar && tbar && !tbar.used) {

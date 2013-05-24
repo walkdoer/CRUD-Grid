@@ -293,31 +293,8 @@ define(function(require, exports) {
                     }
                 })(buttonsBarConfig.items);
             }
-            viewlisteners[config.getEvent('view', 'VIEW_READY')] = function (view) {
-                //如果需要预加载，则显示LoadMask ，提示加载状态
-                if (config.get('needPreloadRes')) {
-                    view.showLoadResMask();
-                }
-                that.loadResource(function () {
-                    view.hideLoadResMask();
-                });
-            };
-            viewlisteners[config.getEvent('view', 'SAVE_RECORD')] = function (record, fieldValues) {
-                model.saveRecord(record);
-            };
-            viewlisteners[config.getEvent('view', 'WINDOW_SHOW')] = function (win, record) {
-                if (record) {
-                    view.selectRow(record.store.indexOf(record));
-                }
-            };
-            viewlisteners[config.getEvent('view', 'SAVE_RECORD_OF_ROWEDITOR')] = function () {
-                model.saveRecord();
-            };
-            viewlisteners[config.getEvent('view', 'UPDATE_RECORD')] = function (record, fieldValues) {
-                console.log('UPDATE_RECORD');
-                model.updateRecord(record, fieldValues);
-            };
-            viewlisteners[config.getEvent('view', 'LOAD_DATA')] = function () {
+            
+            function loadData() {
                 var store = model.getStore(),
                     paramsNew,
                     params = config.get('store', 'params');
@@ -333,6 +310,33 @@ define(function(require, exports) {
                 }
                 setBaseParam(store, paramsNew);
                 store.load();
+            }
+            viewlisteners[config.getEvent('view', 'VIEW_READY')] = function (view) {
+                //如果需要预加载，则显示LoadMask ，提示加载状态
+                if (config.get('needPreloadRes')) {
+                    view.showLoadResMask();
+                    that.loadResource(function () {
+                        view.hideLoadResMask();
+                        loadData();
+                    });
+                } else {
+                    loadData();
+                }
+            };
+            viewlisteners[config.getEvent('view', 'SAVE_RECORD')] = function (record, fieldValues) {
+                model.saveRecord(record);
+            };
+            viewlisteners[config.getEvent('view', 'WINDOW_SHOW')] = function (win, record) {
+                if (record) {
+                    view.selectRow(record.store.indexOf(record));
+                }
+            };
+            viewlisteners[config.getEvent('view', 'SAVE_RECORD_OF_ROWEDITOR')] = function () {
+                model.saveRecord();
+            };
+            viewlisteners[config.getEvent('view', 'UPDATE_RECORD')] = function (record, fieldValues) {
+                console.log('UPDATE_RECORD');
+                model.updateRecord(record, fieldValues);
             };
             viewlisteners[config.getEvent('view', 'SEARCH')] = function (params) {
                 console.log('======搜索....========');
@@ -405,23 +409,24 @@ define(function(require, exports) {
                 return view.getWindowField(id, winType);
             };
             this.loadResource = function (callback) {
-                var stores = config.getStore(),
-                    loadedCount = 0,
-                    storeLen = stores.length;
-                for (var i = 0; i < storeLen; i++) {
-                    (function (store) {
-                        store = stores[i];
-                        store.load({
-                            callback: function () {
-                                loadedCount++;
-                                if (loadedCount === storeLen) {
-                                    if (callback) {
-                                        callback();
-                                    }
-                                }  
-                            }
-                        });
-                    })(stores[i]);
+                var columns = config.get('origin').mColumns;
+                var loadedCount = 0, storeLen = 0;
+                for (var i = 0; i < columns.length; i++) {
+                    if (columns[i].store) {
+                        storeLen++;
+                        (function (store) {
+                            store.load({
+                                callback: function () {
+                                    loadedCount++;
+                                    if (loadedCount === storeLen) {
+                                        if (callback) {
+                                            callback();
+                                        }
+                                    }  
+                                }
+                            });
+                        })(columns[i].store);
+                    }
                 }
             };
         }

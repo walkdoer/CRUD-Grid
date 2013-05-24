@@ -327,7 +327,7 @@ define(function(require, exports) {
                 'renderer'
             ]);
             if (config.type === 'enum') {
-                config.store = getStoreFromComboConfig(col);
+                config.store = col.store;
                 config.mMode = getComboMode(col);
             }
             config.fieldLabel = col.fieldLabel || col.header;
@@ -344,8 +344,8 @@ define(function(require, exports) {
         }
     }
 
-    function getStoreFromComboConfig(combo) {
-        console.log("##getStoreFromComboConfig##");
+    function createStoreFromComboConfig(combo) {
+        console.log("##createStoreFromComboConfig##");
         var store;
         if (combo.mStore) {
             store = combo.mStore;
@@ -454,7 +454,7 @@ define(function(require, exports) {
                 if (col.mEditMode !== ALL_NOT_EDITABLE) {
                     if (col.type === 'enum') {
                         var mode = getComboMode(col);
-                        store = getStoreFromComboConfig(col);
+                        
                         newCol.editor = new FIELD_TYPE[col.type]({
                             fieldLabel: col.fieldLabel,
                             store: store, //direct array data
@@ -490,20 +490,19 @@ define(function(require, exports) {
                 }
             }
             if (col.type === 'enum') {
-                store = getStoreFromComboConfig(col);
-                store.load({
-                    callback: function (records) {
-                        console.log('data loaded');
-                    }
-                });
                 newCol.renderer = (function (col) {
                     return function (value) {
                         if (value) {//传入的value不为空
                             console.log('render ennum value = ' + value + ' ' + col.valueField);
-                            store.query();
+                            var result = col.store.query(col.valueField, value);
+                            if (result) {
+                                return result.get(0).get(col.displayField);
+                            } else {
+                                return '空值';
+                            }
                         }
                         else {//传入的value为空
-                            return '无';
+                            return '空值';
                         }
                     };
                 })(col);
@@ -614,11 +613,10 @@ define(function(require, exports) {
                     if (param) {
                         selectPos = getSelectPos(column, param);
                     }
-                    var store = getStoreFromComboConfig(column);
                     field = new FIELD_TYPE[column.type]({
                         id: id,
                         fieldLabel: column.fieldLabel,
-                        store: store,
+                        store: column.store,
                         typeAhead: true,
                         triggerAction: 'all',
                         width: getSearchBarItemWidth(column.type) || column.width,
@@ -728,6 +726,16 @@ define(function(require, exports) {
         storeConfig.root = storeConfig.root || 'data';
         storeConfig.fields = getStoreField(columns);
     }
+
+    function createStoreForColumns(columns) {
+        var col;
+        for (var i = 0; i < columns.length; i++) {
+            col = columns[i];
+            if (col.type === 'enum') {
+                col.store = createStoreFromComboConfig(col);
+            }
+        }
+    }
     /**
      * 初始化用户配置
      * @param  {object} config 用户配置
@@ -740,7 +748,8 @@ define(function(require, exports) {
         initArgs(config);
         var tbarConfig,
             mode, //组件加载数据的模式
-            columns = config.mColumns;
+            columns = config.mColumns,
+            specialColumns = getColumnsConfig(columns);//转化为Ext理解的Columns
         //组件加载数据的模式
         if (!!config.data) {
             mode = 'local';
@@ -748,6 +757,8 @@ define(function(require, exports) {
             mode = 'remote';
         }
         checkConfig(config);
+        //为需要Store的字段创建Store
+        createStoreForColumns(columns);
         /* 将用户的配置转化为系统可用的配置 */
         tbarConfig = getTbarConfig(config);
         set('mode', mode);
@@ -799,7 +810,7 @@ define(function(require, exports) {
             });
         }*/
         /************ Grid *************/
-        set('grid', 'columns', getColumnsConfig(columns));
+        set('grid', 'columns', specialColumns);
         /************ Window *************/
         /************ Store *************/
         /************ Toolbar *************/
