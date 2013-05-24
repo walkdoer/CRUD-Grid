@@ -59,7 +59,7 @@ define(function(require, exports) {
         });
      *****************************************************/
     Ext.ux.CRUD = Ext.extend(Ext.Panel, {
-        initComponent: function() {
+        initComponent: function () {
             var that = this,
                 reloadMethod; //store.reload() or store.loadData()
             if (!!that.data) {
@@ -293,6 +293,15 @@ define(function(require, exports) {
                     }
                 })(buttonsBarConfig.items);
             }
+            viewlisteners[config.getEvent('view', 'VIEW_READY')] = function (view) {
+                //如果需要预加载，则显示LoadMask ，提示加载状态
+                if (config.get('needPreloadRes')) {
+                    view.showLoadResMask();
+                }
+                that.loadResource(function () {
+                    view.hideLoadResMask();
+                });
+            };
             viewlisteners[config.getEvent('view', 'SAVE_RECORD')] = function (record, fieldValues) {
                 model.saveRecord(record);
             };
@@ -345,6 +354,7 @@ define(function(require, exports) {
                 columns: config.get('grid', 'columns'),
                 noClicksToEdit: config.get('grid', 'noClicksToEdit')
             });
+
             
             this.add(grid);
 
@@ -393,6 +403,26 @@ define(function(require, exports) {
             };
             this.getWindowField = function (id, winType) {
                 return view.getWindowField(id, winType);
+            };
+            this.loadResource = function (callback) {
+                var stores = config.getStore(),
+                    loadedCount = 0,
+                    storeLen = stores.length;
+                for (var i = 0; i < storeLen; i++) {
+                    (function (store) {
+                        store = stores[i];
+                        store.load({
+                            callback: function () {
+                                loadedCount++;
+                                if (loadedCount === storeLen) {
+                                    if (callback) {
+                                        callback();
+                                    }
+                                }  
+                            }
+                        });
+                    })(stores[i]);
+                }
             };
         }
     });

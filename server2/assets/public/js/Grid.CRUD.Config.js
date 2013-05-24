@@ -37,7 +37,8 @@ define(function(require, exports) {
                 UPDATE_RECORD: 'event_view_update_record',
                 LOAD_DATA: 'event_view_load_data',
                 SAVE_RECORD_OF_ROWEDITOR: 'event_view_save_record_of_roweditor',
-                WINDOW_SHOW: 'event_view_window_show'
+                WINDOW_SHOW: 'event_view_window_show',
+                VIEW_READY: 'event_view_view_ready'
             }
         },
         //文件类型
@@ -174,6 +175,19 @@ define(function(require, exports) {
         return maxWidth + WIN_SPAN + getFieldLabelWidth(columnsConfig);
     }
 
+    /**
+     * 是否预加载数据
+     * @return {Boolean} 
+     */
+    function isNeedPreLoadRes(columns) {
+        var col;
+        for (var i = 0; i < columns.length; i++) {
+            col = columns[i];
+            if (col.store || col.mUrl || col.mStore) {
+                return true;
+            }
+        };
+    }
 
 
     /**
@@ -418,7 +432,7 @@ define(function(require, exports) {
      * @return {Array}         处理过后的用户配置
      */
     function getColumnsConfig(columns) {
-        var columnConfig = [], col, newCol;
+        var columnConfig = [], col, newCol, store;
         for (var i = 0; i < columns.length; i++) {
             col = columns[i];
             if (!col.id) { continue; }
@@ -435,11 +449,12 @@ define(function(require, exports) {
                 if (!FIELD_TYPE[col.type]) {
                     throw '[Grid.CRUD.Config] function getColumnsConfig () : ' + col.id + '字段的类型' + col.type + '不合法.';//出错
                 }
-                var store = getStoreFromComboConfig(col);
+                
                 
                 if (col.mEditMode !== ALL_NOT_EDITABLE) {
                     if (col.type === 'enum') {
                         var mode = getComboMode(col);
+                        store = getStoreFromComboConfig(col);
                         newCol.editor = new FIELD_TYPE[col.type]({
                             fieldLabel: col.fieldLabel,
                             store: store, //direct array data
@@ -463,18 +478,6 @@ define(function(require, exports) {
                                 }
                             }
                         });
-                        newCol.renderer = (function () {
-                            var combo = newCol.editor;
-                            return function (value) {
-                                if (value) {//传入的value不为空
-                                    var record = combo.findRecord(combo.valueField, value);
-                                    return record ? record.get(combo.displayField) : value;
-                                }
-                                else {//传入的value为空
-                                    return '无';
-                                }
-                            };
-                        })();
                     } else {
                         if (_.isEmpty(newCol.disabled)) { newCol.disabled = false; }
                         newCol.editor = new FIELD_TYPE[col.type]({
@@ -485,6 +488,25 @@ define(function(require, exports) {
                         });
                     }
                 }
+            }
+            if (col.type === 'enum') {
+                store = getStoreFromComboConfig(col);
+                store.load({
+                    callback: function (records) {
+                        console.log('data loaded');
+                    }
+                });
+                newCol.renderer = (function (col) {
+                    return function (value) {
+                        if (value) {//传入的value不为空
+                            console.log('render ennum value = ' + value + ' ' + col.valueField);
+                            store.query();
+                        }
+                        else {//传入的value为空
+                            return '无';
+                        }
+                    };
+                })(col);
             }
             newCol.dataIndex = newCol.id;
             columnConfig.push(newCol);
@@ -729,6 +751,7 @@ define(function(require, exports) {
         /* 将用户的配置转化为系统可用的配置 */
         tbarConfig = getTbarConfig(config);
         set('mode', mode);
+        set('needPreloadRes', isNeedPreLoadRes(columns));
         set('editable', config.mEditable),
         set('origin', originConfig);
         set('store', 'params', config.store.mInitParams);

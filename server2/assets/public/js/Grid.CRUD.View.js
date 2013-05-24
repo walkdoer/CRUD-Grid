@@ -99,6 +99,8 @@ define(function (require, exports) {
                 buttonsBarConfig = conf.buttonsBarConfig;
             //将config保存到对像中
             this.config = conf;
+            //加载资源的loadMask
+            this.loadResMask = null;
             var getDataMethod = conf.singleSelect ? 'getSelected' : 'getSelections';
 
             function getEditWindow(recordId) {
@@ -282,6 +284,7 @@ define(function (require, exports) {
                     labelSeparator: ':',
                     items: fields
                 });
+
                 conf.items = formPanel;
                 conf.modal = !conf.mMultiWin;
                 conf.listeners = {
@@ -595,9 +598,13 @@ define(function (require, exports) {
                             : null,
                     listeners: {
                         viewready: function () {
+                            that.loadResMask = new Ext.LoadMask(mainPanel.body.dom, {msg: "等一下下，加载资源中"});
+                            that.fireEvent(eventConfig.VIEW_READY, that);
+                            //如果有什么东西需要预加载，则会弹出这个loadMask
                             if (that.config.mode === 'remote') {
                                 that.fireEvent(eventConfig.LOAD_DATA);
                             }
+
                         },
                         render: function () {
                             if (searchBar && tbar && !tbar.used) {
@@ -621,6 +628,7 @@ define(function (require, exports) {
                     mainPanelConfig.plugins = [editor];
                 }
                 mainPanel = new Ext.grid.GridPanel(mainPanelConfig);
+
                 return mainPanel;
             };
             console.info('创建view对象');
@@ -633,6 +641,12 @@ define(function (require, exports) {
         },
         alert: function (msg) {
             Ext.Msg.alert('警告', msg);
+        },
+        showLoadResMask: function () {
+            this.loadResMask.show();
+        },
+        hideLoadResMask: function () {
+            this.loadResMask.hide();
         }
     });
     return View;
