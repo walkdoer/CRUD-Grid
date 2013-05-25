@@ -97,6 +97,8 @@ define(function (require, exports) {
                 editWindowsIDs = {},
                 //事件
                 eventConfig = conf.event,
+                //最后一个编辑窗口的位置
+                lastEditWinPos = null,
                 //顶部工具栏的配置方式
                 buttonsBarConfig = conf.buttonsBarConfig;
             //将config保存到对像中
@@ -116,7 +118,17 @@ define(function (require, exports) {
             }
 
             function removeEditWindow(recordId) {
+                var noWinExist = false;//所有窗口已经关闭
                 delete editWindowsIDs[recordId];
+                for (var win in editWindowsIDs) {
+                    if (editWindowsIDs.hasOwnProperty(win)) {
+                        noWinExist = true;
+                    }
+                }
+                if (noWinExist) {
+                    console.log('恢复位置');
+                    lastEditWinPos = null;
+                }
             }
             function setEditWindow(recordId, winId) {
                 editWindowsIDs[recordId] = winId;
@@ -289,7 +301,7 @@ define(function (require, exports) {
 
                 conf.items = formPanel;
                 conf.modal = !conf.mMultiWin;
-                conf.listeners = {
+                conf.listeners = _.extend({}, conf.listeners, {
                     destroy: function () {
                         console.log('window ' + conf.id + 'destroy');
                         if (record) {
@@ -307,7 +319,7 @@ define(function (require, exports) {
                     },
                     afterrender: function () {
                         var form = formPanel.getForm();
-                        form.setValues(defaultValues);    
+                        form.setValues(defaultValues);
                     },
                     beforeclose: function () {
                         if (win.fromSaveBtn) { return; }
@@ -328,7 +340,7 @@ define(function (require, exports) {
                             return true;
                         }
                     }
-                };
+                });
                 //创建窗口
                 win = new Ext.Window(conf);
                 win.getFormPanel = function () {
@@ -484,6 +496,14 @@ define(function (require, exports) {
                     editWindow.show();
                     editWindow.loadRecord(record);
                     setEditWindow(record.id, editWindow.id);
+                    if (lastEditWinPos) {
+                        var left = lastEditWinPos[0] + 50,
+                            top = lastEditWinPos[1] + 50;
+                        console.log('new Position:' + left + ' ' + top);
+                        editWindow.setPosition(left, top);
+                    }
+                    lastEditWinPos = editWindow.getPosition();
+                    console.dir(lastEditWinPos);
                     return editWindow;
                 };
                 /**
