@@ -24,15 +24,17 @@ define(function (require, exports) {
     var _ = require('crud/public/js/Grid.CRUD.Common.js');
     //监听
     var LISTENERS_TYPE = {
-        'string'   : 'keyup',
-        'bigString': 'keyup',
-        'int'      : 'keyup',
-        'float'    : 'keyup',
-        'time'     : 'select',
-        'date'     : 'change',
-        'enum'     : 'change',      
-        'boolean'  : 'check'
-    }, FIELD_TYPE = _.FIELD_TYPE;
+            'string'   : 'keyup',
+            'bigString': 'keyup',
+            'int'      : 'keyup',
+            'float'    : 'keyup',
+            'time'     : 'select',
+            'date'     : 'change',
+            'enum'     : 'change',      
+            'boolean'  : 'check'
+        },
+        FIELD_TYPE = _.FIELD_TYPE,
+        BTN_CHECK_EXCEPT = ['sysadd', 'sysrefresh'];
     
     function serializeForm(form) {
         var fElements = form.elements || (document.forms[form] || Ext.getDom(form)).elements, 
@@ -368,7 +370,12 @@ define(function (require, exports) {
                     var record = this.rsm[getDataMethod]();
                     var needEnable;
                     for (var btnName in idOfBtnTbar) {
+                        //添加按钮和刷新按钮不需要改变状态
+                        if (BTN_CHECK_EXCEPT.indexOf(btnName) >= 0) {
+                            continue;
+                        }
                         var btn = Ext.getCmp(idOfBtnTbar[btnName]);
+                        console.log(btnName);
                         if (!btn) { continue; }
                         needEnable = btn.initialConfig.whenEnable;
                         if (!needEnable) { needEnable = defaultNeedEnable; }
