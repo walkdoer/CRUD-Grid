@@ -496,7 +496,12 @@ define(function(require, exports) {
                             console.log('render ennum value = ' + value + ' ' + col.valueField);
                             var result = col.store.query(col.valueField, value);
                             if (result) {
-                                return result.get(0).get(col.displayField);
+                                var record = result.get(0);
+                                if (record) {
+                                    return result.get(0).get(col.displayField);
+                                } else {
+                                    return '<font color="red">无效值</font>';
+                                }
                             } else {
                                 return '空值';
                             }
