@@ -191,12 +191,15 @@ define(function(require, exports) {
                     }
                     view.changeAllBtnStatu();
                 }
-            }, errorHandler = {
+            },
+            //服务器发生错误，或者超时
+            errorHandler = {
                 create: function (options, record, msg) {
                     view.error(msg);
                     console.log(options, record, msg);
                 },
                 delete: function (options, record, msg) {
+                    model.getStore().remove(record);
                     handleErrorOrException(options, record, msg);
                 },
                 update: function (options, record, msg) {
@@ -208,9 +211,12 @@ define(function(require, exports) {
                     view.error(msg);
                     console.log(options, record, msg);
                 }
-            }, failHandler = {
+            }, 
+            //服务器返回success false
+            failHandler = {
                 create: function (options, record, msg) {
                     view.error(msg);
+                    model.getStore().remove(record);
                     console.log(options, record, msg);
                 },
                 delete: function (options, record, msg) {
