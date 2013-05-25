@@ -464,6 +464,13 @@ define(function (require, exports) {
                     this.rsm.selectRow(rowIndex);
                 };
 
+                this.selectRecord = function (records) {
+                    if (!_.isArray(records)) {
+                        records = [records];
+                    }
+                    this.rsm.selectRecords(records);
+                };
+
                 /**
                  * 打开编辑窗口
                  * @param  {Ext.data.Record} record 记录

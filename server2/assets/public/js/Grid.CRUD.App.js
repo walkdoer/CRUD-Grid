@@ -159,6 +159,7 @@ define(function(require, exports) {
                         view.closeWindow('add');
                     }
                     view.changeAllBtnStatu();
+                    view.selectRecord(rs);
                 },
                 delete: function (store, action, result, res, rs) {
                     var nextIndex,
