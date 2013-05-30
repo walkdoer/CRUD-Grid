@@ -356,6 +356,10 @@ define(function(require, exports) {
                 setBaseParam(model.getStore(), paramsNew);
                 model.getStore().load();
             };
+            viewlisteners[config.getEvent('view', 'FILTER')] = function (params) {
+                console.log('======筛选....========');
+                model.getStore().filter(params);
+            };
             console.log("####bindListener处理函数");
             view.on(viewlisteners);
             //初始化界面

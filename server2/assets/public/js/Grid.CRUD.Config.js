@@ -9,23 +9,7 @@ define(function(require, exports) {
     /**
      * Config模块
      */
-    var defaultConfig = {
-            buttons: {
-                refresh: {
-                    text: '刷新'
-                },
-                create: {
-                    text: '添加'
-                },
-                delete: {
-                    text: '删除'
-                },
-                update: {
-                    text: '修改'
-                }
-            }
-        },
-        ID = null,
+    var ID = null,
         systemName = '',
         defaultButtons = null,
         tbarButtons = null,
@@ -38,12 +22,14 @@ define(function(require, exports) {
                 LOAD_DATA: 'event_view_load_data',
                 SAVE_RECORD_OF_ROWEDITOR: 'event_view_save_record_of_roweditor',
                 WINDOW_SHOW: 'event_view_window_show',
-                VIEW_READY: 'event_view_view_ready'
+                VIEW_READY: 'event_view_view_ready',
+                FILTER: 'event_view_filter_record'
             }
         },
+        CRUD_FIELD_ALL = _.CRUD_FIELD_ALL,
         //文件类型
         FIELD_TYPE = _.FIELD_TYPE,
-        FIELD_TYPE_SIZE = _.FIELD_TYPE_SIZE,
+        SEARCH_FIELD_WIDTH = _.SEARCH_FIELD_WIDTH,
         FONT_WIDTH = _.FONT_WIDTH,
         WIN_HEIGHT_SPAN = _.WIN_HEIGHT_SPAN,
         ALL_EDITABLE = _.ALL_EDITABLE,
@@ -373,7 +359,7 @@ define(function(require, exports) {
                         var ComboRecord = Ext.data.Record.create(fields),
                             data = {},
                             rd;
-                        data[valueName] = '';
+                        data[valueName] = CRUD_FIELD_ALL;
                         data[textName] = '全部';
                         rd = new ComboRecord(data);
                         
@@ -617,7 +603,7 @@ define(function(require, exports) {
     }
 
     function getSearchBarItemWidth(type) {
-        return FIELD_TYPE_SIZE[type];
+        return SEARCH_FIELD_WIDTH[type];
     }
     /**
      * 获取搜索栏目配置
@@ -677,6 +663,24 @@ define(function(require, exports) {
                                 console.log(record, index);
                             }
                         }
+                    });
+                } else if (column.type === 'boolean') {
+                    var valueField = column.dataIndex || column.id;
+                    field = new Ext.form.ComboBox({
+                        id: id,
+                        store: new Ext.data.ArrayStore({
+                            fields: [valueField, 'displayText'],
+                            data: [['', '全部'], [true, 'true'], [false, 'false']]
+                        }),
+                        typeAhead: true,
+                        triggerAction: 'all',
+                        width: getSearchBarItemWidth(column.type) || column.width,
+                        mode: 'local',
+                        valueField: valueField,
+                        displayField: 'displayText',
+                        valueNotFoundText: '没有该选项',
+                        selectOnFocus: true,
+                        allowBlank: true //搜索框的字段为非必填，可以为空
                     });
                 } else {
                     //排除掉不需要的属性

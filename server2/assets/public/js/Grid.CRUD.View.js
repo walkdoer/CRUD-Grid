@@ -34,6 +34,7 @@ define(function (require, exports) {
             'boolean'  : 'check'
         },
         FIELD_TYPE = _.FIELD_TYPE,
+        CRUD_FIELD_ALL = _.CRUD_FIELD_ALL,
         BTN_CHECK_EXCEPT = ['sysadd', 'sysrefresh'];
     
     function serializeForm(form) {
@@ -610,12 +611,52 @@ define(function (require, exports) {
                                     fieldName = item.id.substring(item.id.lastIndexOf(':') + 1);
                                     if (fieldName) {
                                         params[fieldName] = Ext.getCmp(item.id).getValue();
+                                        if (params[fieldName] === CRUD_FIELD_ALL) {
+                                            params[fieldName] = '';
+                                        }
                                     }
                                 }
                             }
                             that.fireEvent(eventConfig.SEARCH, params);
                         }
                     });
+                    searchBarConfig.items.push({
+                        text: '筛选',
+                        icon: Portal.util.icon('table_lightning.png'),
+                        handler: function () {
+                            var item, key, fieldName, filterParams = [], param, value;
+                            for (key in searchBarConfig.items) {
+                                param = {};
+                                item = searchBarConfig.items[key];
+                                if (item.id) {
+                                    fieldName = item.id.substring(item.id.lastIndexOf(':') + 1);
+                                    if (fieldName) {
+                                        value = Ext.getCmp(item.id).getValue();
+                                        if (value === CRUD_FIELD_ALL) {
+                                            value = '';
+                                        }
+                                        if (!_.isEmpty(value)) {
+                                            param = {
+                                                property: fieldName,
+                                                value: value,
+                                                anyMatch: true,
+                                                caseSensitive: true
+                                            };
+                                            filterParams.push(param);
+                                        }
+                                        
+                                    }
+                                }
+                            }
+                            console.log('filter', filterParams);
+                            if (filterParams.length > 0) {
+                                that.fireEvent(eventConfig.FILTER, filterParams);
+                            } else {
+                                console.log("没有需要过滤的数据");
+                            }
+                        }
+                    })
+
                     searchBar = new Ext.Toolbar(searchBarConfig);
                 }
                 mainPanelConfig = {
