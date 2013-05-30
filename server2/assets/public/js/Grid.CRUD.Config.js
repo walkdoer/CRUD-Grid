@@ -665,7 +665,7 @@ define(function(require, exports) {
                         forceSelection: true,
                         selectOnFocus: true,
                         blankText : '请选择',
-                        allowBlank: column.allowBlank,
+                        allowBlank: true, //搜索框的字段为非必填，可以为空
                         listeners: {
                             afterrender: function (combo) {
                                 var record = combo.store.getAt(selectPos);
@@ -690,6 +690,7 @@ define(function(require, exports) {
                     ]);
                     conf.id = id;
                     conf.width = getSearchBarItemWidth(column.type) || column.width;
+                    conf.allowBlank = true;//搜索框的字段为非必填，可以为空
                     field = new FIELD_TYPE[column.type](conf);
                 }
                 items.push(field, ' ');
