@@ -421,18 +421,18 @@ define(function(require, exports) {
                 for (var i = 0; i < columns.length; i++) {
                     if (columns[i].store) {
                         storeLen++;
-                        (function (store) {
-                            store.load({
-                                callback: function () {
-                                    loadedCount++;
-                                    if (loadedCount === storeLen) {
-                                        if (callback) {
-                                            callback();
-                                        }
-                                    }  
-                                }
-                            });
-                        })(columns[i].store);
+                        (function (store, editStore) {
+                            var loadedCheck = function () {
+                                loadedCount++;
+                                if (loadedCount === storeLen * 2) {
+                                    if (callback) {
+                                        callback();
+                                    }
+                                }  
+                            };
+                            store.load({callback: loadedCheck});
+                            editStore.load({callback: loadedCheck});
+                        })(columns[i].store, columns[i].editStore);
                     }
                 }
             };

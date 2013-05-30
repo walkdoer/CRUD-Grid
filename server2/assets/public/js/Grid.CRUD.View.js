@@ -118,11 +118,11 @@ define(function (require, exports) {
             }
 
             function removeEditWindow(recordId) {
-                var noWinExist = false;//所有窗口已经关闭
+                var noWinExist = true;//所有窗口已经关闭
                 delete editWindowsIDs[recordId];
                 for (var win in editWindowsIDs) {
                     if (editWindowsIDs.hasOwnProperty(win)) {
-                        noWinExist = true;
+                        noWinExist = false;
                     }
                 }
                 if (noWinExist) {
@@ -186,7 +186,7 @@ define(function (require, exports) {
                 //创建formpanel的字段
                 var fieldConfig = conf.fields, fields = [];
                 for (var i = 0; i < fieldConfig.length; i++) {
-                    var item = _.cloneObject(fieldConfig[i], ['mStore', 'mLocalData', 'store']);
+                    var item = _.cloneObject(fieldConfig[i], ['mStore', 'mLocalData', 'store', 'editStore']);
                     if (!_.isEmpty(item.defaultValue)) {
                         defaultValues[item.dataIndex] = item.defaultValue;
                     }
@@ -203,7 +203,7 @@ define(function (require, exports) {
                                 fieldConfItem = {
                                     id: idPrefix + orgnFldItem.id + ':' + Math.round(Math.random() * 10000),
                                     fieldLabel: orgnFldItem.fieldLabel,
-                                    store: orgnFldItem.store, //direct array data
+                                    store: orgnFldItem.editStore, //direct array data
                                     typeAhead: true,
                                     triggerAction: 'all',
                                     width: orgnFldItem.width,
@@ -216,6 +216,7 @@ define(function (require, exports) {
                                     valueNotFoundText: orgnFldItem.valueNotFoundText === undefined ? '没有该选项'
                                                                                     : orgnFldItem.valueNotFoundText,
                                     forceSelection: true,
+                                    blankText : '请选择',
                                     dataIndex: orgnFldItem.dataIndex,
                                     name: orgnFldItem.id,
                                     selectOnFocus: true,

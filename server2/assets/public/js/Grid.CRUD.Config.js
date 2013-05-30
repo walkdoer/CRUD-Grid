@@ -327,7 +327,7 @@ define(function(require, exports) {
                 'renderer'
             ]);
             if (config.type === 'enum') {
-                config.store = col.store;
+                config.store = col.editStore;
                 config.mMode = getComboMode(col);
             }
             config.fieldLabel = col.fieldLabel || col.header;
@@ -343,23 +343,51 @@ define(function(require, exports) {
             return 'remote';
         }
     }
-
-    function createStoreFromComboConfig(combo) {
+    /**
+     * 根据Combo的字段配置来生成Store
+     * @param  {Object} combo         字段配置
+     * @param  {Boolean} useToEdit    是否用于编辑或者添加
+     * @return {Ext.data.JsonStore}      
+     */
+    function createStoreFromComboConfig(combo, useToEdit) {
         console.log("##createStoreFromComboConfig##");
         var store;
         if (combo.mStore) {
             store = combo.mStore;
         } else if (combo.mUrl) {
-            store = new Ext.data.JsonStore({ 
-                url: combo.mUrl,
-                fields: [{
-                    name: combo.valueField || combo.id, //优先使用用户自定义的valueField
-                    mapping: combo.valueField || combo.dataIndex
+            var valueName = combo.valueField || combo.id,//优先使用用户自定义的valueField
+                valueMappig = combo.valueField || combo.dataIndex,
+                textName = combo.displayField || 'displayText',//优先使用用户自定义的displayField
+                textMapping = combo.displayField || 'displayText',
+                fields = [{
+                    name: valueName, 
+                    mapping: valueMappig
                 }, {
-                    name: combo.displayField || 'displayText',//优先使用用户自定义的displayField
-                    mapping: combo.displayField || 'displayText'
+                    name: textName,
+                    mapping: textMapping
                 }],
-                root: 'data'
+                listeners;
+            if (!useToEdit) {
+                listeners = {
+                    load: function () {
+                        var ComboRecord = Ext.data.Record.create(fields),
+                            data = {},
+                            rd;
+                        data[valueName] = '';
+                        data[textName] = '全部';
+                        rd = new ComboRecord(data);
+                        
+                        store.insert(0, rd);
+                    }
+                };
+            }
+            store = new Ext.data.JsonStore({
+                autoSave: false,
+                //autoDestroy: true,
+                url: combo.mUrl,
+                fields: fields,
+                root: 'data',
+                listeners: listeners
             });
         } else if (combo.mLocalData) {
             store = new Ext.data.ArrayStore({
@@ -471,6 +499,7 @@ define(function(require, exports) {
                                                                             : col.valueNotFoundText,
                             forceSelection: true,
                             selectOnFocus: true,
+                            blankText : '请选择',
                             allowBlank: col.allowBlank,
                             listeners: {
                                 select: function (combo, record, index) {
@@ -635,6 +664,7 @@ define(function(require, exports) {
                                                                         : column.valueNotFoundText,
                         forceSelection: true,
                         selectOnFocus: true,
+                        blankText : '请选择',
                         allowBlank: column.allowBlank,
                         listeners: {
                             afterrender: function (combo) {
@@ -738,6 +768,7 @@ define(function(require, exports) {
             col = columns[i];
             if (col.type === 'enum') {
                 col.store = createStoreFromComboConfig(col);
+                col.editStore = createStoreFromComboConfig(col, true);
             }
         }
     }
