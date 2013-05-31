@@ -294,6 +294,7 @@ define(function(require, exports) {
                         var btn = btns[i];
                         if (btns[i].belongToUser) {
                             viewlisteners[btn.id] = function (btn, event, records, data, process) {
+                                //调用用户自定义处理函数
                                 process(that, records, data);
                             };
                         }

@@ -452,8 +452,9 @@ define(function(require, exports) {
         for (var i = 0; i < columns.length; i++) {
             col = columns[i];
             if (!col.id) { continue; }
-            //没有header就是不进行处理
-            if (!col.header) { col.header = col.id || col.dataIndex; }
+            //没有header就是不进行处理 
+            if (!col.header) { col.header = col.fieldLabel || col.id || col.dataIndex; }
+            if (!col.fieldLabel) {col.fieldLabel = col.header; }
             //没有配置dataIndex，就默认用id为dataIndex
             if (!col.dataIndex) {
                 col.dataIndex = col.id;

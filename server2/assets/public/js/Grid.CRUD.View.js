@@ -400,6 +400,14 @@ define(function (require, exports) {
                         } else {
                             btn.disable();
                         }
+                        if (btn.mNega) {
+                            var value = record.getValue(btn.mFieldName);
+                            if (value === true) {
+                                btn.setText('正');
+                            } else if (value === false) {
+                                btn.setText('负');
+                            }
+                        }
                     }
                 };
 
@@ -656,7 +664,7 @@ define(function (require, exports) {
                             }
                             that.fireEvent(eventConfig.FILTER, filterParams);
                         }
-                    })
+                    });
 
                     searchBar = new Ext.Toolbar(searchBarConfig);
                 }

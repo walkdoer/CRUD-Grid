@@ -77,6 +77,7 @@ define(function(require, exports) {
                     }
                 },
                 text: '完成',
+                mNega: '未',
                 iconCls: 'icon-edit',
                 handler: function (app) {
                     //改变记录的状态
@@ -97,7 +98,6 @@ define(function(require, exports) {
                 //editable 字段可编辑时可以不配置editable
                 //因为默认就是可编辑的
                 //editable: true, 
-                header: '标题',
                 fieldLabel: '标题',
                 sortable: true,
                 allowBlank: false,
@@ -106,7 +106,6 @@ define(function(require, exports) {
             }, {
                 id: 'finished',
                 type: 'boolean',
-                fieldLabel: '完成',
                 header: '完成',
                 sortable: true,
                 width: 60,
@@ -114,7 +113,6 @@ define(function(require, exports) {
             }, {
                 id: 'post_date',
                 header   : '更新日期',
-                fieldLabel: '更新日期',
                 mEdit: {
                     edit: false
                 },
@@ -128,7 +126,6 @@ define(function(require, exports) {
             }, {
                 id: 'type',
                 header: '任务类型',
-                fieldLabel: '类型',
                 type: 'enum',
                 /*displayField: 'id', //store的时候需要定义这两个
                 valueField: 'name'*/
