@@ -66,16 +66,16 @@ define(function(require, exports) {
                 property: ['title', 'finished', 'type']
             },
             mButtons: ['add', 'delete', 'refresh', {
-                id: 'finishe',
+                id: 'finished',
                 disabled: true,
-                whenEnable: function (record) {
+                /*whenEnable: function (record) {
                     //演示该如何改变按钮状态
                     if (record && !record.get('finished')) {
                         return true;
                     } else {
                         return false;
                     }
-                },
+                },*/
                 text: '完成',
                 mNega: '未',
                 iconCls: 'icon-edit',

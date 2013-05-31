@@ -401,11 +401,11 @@ define(function (require, exports) {
                             btn.disable();
                         }
                         if (btn.mNega) {
-                            var value = record.getValue(btn.mFieldName);
+                            var value = record.get(btn.initialConfig.mMapfieldName);
                             if (value === true) {
-                                btn.setText('正');
+                                btn.setText(btn.mNega + btn.initialConfig.text);
                             } else if (value === false) {
-                                btn.setText('负');
+                                btn.setText(btn.initialConfig.text);
                             }
                         }
                     }

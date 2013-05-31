@@ -451,7 +451,9 @@ define(function(require, exports) {
         var columnConfig = [], col, newCol, store;
         for (var i = 0; i < columns.length; i++) {
             col = columns[i];
-            if (!col.id) { continue; }
+            if (!col.id) { 
+                throw '[Grid.CRUD.Config] 有配置项缺乏Id，请检查';
+            }
             //没有header就是不进行处理 
             if (!col.header) { col.header = col.fieldLabel || col.id || col.dataIndex; }
             if (!col.fieldLabel) {col.fieldLabel = col.header; }
@@ -581,6 +583,7 @@ define(function(require, exports) {
                 }
             } else {
                 if (btn.id) {
+                    btn.mMapfieldName = btn.id;//按钮对应的字段
                     btn.id = getId('grid', 'tbar', 'buttons', 'btn', btn.id);
                 }
                 btn.belongToUser = true;
