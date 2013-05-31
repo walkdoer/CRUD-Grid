@@ -33,8 +33,10 @@ define(function (require, exports) {
             'enum'     : 'change',      
             'boolean'  : 'check'
         },
-        FIELD_TYPE = _.FIELD_TYPE,
-        CRUD_FIELD_ALL = _.CRUD_FIELD_ALL,
+        FIELD_TYPE       = _.FIELD_TYPE,
+        FALSE            = _.FALSE,
+        TRUE             = _.TRUE,
+        CRUD_FIELD_ALL   = _.CRUD_FIELD_ALL,
         BTN_CHECK_EXCEPT = ['sysadd', 'sysrefresh'];
     
     function serializeForm(form) {
@@ -634,6 +636,10 @@ define(function (require, exports) {
                                         value = Ext.getCmp(item.id).getValue();
                                         if (value === CRUD_FIELD_ALL) {
                                             value = '';
+                                        } else if (value === TRUE) {
+                                            value = true;
+                                        } else if (value === FALSE) {
+                                            value = false;
                                         }
                                         if (!_.isEmpty(value)) {
                                             param = {
@@ -648,12 +654,7 @@ define(function (require, exports) {
                                     }
                                 }
                             }
-                            console.log('filter', filterParams);
-                            if (filterParams.length > 0) {
-                                that.fireEvent(eventConfig.FILTER, filterParams);
-                            } else {
-                                console.log("没有需要过滤的数据");
-                            }
+                            that.fireEvent(eventConfig.FILTER, filterParams);
                         }
                     })
 

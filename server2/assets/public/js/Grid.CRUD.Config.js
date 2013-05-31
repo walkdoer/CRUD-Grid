@@ -37,6 +37,8 @@ define(function(require, exports) {
         EDIT_EDITABLE = _.EDIT_EDITABLE,
         ALL_NOT_EDITABLE = _.ALL_NOT_EDITABLE,
         WIN_SPAN = _.WIN_SPAN,
+        TRUE = _.TRUE,
+        FALSE = _.FALSE,
         originConfig, //未经过处理的原始用户的配置
         userConfig; //经过处理后的用户配置
     
@@ -670,7 +672,7 @@ define(function(require, exports) {
                         id: id,
                         store: new Ext.data.ArrayStore({
                             fields: [valueField, 'displayText'],
-                            data: [['', '全部'], [true, 'true'], [false, 'false']]
+                            data: [['', '全部'], [TRUE, 'true'], [FALSE, 'false']]
                         }),
                         typeAhead: true,
                         triggerAction: 'all',

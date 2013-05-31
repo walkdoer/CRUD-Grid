@@ -117,6 +117,8 @@ define(function (require, exports) {
     exports.CRUD_FIELD_ALL = 'crud_field_all_rsfx',
     exports.ALL_NOT_EDITABLE = 0;
     exports.ADD_EDITABLE = 1;
+    exports.TRUE = 'crud_true',
+    exports.FALSE = 'crud_false',
     exports.EDIT_EDITABLE = 2;
     exports.ALL_EDITABLE = 3;
     exports.except = except;
