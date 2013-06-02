@@ -384,7 +384,32 @@ define(function (require, exports) {
                  */
                 this.changeAllBtnStatu = function () {
                     var record = this.rsm[getDataMethod]();
-                    var needEnable;
+                    var needEnable,//改变按钮状态的函数，可以由用户配置，也可以是默认函数
+                        initCnf;//初始化配置
+                    /**
+                     * 改变按钮状态
+                     * @param {Ext.Button} btn   按钮
+                     * @param {Object}     conf  按钮配置
+                     */
+                    function setIcon(btn, conf, value) {
+                        if (value) {
+                            if (conf.mNegaIconCls) {
+                                btn.setIcon('');
+                                btn.setIconClass(conf.mNegaIconCls);
+                            } else if (conf.mNegaIcon) {
+                                btn.setIconClass('');
+                                btn.setIcon(conf.mNegaIcon);
+                            }
+                        } else {
+                            if (conf.iconCls) {
+                                btn.setIcon('');
+                                btn.setIconClass(conf.iconCls);
+                            } else if (conf.icon) {
+                                btn.setIconClass('');
+                                btn.setIcon(conf.icon);
+                            }
+                        }
+                    }
                     for (var btnName in idOfBtnTbar) {
                         //添加按钮和刷新按钮不需要改变状态
                         if (BTN_CHECK_EXCEPT.indexOf(btnName) >= 0) {
@@ -393,6 +418,7 @@ define(function (require, exports) {
                         var btn = Ext.getCmp(idOfBtnTbar[btnName]);
                         console.log(btnName);
                         if (!btn) { continue; }
+                        initCnf = btn.initialConfig;
                         needEnable = btn.initialConfig.whenEnable;
                         if (!needEnable) { needEnable = defaultNeedEnable; }
                         if (needEnable(record)) {
@@ -400,13 +426,14 @@ define(function (require, exports) {
                         } else {
                             btn.disable();
                         }
-                        if (btn.mNega) {
-                            var value = record.get(btn.initialConfig.mMapfieldName);
+                        if (initCnf.mNega) {
+                            var value = record.get(initCnf.mMapfieldName);
                             if (value === true) {
                                 btn.setText(btn.mNega + btn.initialConfig.text);
                             } else if (value === false) {
                                 btn.setText(btn.initialConfig.text);
                             }
+                            setIcon(btn, initCnf, value);
                         }
                     }
                 };
