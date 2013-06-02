@@ -51,10 +51,10 @@ define(function(require, exports) {
             store: {
                 idProperty: '_id'
             },
-            mEditor: {
+            /*mEditor: {
                 add: 'window', //添加的时候使用rowEditor
                 edit: 'window' //编辑的时候使用窗口
-            },
+            },*/
             search: {
                 property: ['title', 'finished', 'type']
             },

@@ -302,6 +302,21 @@ define(function(require, exports) {
             return field;
         });
     }
+
+    function getIdProperty(store, columns) {
+        var col, id, idReal;
+        idReal = store.idProperty;
+        for (var i = 0, len = columns.length; i < len; i++) {
+            col = columns[i];
+            if (col.dataIndex === idReal) {
+                id = col.id;
+            }
+        }
+        return {
+            id: id,
+            idReal: idReal
+        };
+    }
     /**
      * 通过filter从columns配置中提取配置项
      * @param  {Funtion} filter 过滤器
@@ -495,7 +510,7 @@ define(function(require, exports) {
                         
                         newCol.editor = new FIELD_TYPE[col.type]({
                             fieldLabel: col.fieldLabel,
-                            store: store, //direct array data
+                            store: col.editStore, //direct array data
                             typeAhead: true,
                             triggerAction: 'all',
                             width: col.width,
@@ -810,21 +825,22 @@ define(function(require, exports) {
         //初始化config
         userConfig = {};
         originConfig = config;
+        checkConfig(config);
         //初始化系统参数
-        initArgs(config);
         var tbarConfig,
             mode, //组件加载数据的模式
             columns = config.mColumns,
-            specialColumns = getColumnsConfig(columns);//转化为Ext理解的Columns
+            specialColumns;//Ext理解的Columns
+        initArgs(config);
+        createStoreForColumns(columns);
+        specialColumns = getColumnsConfig(columns);
         //组件加载数据的模式
         if (!!config.data) {
             mode = 'local';
         } else if (!!config.api) {
             mode = 'remote';
         }
-        checkConfig(config);
         //为需要Store的字段创建Store
-        createStoreForColumns(columns);
         /* 将用户的配置转化为系统可用的配置 */
         tbarConfig = getTbarConfig(config);
         set('mode', mode);
@@ -851,6 +867,7 @@ define(function(require, exports) {
             editWinWidth = getWindowWidth(columns, 'edit');
         var singleSelect = config.checkbox ? false : true;
         set('grid', 'page', config.page);
+        set('grid', 'idProperty', getIdProperty(config.store, columns));
         set('grid', 'singleSelect', singleSelect);
         set('grid', 'addEditWay', getAddEditWay(config.mEditable, config.mEditor));
         set('event', 'view', EVENT.VIEW);

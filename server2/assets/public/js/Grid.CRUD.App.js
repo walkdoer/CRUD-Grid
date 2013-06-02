@@ -107,7 +107,7 @@ define(function(require, exports) {
                 pageToolbarConfig: pageConfig,
                 initialParam: config.get('store', 'params'),
                 searchBarConfig: searchBarConfig,
-                idProperty: config.get('store', 'reader', 'idProperty'),// id字段
+                idProperty: config.get('grid', 'idProperty'),// id字段
                 defaultData: config.get('store', 'defaultData'),//Grid数据的默认构造
                 window: config.get('window'),//窗口的配置
                 mode: config.get('mode'),// local 或者 remote

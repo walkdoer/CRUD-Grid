@@ -483,7 +483,8 @@ define(function (require, exports) {
                         listeners: {
                             canceledit: function (rowEditor, press) {
                                 // 取消时候需要的操作
-                                if (!rowEditor.record.get(that.config.idProperty)) {
+                                if (!rowEditor.record.get(that.config.idProperty.id) &&
+                                     !rowEditor.record.get(that.config.idProperty.idReal)) {
                                     store.removeAt(0);
                                 }
                             },
