@@ -127,6 +127,10 @@ define(function (require, exports) {
             store.on('beforewrite', function (store, action, record, arg) {
                 console.log("record:", record);
             });
+
+            store.on('load', function (store, records, options) {
+                that.fireEvent('success', store, 'read', records, options);
+            });
             
             this.getStore = function () {
                 return store;
@@ -147,6 +151,14 @@ define(function (require, exports) {
                 store.save();
             }
         },
+        /**
+         * 更新记录
+         * @param  {Array[Ext.data.Recored]} records     [需要修改的记录]
+         * @param  {Object}                  fieldValues [修改的键值对]
+         * @param  {Object}                  params      [传回给服务器的额外参数]
+         * @param  {Function}                success     [成功回调]
+         * @param  {Function}                error       [失败回调]
+         */
         updateRecord: function (records, fieldValues, params, success, error) {
             var fieldName, rec, store = this.getStore(), key;
             if (!_.isArray(records)) {

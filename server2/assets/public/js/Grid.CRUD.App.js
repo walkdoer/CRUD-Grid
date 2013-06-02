@@ -6,8 +6,7 @@
 define(function(require, exports) {
     /**
      * 组件的Controller层，协调Model层和View层
-     *
-     */
+    */
     'use strict';
 
     var _ = require('crud/public/js/Grid.CRUD.Common.js');
@@ -38,26 +37,7 @@ define(function(require, exports) {
         }
         return c;
     }; // eo function clone*/
-    /*************************************************
-     *----------------使用实例
-      //Ext.uc.CRUD的使用方法如下：
-        var gridPanel = new Ext.ux.CRUD({
-            id: 'System:Module:SubModule',
-            title: 'MyCrudPanel' ,
-            //.... 其他配置项依旧类似于原生Grid配置
-            //自定义的配置项
-            api: {
-                update: 'path/to/update',
-                delete: 'path/to/delete',
-                create: 'path/to/create',
-                read: 'path/to/read'
-            },
-            toolbar: {
-                searchBar: false,//不需要搜索框
-                buttons: ['create', 'delete', 'refresh']
-            }
-        });
-     *****************************************************/
+    
     Ext.ux.CRUD = Ext.extend(Ext.Panel, {
         initComponent: function () {
             var that = this,
@@ -160,6 +140,7 @@ define(function(require, exports) {
                     }
                     view.changeAllBtnStatu();
                     view.selectRecord(rs);
+                    that.fireEvent(config.getEvent('app', 'CREATE_SUCCESS'), rs);
                 },
                 delete: function (store, action, result, res, rs) {
                     var nextIndex,
@@ -178,6 +159,7 @@ define(function(require, exports) {
                     }
                     view.selectRow(nextIndex);
                     view.changeAllBtnStatu();
+                    that.fireEvent(config.getEvent('app', 'DELETE_SUCCESS'), rs, index);
                 },
                 update: function (store, action, result, res, rs) {
                     //todo
@@ -190,6 +172,10 @@ define(function(require, exports) {
                         view.closeWindow('edit', recordId);
                     }
                     view.changeAllBtnStatu();
+                    that.fireEvent(config.getEvent('app', 'UPDATE_SUCCESS'), rs);
+                },
+                read: function (store, action, rs, options) {
+                    that.fireEvent(config.getEvent('app', 'LOAD_SUCCESS'), rs);   
                 }
             },
             //服务器发生错误，或者超时
@@ -197,19 +183,23 @@ define(function(require, exports) {
                 create: function (options, record, msg) {
                     view.error(msg);
                     console.log(options, record, msg);
+                    that.fireEvent(config.getEvent('app', 'CREATE_ERROR'));
                 },
                 delete: function (options, record, msg) {
                     model.getStore().remove(record);
                     handleErrorOrException(options, record, msg);
+                    that.fireEvent(config.getEvent('app', 'DELETE_ERROR'));
                 },
                 update: function (options, record, msg) {
                     record.reject();
                     view.error(msg);
                     console.log(options, record, msg);
+                    that.fireEvent(config.getEvent('app', 'UPDATE_ERROR'));
                 },
                 read: function (options, record, msg) {
                     view.error(msg);
                     console.log(options, record, msg);
+                    that.fireEvent(config.getEvent('app', 'LOAD_ERROR'));
                 }
             }, 
             //服务器返回success false
@@ -289,6 +279,7 @@ define(function(require, exports) {
                         model.removeRecord(records);
                     };
                 }
+                //处理View层工具栏按钮的点击处理函数
                 (function (btns) {
                     for (var i = 0, len = btns.length; i < len; i++) {
                         var btn = btns[i];
@@ -324,6 +315,8 @@ define(function(require, exports) {
                 if (config.get('needPreloadRes')) {
                     view.showLoadResMask();
                     that.loadResource(function () {
+                        //向外部抛出界面Ready的消息
+                        that.fireEvent(config.getEvent('app', 'VIEW_READY'));
                         view.hideLoadResMask();
                         loadData();
                     });
@@ -355,7 +348,12 @@ define(function(require, exports) {
                     paramsNew = params;
                 }
                 setBaseParam(model.getStore(), paramsNew);
-                model.getStore().load();
+                model.getStore().load({
+                    callback: function (records, options, success) {
+                        //向外部抛出搜索成功的消息
+                        that.fireEvent(config.getEvent('app', 'SEARCH_SUCCESS'), records, options, success);
+                    }
+                });
             };
             viewlisteners[config.getEvent('view', 'FILTER')] = function (params) {
                 console.log('======筛选....========');
@@ -445,6 +443,3 @@ define(function(require, exports) {
     });
 });
 
-/**
- * 日志的规范 [组建名][组件类型][日志内容][备注]
- */

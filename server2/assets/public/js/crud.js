@@ -58,18 +58,18 @@ define(function(require, exports) {
             search: {
                 property: ['title', 'finished', 'type']
             },
-            mButtons: ['add', 'delete', 'refresh', {
+            mButtons: ['refresh', 'add', 'delete',  {
                 id: 'finished',
                 disabled: true,
                 iconCls: 'icon-edit',
-                mNega: '未',
                 mNegaIcon: Portal.util.icon('page_white_delete.png'),
                 text: '完成',
+                mNegaText: '取消完成',
                 handler: function (app) {
-                    //改变记录的状态
-                    app.updateRecord({
-                        finished: true
-                    });
+                    app.updateRecord({finished: true});
+                },
+                mNegaHandler: function (app) {
+                    app.updateRecord({finished: false});
                 }
             }],
             mColumns: [{
@@ -113,7 +113,21 @@ define(function(require, exports) {
                 valueField: '_id',
                 mEdit: true,
                 dataIndex: 'type_id'
-            }]
+            }],
+            listeners: {
+                crud_view_ready: function () {
+                    console.log('界面准备好了');
+                },
+                crud_delete_success: function () {
+                    console.log('删除成功');
+                },
+                crud_delete_error: function () {
+                    console.log('删除失败');
+                },
+                crud_load_success: function () {
+                    console.log('加载成功');
+                }
+            }
         });
         return gridPanel;
     }

@@ -156,6 +156,17 @@ define(function (require, exports) {
                             that.fireEvent(btn.id, btn, event, records, data, userHandler);
                         };
                     })(button);
+                    //处理按钮的反状态处理函数
+                    if (button.mNegaHandler) {
+                        button.mNegaHandler = (function (button) {
+                            var userHandler = button.mNegaHandler;//用户的处理函数
+                            return function (btn, event) {
+                                var records, data;
+                                records = that.rsm[getDataMethod]();
+                                that.fireEvent(btn.id, btn, event, records, data, userHandler);
+                            };
+                        })(button);
+                    }
                 } else {
                     console.info('初始化系统自带按钮' + button.id);
                     button.handler = function (btn, event) {
@@ -384,6 +395,9 @@ define(function (require, exports) {
                  */
                 this.changeAllBtnStatu = function () {
                     var record = this.rsm[getDataMethod]();
+                    if (!record) {
+                        return;
+                    }
                     var needEnable,//改变按钮状态的函数，可以由用户配置，也可以是默认函数
                         initCnf;//初始化配置
                     /**
@@ -416,22 +430,29 @@ define(function (require, exports) {
                             continue;
                         }
                         var btn = Ext.getCmp(idOfBtnTbar[btnName]);
-                        console.log(btnName);
                         if (!btn) { continue; }
                         initCnf = btn.initialConfig;
                         needEnable = btn.initialConfig.whenEnable;
-                        if (!needEnable) { needEnable = defaultNeedEnable; }
+                        if (!needEnable) {
+                            //使用默认处理函数来判断状态改变
+                            needEnable = defaultNeedEnable;
+                        }
                         if (needEnable(record)) {
                             btn.enable();
                         } else {
                             btn.disable();
                         }
-                        if (initCnf.mNega) {
+                        //如果用户有设置按钮的反状态
+                        if (initCnf.mNegaText) {
                             var value = record.get(initCnf.mMapfieldName);
                             if (value === true) {
-                                btn.setText(btn.mNega + btn.initialConfig.text);
+                                //修改按钮文字
+                                btn.setText(initCnf.mNegaText);
+                                //修改按钮的点击处理函数
+                                btn.setHandler(initCnf.mNegaHandler);
                             } else if (value === false) {
-                                btn.setText(btn.initialConfig.text);
+                                btn.setText(initCnf.text);
+                                btn.setHandler(initCnf.handler);
                             }
                             setIcon(btn, initCnf, value);
                         }

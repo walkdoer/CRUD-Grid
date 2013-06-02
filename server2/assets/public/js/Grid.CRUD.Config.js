@@ -14,6 +14,9 @@ define(function(require, exports) {
         defaultButtons = null,
         tbarButtons = null,
         EVENT = {
+            /**------------=====事件的规范=====-----------
+             *  event_模块_组件_[组件嵌套]__动作
+             */
             VIEW: {
                 ROW_DBL_CLICK: 'event_view_row_double_click',
                 SAVE_RECORD: 'event_view_save_record',
@@ -22,8 +25,24 @@ define(function(require, exports) {
                 LOAD_DATA: 'event_view_load_data',
                 SAVE_RECORD_OF_ROWEDITOR: 'event_view_save_record_of_roweditor',
                 WINDOW_SHOW: 'event_view_window_show',
-                VIEW_READY: 'event_view_view_ready',
+                VIEW_READY: 'event_view_ready',
                 FILTER: 'event_view_filter_record'
+            },
+            //向外部提供的消息，所以格式与内部消息不同
+            APP: {
+                CREATE_SUCCESS : 'crud_create_success',
+                CREATE_ERROR   : 'crud_create_error',
+                SEARCH_SUCCESS : 'crud_search_success',
+                SEARCH_ERROR   : 'crud_search_error',
+                FILTER_SUCCESS : 'crud_filter_success',
+                FILTER_ERROR   : 'crud_filter_error',
+                DELETE_SUCCESS : 'crud_delete_success',
+                DELETE_ERROR   : 'crud_delete_error',
+                UPDATE_SUCCESS : 'crud_update_success',
+                UPDATE_ERROR   : 'crud_update_error',
+                LOAD_SUCCESS   : 'crud_load_success',
+                LOAD_ERROR     : 'crud_load_error',
+                VIEW_READY     : 'crud_view_ready'
             }
         },
         CRUD_FIELD_ALL = _.CRUD_FIELD_ALL,
@@ -174,7 +193,7 @@ define(function(require, exports) {
             if (col.store || col.mUrl || col.mStore) {
                 return true;
             }
-        };
+        }
     }
 
 
@@ -835,6 +854,7 @@ define(function(require, exports) {
         set('grid', 'singleSelect', singleSelect);
         set('grid', 'addEditWay', getAddEditWay(config.mEditable, config.mEditor));
         set('event', 'view', EVENT.VIEW);
+        set('event', 'app', EVENT.APP);
         set('window', 'edit', 'fields', getWindowFieldConfig(columns));
         set('window', 'edit', 'id', config.id + ':window:edit');
         set('window', 'edit', 'height', editWinHeight);
