@@ -80,8 +80,10 @@ define(function (require, exports) {
         }
         return false;
     }
-    function needClicksToEdit(conf) {
-        if (conf.edit === 'window') {
+    function noNeedClicksToEdit(conf) {
+        var adW = conf.addEditWay,
+            needEdit = conf.needEdit;
+        if (adW.edit === 'window' || needEdit === false) {
             return true;
         }
         return false;
@@ -478,7 +480,7 @@ define(function (require, exports) {
                         saveText: '保存',
                         cancelText: '取消',
                         clicksToEdit: 2,
-                        noClicksToEdit: needClicksToEdit(that.config.addEditWay),
+                        noClicksToEdit: noNeedClicksToEdit(that.config),
                         errorSummary: false,
                         listeners: {
                             canceledit: function (rowEditor, press) {
@@ -747,7 +749,9 @@ define(function (require, exports) {
                         rowdblclick: function (grid, rowIndex) {
                             console.log('Gird [Ext.grid.GridPanel]: Row double click');
                             var record = that.rsm.getSelected();
-                            that.fireEvent(eventConfig.ROW_DBL_CLICK, record);
+                            if (that.config.needEdit) {
+                                that.fireEvent(eventConfig.ROW_DBL_CLICK, record);
+                            }
                         }
                     }
                 };

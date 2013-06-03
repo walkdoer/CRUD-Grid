@@ -76,13 +76,13 @@ define(function(require, exports) {
                 id: 'id',
                 type: 'string',
                 mEdit: false,
-                dataIndex: '_id',
-                editable: false
+                dataIndex: '_id'
             }, {
                 id: 'title',
                 type: 'string',
                 fieldLabel: '标题',
                 sortable: true,
+                mEdit: false,
                 allowBlank: false,
                 width: 180,
                 dataIndex: 'title'
@@ -91,12 +91,14 @@ define(function(require, exports) {
                 type: 'boolean',
                 header: '完成',
                 sortable: true,
+                mEdit: false,
                 width: 60,
                 dataIndex: 'finished'
             }, {
                 id: 'post_date',
                 header   : '更新日期',
                 mEdit: {
+                    add: false,
                     edit: false
                 },
                 allowBlank: true,
@@ -111,7 +113,7 @@ define(function(require, exports) {
                 mUrl: Portal.data.proxyUrl('crud:category:read'),
                 displayField: 'name',
                 valueField: '_id',
-                mEdit: true,
+                mEdit: false,
                 dataIndex: 'type_id'
             }],
             listeners: {

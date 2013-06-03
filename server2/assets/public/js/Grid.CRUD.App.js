@@ -102,6 +102,8 @@ define(function(require, exports) {
             var lowerCaseParam = config.get('grid', 'tbar', 'search', 'lowerCaseParam');
             var view = new View({
                 event: config.get('event', 'view'), //View模块用到的事件
+                needAdd: config.get('sysAddEditMode', 'add'), //是否需要添加， 字段为不允许添加时不出现添加框，和添加按钮
+                needEdit: config.get('sysAddEditMode', 'edit'),//是否需要编辑,字段全部不允许编辑的时候，不允许编辑
                 buttonsBarConfig: buttonsBarConfig,//顶部工具拦的配置
                 singleSelect: config.get('grid', 'singleSelect'),//checkbox
                 pageToolbarConfig: pageConfig,

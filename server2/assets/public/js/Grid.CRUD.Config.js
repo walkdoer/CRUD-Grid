@@ -183,7 +183,7 @@ define(function(require, exports) {
     }
 
     /**
-     * 是否预加载数据
+     * 是否需要预加载数据
      * @return {Boolean} 
      */
     function isNeedPreLoadRes(columns) {
@@ -330,10 +330,13 @@ define(function(require, exports) {
                 continue;
             }
             field = filter(col);
-            fields.push(field);
+            if (field) {
+                fields.push(field);
+            }
         }
         return fields;
     }
+
     function getWindowFieldConfig(columns) {
         /**
          * {
@@ -581,6 +584,36 @@ define(function(require, exports) {
         return defaultData;
     }
 
+    /**
+     * 是否需要编辑/添加功能，
+     * 如果所有字段都是不可编辑的，则取消编辑功能
+     * 如果所有字段都是不可添加的，则取消添加功能， 包括禁用添加按钮
+     * @param  {Array[Object]}   columns         字段配置
+     */
+    function getSystemAddEditMode(columns) {
+        var col, em = {
+            edit: false,
+            add : false
+        };
+        for (var i = 0; i < columns.length; i++) {
+            col = columns[i];
+            if (col.mEditable === ALL_EDITABLE) {
+                em.edit = true;
+                em.add  = true;
+                break;
+            }
+            if (col.mEditMode === ADD_EDITABLE) {
+                em.add = true;
+            }
+            if (col.mEditMode === EDIT_EDITABLE) {
+                em.edit = true;
+            }
+            if (em.add && em.edit) {
+                break;
+            }
+        }
+        return em;
+    }
     function getColumnById(id, columns) {
         var i = 0, length = columns.length;
         while (i < length) {
@@ -845,7 +878,8 @@ define(function(require, exports) {
         tbarConfig = getTbarConfig(config);
         set('mode', mode);
         set('needPreloadRes', isNeedPreLoadRes(columns));
-        set('editable', config.mEditable),
+        set('sysAddEditMode', getSystemAddEditMode(columns));
+        set('editable', config.mEditable);
         set('origin', originConfig);
         set('store', 'params', config.store.mInitParams);
         set('store', 'reader', config.store);
