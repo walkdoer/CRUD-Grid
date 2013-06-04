@@ -486,6 +486,9 @@ define(function(require, exports) {
      */
     function getColumnsConfig(columns) {
         var columnConfig = [], col, newCol, store;
+        if (!columns || columns.length === 0) {
+            throw '[Grid.CRUD.Config] 没有mColumns或者是mColumns为空数组，请检查';
+        }
         for (var i = 0; i < columns.length; i++) {
             col = columns[i];
             if (!col.id) { 

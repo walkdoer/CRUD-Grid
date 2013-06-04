@@ -25,7 +25,7 @@ define(function(require, exports) {
                 read: Portal.data.proxyUrl('crud:category:read')
             },
             store: {idProperty: '_id'},
-            search: {property: ['type']},
+            search: {property: ['name']},
             mButtons: ['add', 'delete', 'refresh'],
             mColumns: [{
                 id: 'id',

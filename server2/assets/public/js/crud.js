@@ -72,7 +72,7 @@ define(function(require, exports) {
                     app.updateRecord({finished: false});
                 }
             }],
-            mColumns: [{
+            mColumns: [/*{
                 id: 'id',
                 type: 'string',
                 mEdit: false,
@@ -115,7 +115,7 @@ define(function(require, exports) {
                 valueField: '_id',
                 mEdit: false,
                 dataIndex: 'type_id'
-            }],
+            }*/],
             listeners: {
                 crud_view_ready: function () {
                     console.log('界面准备好了');
