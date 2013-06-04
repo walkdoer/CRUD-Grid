@@ -540,7 +540,7 @@ define(function(require, exports) {
                         newCol.editor = new FIELD_TYPE[col.type]({
                             name: newCol.dataIndex,
                             allowBlank: newCol.allowBlank,
-                            disabled: newCol.disabled || (col.mEditMode === ADD_EDITABLE),
+                            disabled: newCol.disabled || (col.mEditMode === ADD_EDITABLE || col.mEditMode === ALL_NOT_EDITABLE),
                             hidden: newCol.hidden
                         });
                     }

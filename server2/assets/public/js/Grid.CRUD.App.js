@@ -261,7 +261,11 @@ define(function(require, exports) {
                         //添加
                         console.log('添加');
                         if (config.get('grid', 'addEditWay', 'add') === 'rowEditor') {
-                            view.addRecord();
+                            if (config.get('sysAddEditMode', 'add')) {
+                                view.addRecord();
+                            } else {
+                                throw '[Grid.CRUD.App] 由于所有字段不需要添加，无法添加记录,请查看字段配置.';
+                            }
                         } else {
                             view.openAddWindow();
                         }

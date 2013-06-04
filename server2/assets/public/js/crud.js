@@ -99,7 +99,7 @@ define(function(require, exports) {
                 header   : '更新日期',
                 mEdit: {
                     add: false,
-                    edit: false
+                    edit: true
                 },
                 allowBlank: true,
                 type     : 'string',
