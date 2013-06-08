@@ -600,7 +600,7 @@ define(function(require, exports) {
         };
         for (var i = 0; i < columns.length; i++) {
             col = columns[i];
-            if (col.mEditable === ALL_EDITABLE) {
+            if (col.mEditMode === ALL_EDITABLE) {
                 em.edit = true;
                 em.add  = true;
                 break;

@@ -1,9 +1,11 @@
 define(function (require,exports) {
+    'use strict';
+    //Portal.loadCss('crud', 'roweditor.css');
     function onMenuClick(func) {
         return function (id, cls, title) {
             var mainPanel = Ext.getCmp('main-panel');
             var tab = mainPanel.getComponent('tab:' + id);
-            if(tab) {
+            if (tab) {
                 mainPanel.setActiveTab(tab);
                 return;
             }

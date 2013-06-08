@@ -72,7 +72,7 @@ define(function(require, exports) {
                     app.updateRecord({finished: false});
                 }
             }],
-            mColumns: [/*{
+            mColumns: [{
                 id: 'id',
                 type: 'string',
                 mEdit: false,
@@ -82,7 +82,7 @@ define(function(require, exports) {
                 type: 'string',
                 fieldLabel: '标题',
                 sortable: true,
-                mEdit: false,
+                mEdit: true,
                 allowBlank: false,
                 width: 180,
                 dataIndex: 'title'
@@ -98,11 +98,10 @@ define(function(require, exports) {
                 id: 'post_date',
                 header   : '更新日期',
                 mEdit: {
-                    add: false,
-                    edit: true
+                    edit: false
                 },
                 allowBlank: true,
-                type     : 'string',
+                type     : 'date',
                 width    : 85,
                 sortable : true,
                 dataIndex: 'post_date'
@@ -115,7 +114,7 @@ define(function(require, exports) {
                 valueField: '_id',
                 mEdit: false,
                 dataIndex: 'type_id'
-            }*/],
+            }],
             listeners: {
                 crud_view_ready: function () {
                     console.log('界面准备好了');

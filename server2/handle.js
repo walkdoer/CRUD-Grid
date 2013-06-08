@@ -50,7 +50,7 @@ var getHandler = {},
     handler = {
         get: getHandler,
         post: postHandler,
-        common: commonHandler,
+        common: commonHandler
     };
 
 

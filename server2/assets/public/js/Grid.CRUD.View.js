@@ -391,7 +391,7 @@ define(function (require, exports) {
                     idOfBtnTbar = buttonsBarConfig && buttonsBarConfig.mIdList,
                     columnModel,
                     tbar, editor, mainPanel, mainPanelConfig;
-
+                this.config = _.extend({}, this.config, conf);
                 /**
                  * 改变所有按钮的状态
                  */
@@ -503,6 +503,15 @@ define(function (require, exports) {
                     var record = new store.recordType(Ext.ux.clone(this.config.defaultData));
                     editor.stopEditing();
                     store.insert(0, record);
+                    for (var i = 0, length = conf.columns.length; i < length; i++) {
+                        var col = conf.columns[i],
+                            colEditor = col.editor;
+                        if (colEditor) {
+                            if (col.mEditMode === _.ADD_EDITABLE) {
+                                colEditor.setDisabled(false);
+                            }
+                        }
+                    }
                     editor.startEditing(0);
                 };
                 /**
@@ -747,9 +756,20 @@ define(function (require, exports) {
                             console.log('Grid [Ext.grid.GridPanel]: Destroy');
                         },
                         rowdblclick: function (grid, rowIndex) {
+                            var columns = that.config.columns;
                             console.log('Gird [Ext.grid.GridPanel]: Row double click');
                             var record = that.rsm.getSelected();
                             if (that.config.needEdit) {
+                                for (var i = 0, length = columns.length; i < length; i++) {
+                                    var col = columns[i],
+                                        colEditor = col.editor;
+                                    if (colEditor) {
+                                        //如果不可编辑
+                                        if (col.mEditMode === _.ADD_EDITABLE) {
+                                            colEditor.setDisabled(true);
+                                        }
+                                    }
+                                }
                                 that.fireEvent(eventConfig.ROW_DBL_CLICK, record);
                             }
                         }
