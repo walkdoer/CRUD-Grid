@@ -392,6 +392,42 @@ define(function (require, exports) {
                     columnModel,
                     tbar, editor, mainPanel, mainPanelConfig;
                 this.config = _.extend({}, this.config, conf);
+
+                //处理columns的renderer
+                for (var i = 0; i < conf.columns.length; i++) {
+                    var colItem = conf.columns[i],
+                        tmpArr,
+                        posiColor,
+                        posiText,
+                        negaColor,
+                        negaText;
+                    if (colItem.mPosiText && colItem.mNegaText) {
+                        tmpArr = colItem.mNegaText.split(' ');
+                        negaText = tmpArr[0];
+                        negaColor = tmpArr[1];
+                        tmpArr = colItem.mPosiText.split(' ');
+                        posiText = tmpArr[0],
+                        posiColor = tmpArr[1];
+                        colItem.renderer = function (value) {
+                            if (value === true) {
+                                if (posiColor) {
+                                    return '<font color="' + posiColor + '">' + posiText + '</font>';
+                                } else {
+                                    return posiText;
+                                }
+                            } else if (value === false) {
+                                if (negaColor) {
+                                    return '<font color="' + negaColor + '">' + negaText + '</font>';
+                                } else {
+                                    return negaText;
+                                }
+                            } else {
+                                return '无效值';
+                            }
+                        };
+                    }
+                }
+
                 /**
                  * 改变所有按钮的状态
                  */
@@ -507,6 +543,7 @@ define(function (require, exports) {
                         var col = conf.columns[i],
                             colEditor = col.editor;
                         if (colEditor) {
+                            //如果字段为添加可编辑，则修改未可编辑状态
                             if (col.mEditMode === _.ADD_EDITABLE) {
                                 colEditor.setDisabled(false);
                             }
@@ -764,7 +801,7 @@ define(function (require, exports) {
                                     var col = columns[i],
                                         colEditor = col.editor;
                                     if (colEditor) {
-                                        //如果不可编辑
+                                        //如果不可编辑, rowEditor的字段变为disable，不可编辑
                                         if (col.mEditMode === _.ADD_EDITABLE) {
                                             colEditor.setDisabled(true);
                                         }

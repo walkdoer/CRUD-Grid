@@ -164,7 +164,7 @@ define(function(require, exports) {
      * @return {Int} Height
      */
     function getWindowWidth(columnsConfig, winType) {
-        var col, maxWidth = 0, editMode = '';
+        var col, maxWidth = 0, editMode = '', width;
         if (winType === 'add') {
             editMode = ADD_EDITABLE;
         } else if (winType === 'edit') {
@@ -174,8 +174,13 @@ define(function(require, exports) {
             col = columnsConfig[i];
             if (col.mEditMode === editMode ||
                 col.mEditMode === ALL_EDITABLE) {
-                if (col.width && col.width > maxWidth) {
-                    maxWidth = col.width;
+                if (winType === 'add') {
+                    width = col.widthArray[2];
+                } else if (winType === 'edit') {
+                    width = col.widthArray[3];
+                }
+                if (width && width > maxWidth) {
+                    maxWidth = width;
                 }
             }
         }
@@ -337,7 +342,7 @@ define(function(require, exports) {
         return fields;
     }
 
-    function getWindowFieldConfig(columns) {
+    function getWindowFieldConfig(columns, winType) {
         /**
          * {
          *     emptyText: '空的时候的提示',
@@ -354,6 +359,11 @@ define(function(require, exports) {
             if (config.type === 'enum') {
                 config.store = col.editStore;
                 config.mMode = getComboMode(col);
+            }
+            if (winType === 'edit') {
+                config.width = col.widthArray[3];
+            } else if (winType === 'add') {
+                config.width = col.widthArray[2];
             }
             config.fieldLabel = col.fieldLabel || col.header;
             config.enableKeyEvents = true;
@@ -501,7 +511,8 @@ define(function(require, exports) {
             if (!col.dataIndex) {
                 col.dataIndex = col.id;
             }
-            newCol = _.except(col, ['type']);
+            newCol = _.except(col, ['type', 'mWidth', 'widthArray']);
+            newCol.width = col.widthArray[0];
             if (!originConfig.mEditor || originConfig.mEditor === 'rowEditor'
                 || originConfig.mEditor.add === 'rowEditor') {
                 //生成编辑器
@@ -519,7 +530,7 @@ define(function(require, exports) {
                             store: col.editStore, //direct array data
                             typeAhead: true,
                             triggerAction: 'all',
-                            width: col.width,
+                            width: col.widthArray[0],
                             mode: mode,
                             emptyText: col.emptyText,
                             valueField: col.valueField || col.dataIndex || col.id,
@@ -715,7 +726,7 @@ define(function(require, exports) {
                         store: column.store,
                         typeAhead: true,
                         triggerAction: 'all',
-                        width: getSearchBarItemWidth(column.type) || column.width,
+                        width: getSearchBarItemWidth(column.type) || column.widthArray[1],
                         mode: mode,
                         emptyText: column.emptyText,
                         valueField: column.valueField || column.dataIndex || column.id,
@@ -750,7 +761,7 @@ define(function(require, exports) {
                         }),
                         typeAhead: true,
                         triggerAction: 'all',
-                        width: getSearchBarItemWidth(column.type) || column.width,
+                        width: getSearchBarItemWidth(column.type) || column.widthArray[1],
                         mode: 'local',
                         valueField: valueField,
                         displayField: 'displayText',
@@ -769,7 +780,7 @@ define(function(require, exports) {
                         'dataIndex'
                     ]);
                     conf.id = id;
-                    conf.width = getSearchBarItemWidth(column.type) || column.width;
+                    conf.width = getSearchBarItemWidth(column.type) || column.widthArray[1],
                     conf.allowBlank = true;//搜索框的字段为非必填，可以为空
                     field = new FIELD_TYPE[column.type](conf);
                 }
@@ -830,6 +841,27 @@ define(function(require, exports) {
                 col.editable = true;
             }
             col.mEditMode = getEditMode(col.mEdit, col.hidden);
+            if (_.is('String', col.mWidth)) {
+                var widthArray = col.mWidth.split(',');
+                var widthArrayLen = widthArray.length;
+                for (var ii = 0; ii < widthArrayLen; ii++) {
+                    var wid = widthArray[ii];
+                    widthArray[ii] = parseInt(wid, 10);
+                }
+                for (; ii < 4; ii++) {
+                    if (_.isEmpty(widthArray[ii])) {
+                        widthArray[ii] = widthArray[0];
+                    }
+                }
+                
+                col.widthArray = widthArray;
+            } else if (_.is('Number', col.mWidth)) {
+                //[表格，搜索，编辑窗口，添加窗口]
+                col.widthArray = [col.mWidth, col.mWidth, col.mWidth, col.mWidth];
+            } else if (_.is('Undefined', col.mWidth)) {
+                col.widthArray = [100, 120, 100, 100];   
+            }
+            console.log(col.widthArray);
         }
         if (!conf.store) {
             conf.store = {};
@@ -909,12 +941,12 @@ define(function(require, exports) {
         set('grid', 'addEditWay', getAddEditWay(config.mEditable, config.mEditor));
         set('event', 'view', EVENT.VIEW);
         set('event', 'app', EVENT.APP);
-        set('window', 'edit', 'fields', getWindowFieldConfig(columns));
+        set('window', 'edit', 'fields', getWindowFieldConfig(columns, 'edit'));
         set('window', 'edit', 'id', config.id + ':window:edit');
         set('window', 'edit', 'height', editWinHeight);
         set('window', 'edit', 'width', editWinWidth);
         set('window', 'edit', 'labelWidth', winLabelWidth);
-        set('window', 'add', 'fields', getWindowFieldConfig(columns));
+        set('window', 'add', 'fields', getWindowFieldConfig(columns, 'add'));
         set('window', 'add', 'id', config.id + ':window:add');
         set('window', 'add', 'height', addWinHeight);
         set('window', 'add', 'labelWidth', winLabelWidth);

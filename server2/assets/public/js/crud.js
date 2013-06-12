@@ -10,31 +10,7 @@ define(function(require, exports) {
     require('crud/public/js/lib/RowEditor.js');
     require('crud/public/js/Grid.CRUD.App.js');
     require('crud/public/js/lib/Examples.js');
-    /**
-     * Custom function used for column renderer
-     * @param {Object} val
-     */
-    function change(val) {
-        if (val > 0) {
-            return '<span style="color:green;">' + val + '</span>';
-        } else if (val < 0) {
-            return '<span style="color:red;">' + val + '</span>';
-        }
-        return val;
-    }
-
-    /**
-     * Custom function used for column renderer
-     * @param {Object} val
-     */
-    function pctChange(val) {
-        if (val > 0) {
-            return '<span style="color:green;">' + val + '%</span>';
-        } else if (val < 0) {
-            return '<span style="color:red;">' + val + '%</span>';
-        }
-        return val;
-    }
+    
     function init(id, cls, title) {
         var gridPanel = new Ext.ux.CRUD({
             id: 'tab' + id,
@@ -51,10 +27,10 @@ define(function(require, exports) {
             store: {
                 idProperty: '_id'
             },
-            /*mEditor: {
+            mEditor: {
                 add: 'window', //添加的时候使用rowEditor
                 edit: 'window' //编辑的时候使用窗口
-            },*/
+            },
             search: {
                 property: ['title', 'finished', 'type']
             },
@@ -76,6 +52,7 @@ define(function(require, exports) {
                 id: 'id',
                 type: 'string',
                 mEdit: false,
+                mWidth: 180,
                 dataIndex: '_id'
             }, {
                 id: 'title',
@@ -84,15 +61,17 @@ define(function(require, exports) {
                 sortable: true,
                 mEdit: true,
                 allowBlank: false,
-                width: 180,
+                mWidth: '180, 220',
                 dataIndex: 'title'
             }, {
                 id: 'finished',
                 type: 'boolean',
                 header: '完成',
+                mPosiText: '完成',
+                mNegaText: '未完成 red',
                 sortable: true,
                 mEdit: false,
-                width: 60,
+                mWidth: 85,
                 dataIndex: 'finished'
             }, {
                 id: 'post_date',
@@ -102,7 +81,7 @@ define(function(require, exports) {
                 },
                 allowBlank: true,
                 type     : 'date',
-                width    : 85,
+                mWidth    : 260,
                 sortable : true,
                 dataIndex: 'post_date'
             }, {
@@ -112,7 +91,6 @@ define(function(require, exports) {
                 mUrl: Portal.data.proxyUrl('crud:category:read'),
                 displayField: 'name',
                 valueField: '_id',
-                mEdit: false,
                 dataIndex: 'type_id'
             }],
             listeners: {
