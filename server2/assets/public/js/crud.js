@@ -75,13 +75,10 @@ define(function(require, exports) {
                 dataIndex: 'finished'
             }, {
                 id: 'post_date',
-                header   : '更新日期',
-                mEdit: {
-                    edit: false
-                },
+                header   : 'DeadLine',
                 allowBlank: true,
                 type     : 'date',
-                mWidth    : 260,
+                mWidth    : [260],
                 sortable : true,
                 dataIndex: 'post_date'
             }, {

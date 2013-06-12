@@ -49,7 +49,8 @@ define(function(require, exports) {
         //文件类型
         FIELD_TYPE = _.FIELD_TYPE,
         SEARCH_FIELD_WIDTH = _.SEARCH_FIELD_WIDTH,
-        FONT_WIDTH = _.FONT_WIDTH,
+        FONT_WIDTH_CN = _.FONT_WIDTH_CN,
+        FONT_WIDTH_EN = _.FONT_WIDTH_EN,
         WIN_HEIGHT_SPAN = _.WIN_HEIGHT_SPAN,
         ALL_EDITABLE = _.ALL_EDITABLE,
         ADD_EDITABLE = _.ADD_EDITABLE,
@@ -119,13 +120,24 @@ define(function(require, exports) {
         }
     }
 
+    function calculateWidth(str) {
+        var width = 0;
+        for (var i = 0; i < str.length; i++) {
+            if (str.charCodeAt(i) > 255) {
+                width += FONT_WIDTH_CN;
+            } else {
+                width += FONT_WIDTH_EN;
+            }
+        }
+        return width;
+    }
     function getFieldLabelWidth(columnsConfig) {
         var col, maxWidth = 0, width;
         for (var i = 0; i < columnsConfig.length; i++) {
             col = columnsConfig[i];
             //只要该字段在编辑和添加两个窗口一个可编辑，且有fieldLabel
             if (col.mEditMode !== ALL_NOT_EDITABLE && col.fieldLabel) {
-                width = FONT_WIDTH * col.fieldLabel.length;
+                width = calculateWidth(col.fieldLabel);
                 if (width > maxWidth) {
                     maxWidth = width;
                 }
@@ -530,7 +542,7 @@ define(function(require, exports) {
                             store: col.editStore, //direct array data
                             typeAhead: true,
                             triggerAction: 'all',
-                            width: col.widthArray[0],
+                            width: col.widthArray[0],//表格栏目的宽度
                             mode: mode,
                             emptyText: col.emptyText,
                             valueField: col.valueField || col.dataIndex || col.id,
@@ -841,6 +853,11 @@ define(function(require, exports) {
                 col.editable = true;
             }
             col.mEditMode = getEditMode(col.mEdit, col.hidden);
+            /**
+             * 对宽度配置项进行处理，
+             * 将 [180, 200] 或者 '180, 200', 或者 180
+             * 转化未系统认识的 [表格，搜索，编辑窗口，添加窗口] 宽度格式 
+             */
             if (_.is('String', col.mWidth)) {
                 var widthArray = col.mWidth.split(',');
                 var widthArrayLen = widthArray.length;
@@ -848,20 +865,20 @@ define(function(require, exports) {
                     var wid = widthArray[ii];
                     widthArray[ii] = parseInt(wid, 10);
                 }
-                for (; ii < 4; ii++) {
-                    if (_.isEmpty(widthArray[ii])) {
-                        widthArray[ii] = widthArray[0];
-                    }
-                }
-                
                 col.widthArray = widthArray;
             } else if (_.is('Number', col.mWidth)) {
                 //[表格，搜索，编辑窗口，添加窗口]
                 col.widthArray = [col.mWidth, col.mWidth, col.mWidth, col.mWidth];
             } else if (_.is('Undefined', col.mWidth)) {
                 col.widthArray = [100, 120, 100, 100];   
+            } else if (_.isArray(col.mWidth)) {
+                col.widthArray = col.mWidth;
             }
-            console.log(col.widthArray);
+            for (var kk = col.widthArray.length; kk < 4; kk++) {
+                if (_.isEmpty(col.widthArray[kk])) {
+                    col.widthArray[kk] = col.widthArray[0];
+                }
+            }
         }
         if (!conf.store) {
             conf.store = {};

@@ -123,7 +123,8 @@ define(function (require, exports) {
     exports.ALL_EDITABLE = 3;
     exports.except = except;
     exports.cloneObject = cloneObject;
-    exports.FONT_WIDTH = 14;
+    exports.FONT_WIDTH_CN = 14;
+    exports.FONT_WIDTH_EN = 7;
     exports.WIN_SPAN = 40;
     exports.WIN_HEIGHT_SPAN = 75;
     exports.FIELD_TYPE = FIELD_TYPE;
