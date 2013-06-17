@@ -103,7 +103,7 @@ define(function (require, exports) {
         'boolean': Ext.form.Checkbox,
         'date': Ext.form.DateField,
         'float': Ext.form.NumberField,
-        'time': Ext.form.TimeField,
+        'time': Ext.ux.form.DateTimeField,
         'int': Ext.form.NumberField,
         'enum': Ext.form.ComboBox
     };

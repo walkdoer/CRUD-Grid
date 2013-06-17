@@ -8,7 +8,7 @@ define(function(require, exports) {
      * 组件的Controller层，协调Model层和View层
     */
     'use strict';
-
+    require('crud/public/js/lib/datetimefield.js');
     var _ = require('crud/public/js/Grid.CRUD.Common.js');
     var Model = require('crud/public/js/Grid.CRUD.Model.js'),
         config = require('crud/public/js/Grid.CRUD.Config.js'),
