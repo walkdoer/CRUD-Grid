@@ -395,36 +395,28 @@ define(function (require, exports) {
 
                 //处理columns的renderer
                 for (var i = 0; i < conf.columns.length; i++) {
-                    var colItem = conf.columns[i],
-                        tmpArr,
-                        posiColor,
-                        posiText,
-                        negaColor,
-                        negaText;
+                    var colItem = conf.columns[i];
                     if (colItem.mPosiText && colItem.mNegaText) {
-                        tmpArr = colItem.mNegaText.split(' ');
-                        negaText = tmpArr[0];
-                        negaColor = tmpArr[1];
-                        tmpArr = colItem.mPosiText.split(' ');
-                        posiText = tmpArr[0],
-                        posiColor = tmpArr[1];
-                        colItem.renderer = function (value) {
-                            if (value === true) {
-                                if (posiColor) {
-                                    return '<font color="' + posiColor + '">' + posiText + '</font>';
+                        colItem.renderer = (function (pt, pc, nt, nc) {
+                            return function (value) {
+                                if (value === true) {
+                                    if (pc) {
+                                        return '<font color="' + pc + '">' + pt + '</font>';
+                                    } else {
+                                        return pt;
+                                    }
+                                } else if (value === false) {
+                                    if (nc) {
+                                        return '<font color="' + nc + '">' + nt + '</font>';
+                                    } else {
+                                        return nt;
+                                    }
                                 } else {
-                                    return posiText;
+                                    return '无效值';
                                 }
-                            } else if (value === false) {
-                                if (negaColor) {
-                                    return '<font color="' + negaColor + '">' + negaText + '</font>';
-                                } else {
-                                    return negaText;
-                                }
-                            } else {
-                                return '无效值';
-                            }
-                        };
+                            };
+                        })(colItem.mPosiText, colItem.mPosiColor, colItem.mNegaText, colItem.mNegaColor);
+
                     }
                 }
 

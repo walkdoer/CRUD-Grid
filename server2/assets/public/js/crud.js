@@ -77,7 +77,7 @@ define(function(require, exports) {
                 id: 'post_date',
                 header   : 'DeadLine',
                 allowBlank: true,
-                type     : 'date',
+                type     : 'time',
                 mWidth    : [260],
                 sortable : true,
                 dataIndex: 'post_date'

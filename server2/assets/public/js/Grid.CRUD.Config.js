@@ -769,7 +769,7 @@ define(function(require, exports) {
                         id: id,
                         store: new Ext.data.ArrayStore({
                             fields: [valueField, 'displayText'],
-                            data: [['', '全部'], [TRUE, 'true'], [FALSE, 'false']]
+                            data: [['', '全部'], [TRUE, column.mPosiText || 'true'], [FALSE, column.mNegaText || 'false']]
                         }),
                         typeAhead: true,
                         triggerAction: 'all',
@@ -844,7 +844,7 @@ define(function(require, exports) {
      * @param  {Object} conf 配置
      */
     function checkConfig(conf) {
-        var columns = conf.mColumns, col, storeConfig;
+        var columns = conf.mColumns, col, storeConfig, textColor;
 
         for (var i = 0, len = columns.length; i < len; i++) {
             col = columns[i];
@@ -877,6 +877,20 @@ define(function(require, exports) {
             for (var kk = col.widthArray.length; kk < 4; kk++) {
                 if (_.isEmpty(col.widthArray[kk])) {
                     col.widthArray[kk] = col.widthArray[0];
+                }
+            }
+            if (col.mNegaText) {
+                textColor = col.mNegaText.split(/\s+/);
+                col.mNegaText = textColor[0];
+                if (textColor[1]) {
+                    col.mNegaColor = textColor[1];
+                }
+            }
+            if (col.mPosiText) {
+                textColor = col.mPosiText.split(/\s+/);
+                col.mPosiText = textColor[0];
+                if (textColor[1]) {
+                    col.mPosiColor = textColor[1];
                 }
             }
         }

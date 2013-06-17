@@ -417,6 +417,7 @@ define(function(require, exports) {
             };
             this.reload = function () {
                 model.getStore().reload();
+                return this;
             };
             this.getGridPanel = function () {
                 return grid;
