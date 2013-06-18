@@ -8,6 +8,8 @@ define(function(require, exports) {
      * 组件的Controller层，协调Model层和View层
     */
     'use strict';
+    Portal.loadCss('crud', 'public/css/roweditor.css');
+    Portal.loadCss('crud', 'public/css/Spinner.css');
     require('crud/public/js/lib/datetimefield.js');
     var _ = require('crud/public/js/Grid.CRUD.Common.js');
     var Model = require('crud/public/js/Grid.CRUD.Model.js'),
@@ -426,10 +428,11 @@ define(function(require, exports) {
                 return view.getWindowField(id, winType);
             };
             this.loadResource = function (callback) {
-                var columns = config.get('origin').mColumns;
-                var loadedCount = 0, storeLen = 0;
+                var columns = config.get('grid', 'columns');
+                var loadedCount = 0, storeLen = 0, col;
                 for (var i = 0; i < columns.length; i++) {
-                    if (columns[i].store) {
+                    col = columns[i];
+                    if (col.store) {
                         storeLen++;
                         (function (store, editStore) {
                             var loadedCheck = function () {
@@ -442,7 +445,7 @@ define(function(require, exports) {
                             };
                             store.load({callback: loadedCheck});
                             editStore.load({callback: loadedCheck});
-                        })(columns[i].store, columns[i].editStore);
+                        })(col.store, col.editStore);
                     }
                 }
             };

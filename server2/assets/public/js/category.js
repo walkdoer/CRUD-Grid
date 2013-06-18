@@ -15,7 +15,7 @@ define(function(require, exports) {
     
     function init(id, cls, title) {
         var gridPanel = new Ext.ux.CRUD({
-            id: 'tab' + id,
+            id: 'tab:' + id,
             title: title,
             closable: true,//配置可以关闭
             api: {

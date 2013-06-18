@@ -59,8 +59,9 @@ define(function(require, exports) {
         WIN_SPAN = _.WIN_SPAN,
         TRUE = _.TRUE,
         FALSE = _.FALSE,
-        originConfig, //未经过处理的原始用户的配置
-        userConfig; //经过处理后的用户配置
+        originConfig = {}, //未经过处理的原始用户的配置
+        curAppId, //用户当前界面Id，用户每一次切换都会切换curAppId
+        userConfig = {}; //经过处理后的用户配置
     
 
     /**
@@ -263,7 +264,7 @@ define(function(require, exports) {
         if (args.length === 0) {
             return null;
         }
-        conf = userConfig;
+        conf = userConfig[curAppId];
         for (var i = 0, len = args.length; i < len; i++) {
             conf = conf[args[i]];
             //如果参数多于实际的配置,返回null
@@ -286,7 +287,7 @@ define(function(require, exports) {
         if (args.length === 1) {
             throw '[Grid.CRUD.Config] function set () : set  without value.';//出错
         } else if (args.length > 1) {
-            conf = userConfig;
+            conf = userConfig[curAppId];
             for (var i = 0; i < args.length - 2; i++) {
                 if (!conf[args[i]]) {
                     conf[args[i]] = {};
@@ -507,7 +508,7 @@ define(function(require, exports) {
      * @return {Array}         处理过后的用户配置
      */
     function getColumnsConfig(columns) {
-        var columnConfig = [], col, newCol, store;
+        var columnConfig = [], col, newCol, oConf;
         if (!columns || columns.length === 0) {
             throw '[Grid.CRUD.Config] 没有mColumns或者是mColumns为空数组，请检查';
         }
@@ -525,8 +526,9 @@ define(function(require, exports) {
             }
             newCol = _.except(col, ['type', 'mWidth', 'widthArray']);
             newCol.width = col.widthArray[0];
-            if (!originConfig.mEditor || originConfig.mEditor === 'rowEditor'
-                || originConfig.mEditor.add === 'rowEditor') {
+            oConf = originConfig[curAppId];
+            if (!oConf.mEditor || oConf.mEditor === 'rowEditor' ||
+                 oConf.mEditor.add === 'rowEditor') {
                 //生成编辑器
                 if (!FIELD_TYPE[col.type]) {
                     throw '[Grid.CRUD.Config] function getColumnsConfig () : ' + col.id + '字段的类型' + col.type + '不合法.';//出错
@@ -922,8 +924,9 @@ define(function(require, exports) {
      */
     function init(config) {
         //初始化config
-        userConfig = {};
-        originConfig = config;
+        curAppId = config.id;
+        userConfig[curAppId] = {};
+        originConfig[curAppId] = _.extend(true, {}, config);
         checkConfig(config);
         //初始化系统参数
         var tbarConfig,
@@ -946,7 +949,7 @@ define(function(require, exports) {
         set('needPreloadRes', isNeedPreLoadRes(columns));
         set('sysAddEditMode', getSystemAddEditMode(columns));
         set('editable', config.mEditable);
-        set('origin', originConfig);
+        set('origin', originConfig[curAppId]);
         set('store', 'params', config.store.mInitParams);
         set('store', 'reader', config.store);
         set('store', 'defaultData', getStoreDefaultData(columns));

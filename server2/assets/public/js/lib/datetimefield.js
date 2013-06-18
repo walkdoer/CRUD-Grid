@@ -6,6 +6,7 @@
  */
 define(function (require, exports) {
     'use strict';
+
     Ext.ux.Spinner = Ext.extend(Ext.util.Observable, {
         incrementValue: 1,
         alternateIncrementValue: 5,

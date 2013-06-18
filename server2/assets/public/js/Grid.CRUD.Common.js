@@ -5,6 +5,27 @@
  */
 define(function (require, exports) {
     'use strict';
+    var addCssByStyle = function addCssByStyle(cssString) {
+        var doc = document;
+        var style = doc.createElement("style");
+        style.setAttribute("type", "text/css");
+
+        if (style.styleSheet) {// IE
+            style.styleSheet.cssText = cssString;
+        } else {// w3c
+            var cssText = doc.createTextNode(cssString);
+            style.appendChild(cssText);
+        }
+
+        var heads = doc.getElementsByTagName("head");
+        if (heads.length) {
+            heads[0].appendChild(style);
+        }
+        else {
+            doc.documentElement.appendChild(style);
+        }
+    };
+
     function is(type, obj) {
         if (Object.prototype.toString.call(obj).indexOf(type) > 0) {
             return true;
@@ -114,6 +135,7 @@ define(function (require, exports) {
     exports.SEARCH_FIELD_WIDTH = {
         'boolean': 50
     };
+    exports.addCssByStyle = addCssByStyle;
     exports.CRUD_FIELD_ALL = 'crud_field_all_rsfx',
     exports.ALL_NOT_EDITABLE = 0;
     exports.ADD_EDITABLE = 1;
