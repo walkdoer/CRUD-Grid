@@ -29,8 +29,9 @@ define(function (require, exports) {
             'int'      : 'keyup',
             'float'    : 'keyup',
             'time'     : 'select',
-            'date'     : 'change',
-            'enum'     : 'change',      
+            'datetime' : 'select',
+            'date'     : 'select',
+            'enum'     : 'select',      
             'boolean'  : 'check'
         },
         FIELD_TYPE       = _.FIELD_TYPE,
@@ -248,6 +249,7 @@ define(function (require, exports) {
                                 fieldConfItem.id = idPrefix + fieldConfItem.id + Math.round(Math.random() * 10000);
                                 fieldConfItem.name = orgnFldItem.dataIndex;
                             }
+                            //为窗口字段创建监听，以控制保存按钮的状态
                             var orgnEventHandler = fieldConfItem.listeners[LISTENERS_TYPE[orgnFldItem.type]];
                             fieldConfItem.listeners[LISTENERS_TYPE[orgnFldItem.type]] = function (field, rec, index) {
                                 var btn = Ext.getCmp(saveBtnId);

@@ -703,7 +703,6 @@ define(function (require, exports) {
             }
         },
         setValue: function (value) {
-            var old = this.value;
             this.value = this.getDateTime(value);
             if (!this.tf) {
                 this.tf = new Ext.ux.form.TimePickerField();
