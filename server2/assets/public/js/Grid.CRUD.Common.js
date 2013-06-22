@@ -118,16 +118,38 @@ define(function (require, exports) {
         }
         return newObj;
     }
-    var FIELD_TYPE = {
+    var TYPES = {
+        STRING: 'string',
+        BIGSTRING: 'bigstring',
+        BOOLEAN: 'boolean',
+        DATE: 'date',
+        TIME: 'time',
+        DATETIME: 'datetime',
+        INT: 'int',
+        ENUM: 'enum',
+        FLOAT: 'float'
+    },
+    FIELD_TYPE = {
         'string': Ext.form.TextField,
         'bigString': Ext.form.TextArea,
         'boolean': Ext.form.Checkbox,
         'date': Ext.form.DateField,
         'float': Ext.form.NumberField,
-        'time': Ext.ux.form.DateTimeField,
+        'time': Ext.form.TimeField,
+        'datetime': Ext.ux.form.DateTimeField,
         'int': Ext.form.NumberField,
         'enum': Ext.form.ComboBox
     };
+
+    /* 备注:
+    EXT 有以下几种数据类型，剩下的需要自定义了
+        auto (Default, implies no conversion)
+        string
+        int
+        float
+        boolean
+        date
+     */
 
     exports.isEmpty = function (a) {
         return a === undefined || a === null || a === '';
@@ -135,6 +157,7 @@ define(function (require, exports) {
     exports.SEARCH_FIELD_WIDTH = {
         'boolean': 50
     };
+    exports.TYPES = TYPES;
     exports.addCssByStyle = addCssByStyle;
     exports.CRUD_FIELD_ALL = 'crud_field_all_rsfx',
     exports.ALL_NOT_EDITABLE = 0;

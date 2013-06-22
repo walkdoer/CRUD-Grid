@@ -708,7 +708,10 @@ define(function (require, exports) {
             if (!this.tf) {
                 this.tf = new Ext.ux.form.TimePickerField();
                 this.tf.ownerCt = this;
-                this.tf.setValue(old.format(this.timeFormat));
+                this.tf.setValue(this.value.format(this.timeFormat));
+            } else {
+                console.log('test');
+                this.tf.setValue(this.value.format(this.timeFormat));
             }
         },
         getDateTime: function (value) {
@@ -812,6 +815,8 @@ define(function (require, exports) {
                     this.activeItem.deactivate();
                     this.activeItem = null;
                 }
+                //this.picker.superclass().rendered = true;
+                //this.picker.superclass().setValue.call(this.picker, this.picker.getValue());
                 this.el.hide();
                 this.hidden = true;
                 this.fireEvent("hide", this);

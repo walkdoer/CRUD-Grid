@@ -44,6 +44,7 @@ define(function(require, exports) {
         },
         CRUD_FIELD_ALL = _.CRUD_FIELD_ALL,
         //文件类型
+        TYPES = _.TYPES,
         FIELD_TYPE = _.FIELD_TYPE,
         SEARCH_FIELD_WIDTH = _.SEARCH_FIELD_WIDTH,
         FONT_WIDTH_CN = _.FONT_WIDTH_CN,
@@ -54,6 +55,7 @@ define(function(require, exports) {
         EDIT_EDITABLE = _.EDIT_EDITABLE,
         ALL_NOT_EDITABLE = _.ALL_NOT_EDITABLE,
         WIN_SPAN = _.WIN_SPAN,
+        VALID_TYPE = _.VALID_TYPE,
         TRUE = _.TRUE,
         FALSE = _.FALSE,
         originConfig = {}, //未经过处理的原始用户的配置
@@ -239,11 +241,16 @@ define(function(require, exports) {
      */
     getStoreField = function getStoreField(columns) {
         return getConfigFromColumn(columns, function (col) {
-            var field = {};
+            var field = {}, type = col.type;
             field.name = col.id;
-            //如果用户有定义类型 Type
-            if (!!col.type) {
-                field.type = col.type;
+            //如果用户有定义类型 Type, 且类型是合法的
+            if (!!type && TYPES[type.toUpperCase()]) {
+                if (type === TYPES.DATETIME || type === TYPES.TIME) {
+                    type = TYPES.DATE;
+                }
+                field.type = Ext.data.Types[type.toUpperCase()];
+            } else {
+                throw '字段' + col.id + '的类型' + type + '不合法或者为空';
             }
             //如果用户有定义 dateFormat
             if (!!col.dateFormat) {
