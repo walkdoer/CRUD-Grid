@@ -101,6 +101,7 @@ define(function (require, exports) {
         constructor: function (conf) {
             var that = this,
                 editWindowsIDs = {},
+                windows = [],
                 //事件
                 eventConfig = conf.event,
                 //最后一个编辑窗口的位置
@@ -112,8 +113,12 @@ define(function (require, exports) {
             //加载资源的loadMask
             this.loadResMask = null;
             var getDataMethod = conf.singleSelect ? 'getSelected' : 'getSelections';
-
-            function getEditWindow(recordId) {
+            /**
+             * 通过record Id 获取 window
+             * @param  {String} recordId  记录Id
+             * @return {Ext.Window}       窗口          
+             */
+            var getEditWinByRecId = function getEditWinByRecId(recordId) {
                 if (!_.isEmpty(editWindowsIDs[recordId])) {
                     console.info('window ' + editWindowsIDs[recordId] +
                         ' found for record[' + recordId + ']');
@@ -121,12 +126,38 @@ define(function (require, exports) {
                 }
                 console.info('window not found for record[' + recordId + ']');
                 return null;
-            }
-
-            function removeEditWindow(recordId) {
-                var noWinExist = true;//所有窗口已经关闭
+            },
+            /**
+             * 获取最后的窗口Id
+             * @return {String} 最后的窗口Id
+             */
+            getLastWindowId = function getLastWindowId() {
+                return windows[windows.length - 1];
+            },
+            /**
+             * 如果window移动，就从未移动过的列表记录(windows)中移除 
+             * @param  {String} winId 窗口Id
+             * @return {String} 移除的窗口Id       
+             */
+            removeWindowFromOrder = function removeWindowFromOrder(winId) {
+                var id;
+                for (var i = 0; i < windows.length; i++) {
+                    id = windows[i];
+                    if (winId === id) {
+                        return windows.splice(i, 1);
+                    }
+                }
+            },
+            /**
+             * 删除window
+             * @param  {String} recordId 记录Id
+             */
+            removeEditWindow = function removeEditWindow(recordId) {
+                var noWinExist = true, win;//所有窗口已经关闭
+                removeWindowFromOrder(editWindowsIDs[recordId]);
+                editWindowsIDs[recordId] = null;
                 delete editWindowsIDs[recordId];
-                for (var win in editWindowsIDs) {
+                for (win in editWindowsIDs) {
                     if (editWindowsIDs.hasOwnProperty(win)) {
                         noWinExist = false;
                     }
@@ -134,11 +165,16 @@ define(function (require, exports) {
                 if (noWinExist) {
                     console.log('恢复位置');
                     lastEditWinPos = null;
+                } else {
+                    win = Ext.getCmp(getLastWindowId());
+                    if (win) {
+                        lastEditWinPos = win.getPosition();
+                    }
                 }
-            }
-            function setEditWindow(recordId, winId) {
+            },
+            setEditWindow = function setEditWindow(recordId, winId) {
                 editWindowsIDs[recordId] = winId;
-            }
+            };
 
             //添加事件
             for (var eventName in eventConfig) {
@@ -322,7 +358,7 @@ define(function (require, exports) {
                 conf.modal = !conf.mMultiWin;
                 conf.listeners = _.extend({}, conf.listeners, {
                     destroy: function () {
-                        console.log('window ' + conf.id + 'destroy');
+                        console.log('window ' + this.id + 'destroy');
                         if (record) {
                             removeEditWindow(record.id);
                         }
@@ -580,7 +616,7 @@ define(function (require, exports) {
                  */
                 this.openEditWindow = function (record) {
                     //如果窗口已经打开，则直接显示窗口
-                    var editWindow = getEditWindow(record.id);
+                    var editWindow = getEditWinByRecId(record.id);
                     if (editWindow) {
                         editWindow.show(true);
                         return;
@@ -607,12 +643,29 @@ define(function (require, exports) {
                     editWindow.loadRecord(record);
                     setEditWindow(record.id, editWindow.id);
                     if (lastEditWinPos) {
-                        var left = lastEditWinPos[0] + 50,
-                            top = lastEditWinPos[1] + 50;
+                        var left = lastEditWinPos[0] + 25,
+                            top = lastEditWinPos[1] + 25;
                         console.log('new Position:' + left + ' ' + top);
                         editWindow.setPosition(left, top);
                     }
+                    editWindow.on('move', function () {
+                        console.log('move');
+                        removeWindowFromOrder(this.getId());
+                        var id = getLastWindowId(), win;
+                        if (id) {
+                            win = Ext.getCmp(id);
+                            if (win) {
+                                lastEditWinPos = win.getPosition();
+                            }
+                        } else {
+                            lastEditWinPos = [
+                                (document.documentElement.clientWidth - this.getWidth()) / 2,
+                                (document.documentElement.clientHeight - this.getHeight()) / 2
+                            ];
+                        }
+                    });
                     lastEditWinPos = editWindow.getPosition();
+                    windows.push(editWindow.getId());
                     console.dir(lastEditWinPos);
                     return editWindow;
                 };
