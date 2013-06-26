@@ -5,6 +5,8 @@
  */
 define(function (require, exports) {
     'use strict';
+    var FONT_WIDTH_CN = 14,
+        FONT_WIDTH_EN = 7;
     var addCssByStyle = function addCssByStyle(cssString) {
         var doc = document;
         var style = doc.createElement("style");
@@ -50,15 +52,15 @@ define(function (require, exports) {
                     clone[i] = obj[i];
                 }
             }
-            
+
         }
         return clone;
     }
     /**
      * 将两个Object合体
-     * @param  {Object} a 
-     * 
-     * @param  {Object} b 
+     * @param  {Object} a
+     *
+     * @param  {Object} b
      * @return {Object}
      */
     function extend(target, source, deep) {
@@ -97,6 +99,25 @@ define(function (require, exports) {
             newObj[key.toLowerCase()] = obj[key];
         }
         return newObj;
+    }
+
+    function getMean(data) {
+        var min = Number.MAX_VALUE, //最小值
+            max = 0, //最大值
+            sum = 0,
+            d;
+        for (var i = data.length - 1; i >= 0; i--) {
+            d = data[i];
+            if (d > max) {
+                max = d;
+            }
+            if (d < min) {
+                min = d;
+            }
+            sum += d;
+        }
+        sum = sum - min - max;//去掉两个极端值
+        return sum / (data.length - 2);
     }
 
     /**
@@ -150,7 +171,20 @@ define(function (require, exports) {
         boolean
         date
      */
-
+    /**
+     * 计算文字宽度
+     */
+    exports.calTextWidth = function calTextWidth(str) {
+        var width = 0;
+        for (var i = 0; i < str.length; i++) {
+            if (str.charCodeAt(i) > 255) {
+                width += FONT_WIDTH_CN;
+            } else {
+                width += FONT_WIDTH_EN;
+            }
+        }
+        return width;
+    };
     exports.isEmpty = function (a) {
         return a === undefined || a === null || a === '';
     };
@@ -167,9 +201,10 @@ define(function (require, exports) {
     exports.EDIT_EDITABLE = 2;
     exports.ALL_EDITABLE = 3;
     exports.except = except;
+    exports.getMean = getMean;
     exports.cloneObject = cloneObject;
-    exports.FONT_WIDTH_CN = 14;
-    exports.FONT_WIDTH_EN = 7;
+    exports.FONT_WIDTH_CN = FONT_WIDTH_CN;
+    exports.FONT_WIDTH_EN = FONT_WIDTH_EN;
     exports.WIN_SPAN = 40;
     exports.WIN_HEIGHT_SPAN = 75;
     exports.FIELD_TYPE = FIELD_TYPE;

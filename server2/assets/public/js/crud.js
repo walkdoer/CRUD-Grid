@@ -10,7 +10,7 @@ define(function(require, exports) {
     require('crud/public/js/lib/RowEditor.js');
     require('crud/public/js/Grid.CRUD.App.js');
     require('crud/public/js/lib/Examples.js');
-    
+
     function init(id, cls, title) {
         var gridPanel = new Ext.ux.CRUD({
             id: 'tab:' + id,
@@ -78,6 +78,7 @@ define(function(require, exports) {
                 header   : 'DeadLine',
                 allowBlank: true,
                 type     : 'datetime',
+                renderer : Ext.util.Format.dateRenderer('n/j h:ia'),
                 mWidth    : [260],
                 sortable : true,
                 dataIndex: 'post_date'

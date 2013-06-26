@@ -31,7 +31,7 @@ define(function (require, exports) {
             'time'     : 'select',
             'datetime' : 'select',
             'date'     : 'select',
-            'enum'     : 'select',      
+            'enum'     : 'select',
             'boolean'  : 'check'
         },
         FIELD_TYPE       = _.FIELD_TYPE,
@@ -39,20 +39,20 @@ define(function (require, exports) {
         TRUE             = _.TRUE,
         CRUD_FIELD_ALL   = _.CRUD_FIELD_ALL,
         BTN_CHECK_EXCEPT = ['sysadd', 'sysrefresh'];
-    
+
     function serializeForm(form) {
-        var fElements = form.elements || (document.forms[form] || Ext.getDom(form)).elements, 
-            hasSubmit = false, 
-            encoder = encodeURIComponent, 
-            name, 
-            data = '', 
-            type, 
+        var fElements = form.elements || (document.forms[form] || Ext.getDom(form)).elements,
+            hasSubmit = false,
+            encoder = encodeURIComponent,
+            name,
+            data = '',
+            type,
             hasValue;
 
         Ext.each(fElements, function (element) {
             name = element.name;
             type = element.type;
-    
+
             if (name) {
                 if (/select-(one|multiple)/i.test(type)) {
                     Ext.each(element.options, function (opt) {
@@ -116,7 +116,7 @@ define(function (require, exports) {
             /**
              * 通过record Id 获取 window
              * @param  {String} recordId  记录Id
-             * @return {Ext.Window}       窗口          
+             * @return {Ext.Window}       窗口
              */
             var getEditWinByRecId = function getEditWinByRecId(recordId) {
                 if (!_.isEmpty(editWindowsIDs[recordId])) {
@@ -135,9 +135,9 @@ define(function (require, exports) {
                 return windows[windows.length - 1];
             },
             /**
-             * 如果window移动，就从未移动过的列表记录(windows)中移除 
+             * 如果window移动，就从未移动过的列表记录(windows)中移除
              * @param  {String} winId 窗口Id
-             * @return {String} 移除的窗口Id       
+             * @return {String} 移除的窗口Id
              */
             removeWindowFromOrder = function removeWindowFromOrder(winId) {
                 var id;
@@ -246,7 +246,7 @@ define(function (require, exports) {
 
                     (function (orgnFldItem) {
                         var fieldConfItem;
-                        if (orgnFldItem.mEditMode === editMode || 
+                        if (orgnFldItem.mEditMode === editMode ||
                             orgnFldItem.mEditMode === _.ALL_EDITABLE) {
                             if (_.isEmpty(orgnFldItem.listeners)) {
                                 orgnFldItem.listeners = {};
@@ -302,7 +302,7 @@ define(function (require, exports) {
                             fields.push(new FIELD_TYPE[orgnFldItem.type](fieldConfItem));
                         }
                     })(item);
-                    
+
                 }
                 if (!conf.title) {
                     conf.title = "窗口";
@@ -557,7 +557,7 @@ define(function (require, exports) {
                                 }
                             },
                             afteredit: function (editor, changes, r) {
-                                
+
                                 that.fireEvent(eventConfig.SAVE_RECORD_OF_ROWEDITOR, r, changes);
                             }
                         }
@@ -748,7 +748,7 @@ define(function (require, exports) {
                     });
                     columnModel = new Ext.grid.ColumnModel(conf.columns);
                 }
-                
+
 
                 var searchBarConfig = that.config.searchBarConfig,
                     searchBar;
@@ -802,7 +802,7 @@ define(function (require, exports) {
                                             };
                                             filterParams.push(param);
                                         }
-                                        
+
                                     }
                                 }
                             }
@@ -822,8 +822,8 @@ define(function (require, exports) {
                     enableHdMenu: false,
                     sm: this.rsm,
                     cm: columnModel,
-                    bbar: this.config.pageToolbarConfig ? 
-                        new Ext.PagingToolbar(this.config.pageToolbarConfig) 
+                    bbar: this.config.pageToolbarConfig ?
+                        new Ext.PagingToolbar(this.config.pageToolbarConfig)
                             : null,
                     listeners: {
                         viewready: function () {
@@ -884,6 +884,32 @@ define(function (require, exports) {
         },
         hideLoadResMask: function () {
             this.loadResMask.hide();
+        },
+        /**
+         * 加载store的数据，根据加载好的数据微调用户界面
+         */
+        adjustUI: function adjustUI() {
+            //调整搜索栏子项的宽度
+            var sbItms = this.config.searchBarConfig.items;
+            Ext.each(sbItms, function (itm) {
+                var store,
+                    data = [],
+                    width,
+                    displayField;
+                if (_.isObject(itm)) {
+                    store = itm.store;
+                    displayField = itm.displayField;
+                    if (store) {
+                        store.each(function (rec, i) {
+                            var text = rec.get(displayField),
+                                width = _.calTextWidth(text);
+                            data.push(width);
+                        });
+                        width = _.getMean(data);
+                        itm.setWidth(width + 35);
+                    }
+                }
+            });
         }
     });
     return View;

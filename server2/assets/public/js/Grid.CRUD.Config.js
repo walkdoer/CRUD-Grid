@@ -81,7 +81,7 @@ define(function(require, exports) {
             /**
              * 对宽度配置项进行处理，
              * 将 [180, 200] 或者 '180, 200', 或者 180
-             * 转化未系统认识的 [表格，搜索，编辑窗口，添加窗口] 宽度格式 
+             * 转化未系统认识的 [表格，搜索，编辑窗口，添加窗口] 宽度格式
              */
             if (_.is('String', col.mWidth)) {
                 var widthArray = col.mWidth.split(',');
@@ -95,7 +95,7 @@ define(function(require, exports) {
                 //[表格，搜索，编辑窗口，添加窗口]
                 col.widthArray = [col.mWidth, col.mWidth, col.mWidth, col.mWidth];
             } else if (_.is('Undefined', col.mWidth)) {
-                col.widthArray = [100, 120, 100, 100];   
+                col.widthArray = [100, 120, 100, 100];
             } else if (_.isArray(col.mWidth)) {
                 col.widthArray = col.mWidth;
             }
@@ -129,7 +129,7 @@ define(function(require, exports) {
         storeConfig.totalProperty = storeConfig.totalProperty || 'totalCount';
         storeConfig.root = storeConfig.root || 'data';
         storeConfig.fields = getStoreField(columns);
-    }, 
+    },
     getComboMode = function getComboMode(col) {
         if (col.mLocalData) {
             return 'local';
@@ -137,24 +137,13 @@ define(function(require, exports) {
             return 'remote';
         }
     },
-    calculateWidth = function calculateWidth(str) {
-        var width = 0;
-        for (var i = 0; i < str.length; i++) {
-            if (str.charCodeAt(i) > 255) {
-                width += FONT_WIDTH_CN;
-            } else {
-                width += FONT_WIDTH_EN;
-            }
-        }
-        return width;
-    },
     getFieldLabelWidth = function getFieldLabelWidth(columnsConfig) {
         var col, maxWidth = 0, width;
         for (var i = 0; i < columnsConfig.length; i++) {
             col = columnsConfig[i];
             //只要该字段在编辑和添加两个窗口一个可编辑，且有fieldLabel
             if (col.mEditMode !== ALL_NOT_EDITABLE && col.fieldLabel) {
-                width = calculateWidth(col.fieldLabel);
+                width = _.calTextWidth(col.fieldLabel);
                 if (width > maxWidth) {
                     maxWidth = width;
                 }
@@ -186,7 +175,7 @@ define(function(require, exports) {
             idReal: idReal
         };
     },
-    
+
     getWindowFieldConfig = function getWindowFieldConfig(columns, winType) {
         /**
          * {
@@ -274,7 +263,7 @@ define(function(require, exports) {
     },
      /**
      * 是否需要预加载数据
-     * @return {Boolean} 
+     * @return {Boolean}
      */
     isNeedPreLoadRes = function isNeedPreLoadRes(columns) {
         var col;
@@ -289,7 +278,7 @@ define(function(require, exports) {
      * 根据Combo的字段配置来生成Store
      * @param  {Object} combo         字段配置
      * @param  {Boolean} useToEdit    是否用于编辑或者添加
-     * @return {Ext.data.JsonStore}      
+     * @return {Ext.data.JsonStore}
      */
     createStoreFromComboConfig = function createStoreFromComboConfig(combo, useToEdit) {
         console.log("##createStoreFromComboConfig##");
@@ -302,7 +291,7 @@ define(function(require, exports) {
                 textName = combo.displayField || 'displayText',//优先使用用户自定义的displayField
                 textMapping = combo.displayField || 'displayText',
                 fields = [{
-                    name: valueName, 
+                    name: valueName,
                     mapping: valueMappig
                 }, {
                     name: textName,
@@ -318,7 +307,7 @@ define(function(require, exports) {
                         data[valueName] = CRUD_FIELD_ALL;
                         data[textName] = '全部';
                         rd = new ComboRecord(data);
-                        
+
                         store.insert(0, rd);
                     }
                 };
@@ -341,8 +330,8 @@ define(function(require, exports) {
     },
     /**
      * 字段的可编辑性
-     * @param  {Object/Boolean} editable 
-     * @return {Int}            0 全部可编辑， 1 添加窗口编辑，2 编辑窗口可编辑 
+     * @param  {Object/Boolean} editable
+     * @return {Int}            0 全部可编辑， 1 添加窗口编辑，2 编辑窗口可编辑
      */
     getEditMode = function getEditMode(editMode, hidden) {
         var flag = 0;
@@ -377,7 +366,7 @@ define(function(require, exports) {
         }
     },
     getSelectPos = function getSelectPos(column, param) {
-        var selectPos = 0, pos; 
+        var selectPos = 0, pos;
         if (column.mStore) {
             column.mLocalData.each(function (record) {
                 if (parseInt(record.get(column.id), 10) === param[column.id]) {
@@ -451,7 +440,7 @@ define(function(require, exports) {
      *    edit: 'widow' //编辑的时候使用窗口
      * },
      * @return {Object}
-     * 
+     *
      */
     getAddEditWay = function getAddEditWay(editable, editor) {
         if (!editable) {
@@ -569,6 +558,7 @@ define(function(require, exports) {
                         store: column.store,
                         typeAhead: true,
                         triggerAction: 'all',
+                        //宽度优先使用计算过后的宽度，否则使用用户自定义宽度
                         width: getSearchBarItemWidth(column.type) || column.widthArray[1],
                         mode: mode,
                         emptyText: column.emptyText,
@@ -661,7 +651,7 @@ define(function(require, exports) {
                 this.setId('grid', 'tbar', 'buttons', 'btn', conf.mButtons[i].id,//ID保存的位置
                     this.systemId + '-grid-tbar-buttons-btn-' + conf.mButtons[i].id);//ID的值
             }
-            
+
             this.defaultButtons = {
                 add: {
                     id: this.getId('grid', 'tbar', 'buttons', 'btn', 'sysadd'),
@@ -764,7 +754,7 @@ define(function(require, exports) {
                 items: tbarButtons
             };
         },
-        
+
         /**
          * 获取Grid的栏目配置
          * @param  {Array} columns 用户的Column配置
@@ -777,10 +767,10 @@ define(function(require, exports) {
             }
             for (var i = 0; i < columns.length; i++) {
                 col = columns[i];
-                if (!col.id) { 
+                if (!col.id) {
                     throw '[Grid.CRUD.Config] 有配置项缺乏Id，请检查';
                 }
-                //没有header就是不进行处理 
+                //没有header就是不进行处理
                 if (!col.header) { col.header = col.fieldLabel || col.id || col.dataIndex; }
                 if (!col.fieldLabel) {col.fieldLabel = col.header; }
                 //没有配置dataIndex，就默认用id为dataIndex
@@ -796,12 +786,12 @@ define(function(require, exports) {
                     if (!FIELD_TYPE[col.type]) {
                         throw '[Grid.CRUD.Config] function getColumnsConfig () : ' + col.id + '字段的类型' + col.type + '不合法.';//出错
                     }
-                    
-                    
+
+
                     if (col.mEditMode !== ALL_NOT_EDITABLE) {
                         if (col.type === 'enum') {
                             var mode = getComboMode(col);
-                            
+
                             newCol.editor = new FIELD_TYPE[col.type]({
                                 fieldLabel: col.fieldLabel,
                                 store: col.editStore, //direct array data
@@ -841,7 +831,7 @@ define(function(require, exports) {
                     newCol.renderer = (function (col) {
                         return function (value) {
                             if (value) {//传入的value不为空
-                                console.log('render ennum value = ' + value + ' ' + col.valueField);
+                                //console.log('render ennum value = ' + value + ' ' + col.valueField);
                                 var result = col.store.query(col.valueField, value);
                                 if (result) {
                                     var record = result.get(0);
@@ -937,7 +927,7 @@ define(function(require, exports) {
             this.set('store', 'params', config.store.mInitParams);
             this.set('store', 'reader', config.store);
             this.set('store', 'defaultData', getStoreDefaultData(columns));
-            
+
             if (config.search) {
                 this.set('grid', 'tbar', 'search', 'property', getSearchBarConfig.call(this, config.search, columns));
                 this.setId('grid', 'tbar', 'search', this.systemId + '-grid-tbar-search');

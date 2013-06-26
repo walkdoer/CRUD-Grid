@@ -39,7 +39,7 @@ define(function(require, exports) {
         }
         return c;
     }; // eo function clone*/
-    
+
     Ext.ux.CRUD = Ext.extend(Ext.Panel, {
         initComponent: function () {
             var self = this,
@@ -64,7 +64,7 @@ define(function(require, exports) {
              * 返回记录是否处于编辑状态
              * @param  {Ext.data.Record}  record 打开的记录
              * @return {Boolean}
-             
+
             function isRecordEditing(record) {
                 return !_.isEmpty(editingRecords[record.id]);
             }*/
@@ -72,12 +72,12 @@ define(function(require, exports) {
             /**
              * 添加正在编辑的Record
              * @param {Ext.data.Record} record
-             
+
             function addEditingRecord(record) {
                 editingRecords[record.id] = record;
             }*/
 
-            
+
             var buttonsBarConfig = self.config.get('grid', 'tbar', 'buttons'),
                 searchBarConfig = self.config.get('grid', 'tbar', 'search', 'property'),
                 pageConfig = self.config.get('grid', 'page');
@@ -89,7 +89,7 @@ define(function(require, exports) {
                 buttonsBarConfig.mIdList = self.config.getId('grid', 'tbar', 'buttons', 'btn');
                 buttonsBarConfig.id = self.config.getId('grid', 'tbar', 'buttons');
             }
-            
+
             //结合其他配置项构造翻页配置
             if (pageConfig) {
                 pageConfig = _.extend({
@@ -99,7 +99,7 @@ define(function(require, exports) {
                     prependButtons: true
                 }, pageConfig);
             }
-            
+
 
             var lowerCaseParam = self.config.get('grid', 'tbar', 'search', 'lowerCaseParam');
             var view = new View({
@@ -121,7 +121,7 @@ define(function(require, exports) {
             //处理删除错误
             function handleErrorOrException(options, record, msg) {
                 view.error(msg);
-                var id, 
+                var id,
                     store = model.getStore();
                 if (record.lastIndex === store.getTotalCount() - 1) {
                     id = store.getCount();
@@ -179,7 +179,7 @@ define(function(require, exports) {
                     self.fireEvent(self.config.getEvent('app', 'UPDATE_SUCCESS'), rs);
                 },
                 read: function (store, action, rs, options) {
-                    self.fireEvent(self.config.getEvent('app', 'LOAD_SUCCESS'), rs);   
+                    self.fireEvent(self.config.getEvent('app', 'LOAD_SUCCESS'), rs);
                 }
             },
             //服务器发生错误，或者超时
@@ -205,7 +205,7 @@ define(function(require, exports) {
                     console.log(options, record, msg);
                     self.fireEvent(self.config.getEvent('app', 'LOAD_ERROR'));
                 }
-            }, 
+            },
             //服务器返回success false
             failHandler = {
                 create: function (options, record, msg) {
@@ -242,7 +242,7 @@ define(function(require, exports) {
             });
             var idOfTbar = self.config.getId('grid', 'tbar', 'buttons', 'btn'),
                 viewlisteners = {};
-            
+
             viewlisteners[self.config.getEvent('view', 'ROW_DBL_CLICK')] = function (record) {
                 var win;
                 //如果是可编辑状态
@@ -300,7 +300,7 @@ define(function(require, exports) {
                     }
                 })(buttonsBarConfig.items);
             }
-            
+
             function loadData() {
                 var store = model.getStore(),
                     paramsNew,
@@ -327,6 +327,7 @@ define(function(require, exports) {
                         self.fireEvent(self.config.getEvent('app', 'VIEW_READY'));
                         view.hideLoadResMask();
                         loadData();
+                        view.adjustUI();
                     });
                 } else {
                     loadData();
@@ -377,12 +378,12 @@ define(function(require, exports) {
                 noClicksToEdit: self.config.get('grid', 'noClicksToEdit')
             });
 
-            
+
             this.add(grid);
 
             /**
              * 设置BaseParam
-             * @param {Ext.data.Store} store  
+             * @param {Ext.data.Store} store
              * @param {Object}         params 参数
              */
             function setBaseParam(store, params) {
@@ -395,7 +396,7 @@ define(function(require, exports) {
             /**
              * 更新记录
              * @param  {Object} obj 需要更新的数据
-             * @return {Boolean} 更新成功与否     
+             * @return {Boolean} 更新成功与否
              */
             this.updateRecord = function (obj, params, success, error) {
                 if (!obj) {
@@ -441,7 +442,7 @@ define(function(require, exports) {
                                     if (callback) {
                                         callback();
                                     }
-                                }  
+                                }
                             };
                             store.load({callback: loadedCheck});
                             editStore.load({callback: loadedCheck});
