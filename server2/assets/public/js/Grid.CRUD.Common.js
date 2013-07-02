@@ -157,9 +157,11 @@ define(function (require, exports) {
         'date': Ext.form.DateField,
         'float': Ext.form.NumberField,
         'time': Ext.form.TimeField,
-        'datetime': Ext.ux.form.DateTimeField,
         'int': Ext.form.NumberField,
-        'enum': Ext.form.ComboBox
+        'enum': Ext.form.ComboBox,
+        /*扩展插件*/
+        'datetime': Ext.ux.form.DateTimeField,
+        'multiEnum': Ext.ux.form.LovCombo
     };
 
     /* 备注:

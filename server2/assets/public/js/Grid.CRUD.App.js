@@ -10,6 +10,10 @@ define(function(require, exports) {
     'use strict';
     Portal.loadCss('crud', 'public/css/roweditor.css');
     Portal.loadCss('crud', 'public/css/Spinner.css');
+    Portal.loadCss('crud', 'public/css/lovcombo.css');
+    require('crud/public/js/lib/RowEditor.js');
+    require('crud/public/js/lib/lovcombo.js');
+    require('crud/public/js/lib/Examples.js');
     require('crud/public/js/lib/datetimefield.js');
     var _ = require('crud/public/js/Grid.CRUD.Common.js');
     var Model = require('crud/public/js/Grid.CRUD.Model.js'),

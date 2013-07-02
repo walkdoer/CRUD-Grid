@@ -47,15 +47,12 @@ define(function(require, exports) {
         TYPES = _.TYPES,
         FIELD_TYPE = _.FIELD_TYPE,
         SEARCH_FIELD_WIDTH = _.SEARCH_FIELD_WIDTH,
-        FONT_WIDTH_CN = _.FONT_WIDTH_CN,
-        FONT_WIDTH_EN = _.FONT_WIDTH_EN,
         WIN_HEIGHT_SPAN = _.WIN_HEIGHT_SPAN,
         ALL_EDITABLE = _.ALL_EDITABLE,
         ADD_EDITABLE = _.ADD_EDITABLE,
         EDIT_EDITABLE = _.EDIT_EDITABLE,
         ALL_NOT_EDITABLE = _.ALL_NOT_EDITABLE,
         WIN_SPAN = _.WIN_SPAN,
-        VALID_TYPE = _.VALID_TYPE,
         TRUE = _.TRUE,
         FALSE = _.FALSE,
         originConfig = {}, //未经过处理的原始用户的配置
@@ -552,10 +549,12 @@ define(function(require, exports) {
                     if (param) {
                         selectPos = getSelectPos(column, param);
                     }
-                    field = new FIELD_TYPE[column.type]({
+                    field = new FIELD_TYPE[column.multi ? 'multiEnum' : 'enum']({
                         id: id,
                         fieldLabel: column.fieldLabel,
                         store: column.store,
+                        hideOnSelect: false,
+                        submitValue: true,
                         typeAhead: true,
                         triggerAction: 'all',
                         //宽度优先使用计算过后的宽度，否则使用用户自定义宽度

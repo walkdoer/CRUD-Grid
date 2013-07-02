@@ -1,6 +1,5 @@
 define(function (require,exports) {
     'use strict';
-    Portal.loadCss('crud', 'public/css/roweditor.css');
     function onMenuClick(func) {
         return function (id, cls, title) {
             var mainPanel = Ext.getCmp('main-panel');

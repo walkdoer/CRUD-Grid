@@ -7,10 +7,7 @@ define(function(require, exports) {
      *
      */
     'use strict';
-    require('crud/public/js/lib/RowEditor.js');
     require('crud/public/js/Grid.CRUD.App.js');
-    require('crud/public/js/lib/Examples.js');
-
     function init(id, cls, title) {
         var gridPanel = new Ext.ux.CRUD({
             id: 'tab:' + id,
@@ -86,6 +83,7 @@ define(function(require, exports) {
                 id: 'type',
                 header: '任务类型',
                 type: 'enum',
+                multi: true,
                 mUrl: Portal.data.proxyUrl('crud:category:read'),
                 displayField: 'name',
                 valueField: '_id',
