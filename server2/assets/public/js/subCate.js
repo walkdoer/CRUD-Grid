@@ -10,17 +10,16 @@ define(function(require, exports) {
      */
     'use strict';
     require('crud/public/js/Grid.CRUD.App.js');
-
     function init(id, cls, title) {
         var gridPanel = new Ext.ux.CRUD({
             id: 'tab:' + id,
             title: title,
             closable: true,//配置可以关闭
             api: {
-                update: Portal.data.proxyUrl('crud:category:update'),
-                create: Portal.data.proxyUrl('crud:category:create'),
-                delete: Portal.data.proxyUrl('crud:category:delete'),
-                read: Portal.data.proxyUrl('crud:category:read')
+                update: Portal.data.proxyUrl('crud:subCate:update'),
+                create: Portal.data.proxyUrl('crud:subCate:create'),
+                delete: Portal.data.proxyUrl('crud:subCate:delete'),
+                read: Portal.data.proxyUrl('crud:subCate:read')
             },
             store: {idProperty: '_id'},
             search: {property: ['name']},
@@ -34,12 +33,11 @@ define(function(require, exports) {
             }, {
                 id: 'name',
                 type: 'string',
-                header: '分类名称',
+                header: '子分类名称',
                 fieldLabel: '标题',
                 sortable: true,
                 allowBlank: false,
-                width: 180,
-                dataIndex: 'name'
+                width: 180
             }, {
                 id: 'post_date',
                 header   : '更新日期',
@@ -47,17 +45,15 @@ define(function(require, exports) {
                 allowBlank: true,
                 type     : 'date',
                 width    : 85,
-                sortable : true,
-                dataIndex: 'post_date'
+                sortable : true
             }, {
-                id: 'type',
-                header: '任务类型',
-                fieldLabel: '类型',
+                id: 'parentId',
+                header: '父类任务类型',
+                fieldLabel: '父类任务类型',
                 type: 'enum',
                 mUrl: Portal.data.proxyUrl('crud:category:read'),
                 displayField: 'name',
-                valueField: '_id',
-                hidden: true
+                valueField: '_id'
             }]
         });
         return gridPanel;

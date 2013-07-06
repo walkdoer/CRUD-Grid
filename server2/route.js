@@ -1,7 +1,8 @@
 'use strict';
 var mime = require('./conf/mime').types;
 var staticPath = '/public/';
-var qs = require('querystring');
+var url = require('url'),
+    qs = require('querystring');
 var handle = require('./handle');
 function isStaticPath(path) {
     //如果path是public，且所请求的文件是合法的
@@ -43,16 +44,15 @@ function route(pathname, request, response) {
                     }
                 }
                 request.params = params;
-                method(request, response, function (err) {
-                    handle.method('common', 'error')(request, response, err);
-                });
             });
-        } else {
-            method(request, response, function (err) {
-                handle.method('common', 'error')(request, response, err);
-            });
+        } else if (request.method.toLowerCase() === 'get') {
+            var query = url.parse(request.url).query,
+                params = qs.parse(query);
+            request.params = params;
         }
-        
+        method(request, response, function (err) {
+            handle.method('common', 'error')(request, response, err);
+        });
     } else {
         handle.method('common', 'pathNotExist')(request, response, pathname);
     }

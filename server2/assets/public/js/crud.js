@@ -29,7 +29,7 @@ define(function(require, exports) {
                 edit: 'window' //编辑的时候使用窗口
             },
             search: {
-                property: ['title', 'finished', 'type']
+                property: ['title', 'finished', 'type', 'subType']
             },
             mButtons: ['refresh', 'add', 'delete',  {
                 id: 'finished',
@@ -76,18 +76,26 @@ define(function(require, exports) {
                 allowBlank: true,
                 type     : 'datetime',
                 renderer : Ext.util.Format.dateRenderer('n/j h:ia'),
-                mWidth    : [260],
+                mWidth    : [120, 200, 230, 230],//表格列宽度，搜索栏宽度，添加窗口宽度，编辑窗口宽度
                 sortable : true,
                 dataIndex: 'post_date'
             }, {
                 id: 'type',
                 header: '任务类型',
                 type: 'enum',
-                multi: true,
                 mUrl: Portal.data.proxyUrl('crud:category:read'),
                 displayField: 'name',
                 valueField: '_id',
                 dataIndex: 'type_id'
+            }, {
+                id: 'subType',
+                header: '子任务类型',
+                type: 'enum',
+                mParent: 'type',
+                mUrl: Portal.data.proxyUrl('crud:subCate:read'),
+                displayField: 'name',
+                valueField: '_id',
+                dataIndex: 'subType'
             }],
             listeners: {
                 crud_view_ready: function () {

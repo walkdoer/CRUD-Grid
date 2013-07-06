@@ -31,4 +31,11 @@ define(function (require,exports) {
             onMenuClick(p.init)(id, cls, title);
         });
     };
+    window.on_menu_click$crud$subCate = function (id, cls, title) {
+        console.log('menu click');
+        Portal.data.loadPlugin('crud', '/public/js/subCate.js', function (p) {
+            console.log('plugin loaded');
+            onMenuClick(p.init)(id, cls, title);
+        });
+    };
 });

@@ -74,6 +74,10 @@ define(function(require, exports) {
             if (typeof col.editable !== 'boolean') {
                 col.editable = true;
             }
+            //没有配置dataIndex，就默认用id为dataIndex
+            if (!col.dataIndex) {
+                col.dataIndex = col.id;
+            }
             col.mEditMode = getEditMode(col.mEdit, col.hidden);
             /**
              * 对宽度配置项进行处理，
@@ -542,7 +546,7 @@ define(function(require, exports) {
                 column = getColumnById(searchCondition, columnConfig);
                 if (!column) { return; }
                 items.push(column.fieldLabel, ' ');
-                var id = self.systemId + ':grid:searchbar:' + column.id;
+                var id = column.id = self.systemId + ':grid:searchbar:' + column.id;
                 if (column.type === 'enum') {
                     var mode = getComboMode(column);
                     var selectPos = 0, param = self.get('store', 'params');
@@ -560,6 +564,7 @@ define(function(require, exports) {
                         //宽度优先使用计算过后的宽度，否则使用用户自定义宽度
                         width: getSearchBarItemWidth(column.type) || column.widthArray[1],
                         mode: mode,
+                        mParent: column.mParent,
                         emptyText: column.emptyText,
                         valueField: column.valueField || column.dataIndex || column.id,
                         displayField: column.displayField === undefined ? 'displayText'
@@ -580,6 +585,17 @@ define(function(require, exports) {
                             },
                             select: function (combo, record, index) {
                                 console.log(record, index);
+                            },
+                            beforequery: function () {
+                                var parentId,
+                                    config = this.initialConfig;
+                                console.debug('beforequery', config);
+                                if (config.mParent) {
+                                    parentId = getColumnById(config.mParent, columnConfig).id;
+                                    var param = {};
+                                    param[config.mParent] = Ext.getCmp(parentId).getValue();
+                                    this.store.setBaseParam(param);
+                                }
                             }
                         }
                     });
@@ -772,10 +788,6 @@ define(function(require, exports) {
                 //没有header就是不进行处理
                 if (!col.header) { col.header = col.fieldLabel || col.id || col.dataIndex; }
                 if (!col.fieldLabel) {col.fieldLabel = col.header; }
-                //没有配置dataIndex，就默认用id为dataIndex
-                if (!col.dataIndex) {
-                    col.dataIndex = col.id;
-                }
                 newCol = _.except(col, ['type', 'mWidth', 'widthArray']);
                 newCol.width = col.widthArray[0];
                 oConf = originConfig[this.systemId];

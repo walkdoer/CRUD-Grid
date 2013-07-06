@@ -4,7 +4,8 @@ var http = require('http'),
     router = require('./route'),
     handle = require('./handle'),
     todoHandlers = require('./todoHandlers'),
-    cateHandlers = require('./cateHandlers');
+    cateHandlers = require('./cateHandlers'),
+    subCateHandlers = require('./subCateHandler');
 
 /*todo*/
 handle.post('/todo/new', todoHandlers.new);
@@ -21,6 +22,13 @@ handle.get('/cate/read', cateHandlers.read);
 handle.post('/cate/read', cateHandlers.read);
 handle.post('/cate/delete', cateHandlers.destroy);
 handle.post('/cate/update', cateHandlers.update);
+
+/*subCate*/
+handle.post('/sub/create', subCateHandlers.create);
+handle.get('/sub/read', subCateHandlers.read);
+handle.post('/sub/read', subCateHandlers.read);
+handle.post('/sub/delete', subCateHandlers.destroy);
+handle.post('/sub/update', subCateHandlers.update);
 
 
 function start(route) {
