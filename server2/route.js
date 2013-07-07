@@ -15,7 +15,7 @@ function isStaticPath(path) {
     return false;
 }
 function route(pathname, request, response) {
-    console.log(JSON.stringify(handle));
+    //console.log(JSON.stringify(handle));
     if (isStaticPath(pathname)) {
         //这里要记住惨痛的教训，不return导致下面的代码依旧执行
         return handle.method('common', 'readFile')(request, response,function (err) {
@@ -32,27 +32,32 @@ function route(pathname, request, response) {
             });
             request.on('end', function () {
                 var params = qs.parse(body);
+                console.log('====params=======');
+                console.dir(params);
                 request.body = body;
-                for (var key in params) {
+                /*for (var key in params) {
                     if (params.hasOwnProperty(key)) {
-                        console.dir(params);
                         if ((typeof key).toLowerCase() === 'string') {
                             var p = params[key];
                             if (!p) { continue; }
+                            console.log(key + "=" + p);
                             params[key] = JSON.parse(params[key]);
                         }
                     }
-                }
+                }*/
                 request.params = params;
+                method(request, response, function (err) {
+                    handle.method('common', 'error')(request, response, err);
+                });
             });
         } else if (request.method.toLowerCase() === 'get') {
             var query = url.parse(request.url).query,
                 params = qs.parse(query);
             request.params = params;
+            method(request, response, function (err) {
+                handle.method('common', 'error')(request, response, err);
+            });
         }
-        method(request, response, function (err) {
-            handle.method('common', 'error')(request, response, err);
-        });
     } else {
         handle.method('common', 'pathNotExist')(request, response, pathname);
     }

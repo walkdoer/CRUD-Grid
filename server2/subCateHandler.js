@@ -6,14 +6,17 @@ exports.read = function (req, res, next) {
     var data = req.params,
         params = {};
     console.log('=======read========');
-    if (data && data.parentId) {
-        params.parentId = data.parentId;
+    if (data && data.type) {
+        console.log(data.type);
+        console.log(db.ObjectID.createFromHexString(data.type));
+        params.parentId = data.type;
     }
     db.subCate.findItems(params, {
         sort: {
             id: 1
         }
     }, function (err, rows) {
+        console.dir(rows);
         if (err) {
             return next(err);
         }

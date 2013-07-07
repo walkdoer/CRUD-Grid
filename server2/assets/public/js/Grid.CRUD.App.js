@@ -319,7 +319,7 @@ define(function(require, exports) {
                 } else {
                     paramsNew = params;
                 }
-                setBaseParam(store, paramsNew);
+                _.setBaseParam(store, paramsNew);
                 store.load();
             }
             viewlisteners[self.config.getEvent('view', 'VIEW_READY')] = function (view) {
@@ -360,7 +360,7 @@ define(function(require, exports) {
                 } else {
                     paramsNew = params;
                 }
-                setBaseParam(model.getStore(), paramsNew);
+                _.setBaseParam(model.getStore(), paramsNew);
                 model.getStore().load({
                     callback: function (records, options, success) {
                         //向外部抛出搜索成功的消息
@@ -384,18 +384,6 @@ define(function(require, exports) {
 
 
             this.add(grid);
-
-            /**
-             * 设置BaseParam
-             * @param {Ext.data.Store} store
-             * @param {Object}         params 参数
-             */
-            function setBaseParam(store, params) {
-                if (!params) { return; }
-                for (var key in params) {
-                    store.setBaseParam(key, params[key]);
-                }
-            }
 
             /**
              * 更新记录

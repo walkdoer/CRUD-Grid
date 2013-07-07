@@ -57,6 +57,17 @@ define(function (require, exports) {
         return clone;
     }
     /**
+     * 设置BaseParam
+     * @param {Ext.data.Store} store
+     * @param {Object}         params 参数
+     */
+    function setBaseParam(store, params) {
+        if (!params) { return; }
+        for (var key in params) {
+            store.setBaseParam(key, params[key]);
+        }
+    }
+    /**
      * 将两个Object合体
      * @param  {Object} a
      *
@@ -214,4 +225,5 @@ define(function (require, exports) {
     exports.is = is;
     exports.isObject = isObject;
     exports.isArray = isArray;
+    exports.setBaseParam = setBaseParam;
 });

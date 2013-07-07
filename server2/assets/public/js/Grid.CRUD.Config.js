@@ -546,7 +546,7 @@ define(function(require, exports) {
                 column = getColumnById(searchCondition, columnConfig);
                 if (!column) { return; }
                 items.push(column.fieldLabel, ' ');
-                var id = column.id = self.systemId + ':grid:searchbar:' + column.id;
+                var realId = column.realId = self.systemId + ':grid:searchbar:' + column.id;
                 if (column.type === 'enum') {
                     var mode = getComboMode(column);
                     var selectPos = 0, param = self.get('store', 'params');
@@ -554,7 +554,7 @@ define(function(require, exports) {
                         selectPos = getSelectPos(column, param);
                     }
                     field = new FIELD_TYPE[column.multi ? 'multiEnum' : 'enum']({
-                        id: id,
+                        id: realId,
                         fieldLabel: column.fieldLabel,
                         store: column.store,
                         hideOnSelect: false,
@@ -591,10 +591,11 @@ define(function(require, exports) {
                                     config = this.initialConfig;
                                 console.debug('beforequery', config);
                                 if (config.mParent) {
-                                    parentId = getColumnById(config.mParent, columnConfig).id;
+                                    parentId = getColumnById(config.mParent, columnConfig).realId;
                                     var param = {};
                                     param[config.mParent] = Ext.getCmp(parentId).getValue();
-                                    this.store.setBaseParam(param);
+                                    _.setBaseParam(this.store, param);
+                                    column.store.reload();
                                 }
                             }
                         }
@@ -602,7 +603,7 @@ define(function(require, exports) {
                 } else if (column.type === 'boolean') {
                     var valueField = column.dataIndex || column.id;
                     field = new Ext.form.ComboBox({
-                        id: id,
+                        id: realId,
                         store: new Ext.data.ArrayStore({
                             fields: [valueField, 'displayText'],
                             data: [['', '全部'], [TRUE, column.mPosiText || 'true'], [FALSE, column.mNegaText || 'false']]
@@ -627,7 +628,7 @@ define(function(require, exports) {
                         'mEditMode',
                         'dataIndex'
                     ]);
-                    conf.id = id;
+                    conf.id = realId;
                     conf.width = getSearchBarItemWidth(column.type) || column.widthArray[1],
                     conf.allowBlank = true;//搜索框的字段为非必填，可以为空
                     field = new FIELD_TYPE[column.type](conf);
