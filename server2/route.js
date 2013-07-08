@@ -35,16 +35,20 @@ function route(pathname, request, response) {
                 console.log('====params=======');
                 console.dir(params);
                 request.body = body;
-                /*for (var key in params) {
+                for (var key in params) {
                     if (params.hasOwnProperty(key)) {
                         if ((typeof key).toLowerCase() === 'string') {
                             var p = params[key];
                             if (!p) { continue; }
                             console.log(key + "=" + p);
-                            params[key] = JSON.parse(params[key]);
+                            try {
+                                params[key] = JSON.parse(params[key]);
+                            } catch (e) {
+                                continue;
+                            }
                         }
                     }
-                }*/
+                }
                 request.params = params;
                 method(request, response, function (err) {
                     handle.method('common', 'error')(request, response, err);

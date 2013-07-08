@@ -152,16 +152,6 @@ define(function(require, exports) {
         }
         return maxWidth;
     },
-    getColumnById = function getColumnById(id, columns) {
-        var i = 0, length = columns.length;
-        while (i < length) {
-            if (columns[i].id === id) {
-                return columns[i];
-            }
-            i++;
-        }
-        return null;
-    },
     getIdProperty = function getIdProperty(store, columns) {
         var col, id, idReal;
         idReal = store.idProperty;
@@ -543,10 +533,13 @@ define(function(require, exports) {
         for (var i = 0; i < property.length; i++) {
             (function (column, self) {
                 searchCondition = property[i];
-                column = getColumnById(searchCondition, columnConfig);
+                column = _.getColumnById(searchCondition, columnConfig);
                 if (!column) { return; }
                 items.push(column.fieldLabel, ' ');
-                var realId = column.realId = self.systemId + ':grid:searchbar:' + column.id;
+                if (!column.realId) {
+                    column.realId = {};
+                }
+                var realId = column.realId.search = self.systemId + ':grid:searchbar:' + column.id;
                 if (column.type === 'enum') {
                     var mode = getComboMode(column);
                     var selectPos = 0, param = self.get('store', 'params');
@@ -591,11 +584,14 @@ define(function(require, exports) {
                                     config = this.initialConfig;
                                 console.debug('beforequery', config);
                                 if (config.mParent) {
-                                    parentId = getColumnById(config.mParent, columnConfig).realId;
+                                    parentId = _.getColumnById(config.mParent, columnConfig).realId.search;
                                     var param = {};
                                     param[config.mParent] = Ext.getCmp(parentId).getValue();
+                                    if (CRUD_FIELD_ALL === param[config.mParent]) {
+                                        param[config.mParent] = '';
+                                    }
                                     _.setBaseParam(this.store, param);
-                                    column.store.reload();
+                                    column.store.load(param);
                                 }
                             }
                         }

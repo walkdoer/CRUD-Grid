@@ -92,6 +92,7 @@ define(function(require, exports) {
                 header: '子任务类型',
                 type: 'enum',
                 mParent: 'type',
+                allowBlank: true,
                 mUrl: Portal.data.proxyUrl('crud:subCate:read'),
                 displayField: 'name',
                 valueField: '_id',

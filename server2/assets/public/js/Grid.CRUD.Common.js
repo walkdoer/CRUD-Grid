@@ -150,6 +150,16 @@ define(function (require, exports) {
         }
         return newObj;
     }
+    var getColumnById = function getColumnById(id, columns) {
+        var i = 0, length = columns.length;
+        while (i < length) {
+            if (columns[i].id === id) {
+                return columns[i];
+            }
+            i++;
+        }
+        return null;
+    };
     var TYPES = {
         STRING: 'string',
         BIGSTRING: 'bigstring',
@@ -218,6 +228,7 @@ define(function (require, exports) {
     exports.cloneObject = cloneObject;
     exports.FONT_WIDTH_CN = FONT_WIDTH_CN;
     exports.FONT_WIDTH_EN = FONT_WIDTH_EN;
+    exports.getColumnById = getColumnById;
     exports.WIN_SPAN = 40;
     exports.WIN_HEIGHT_SPAN = 75;
     exports.FIELD_TYPE = FIELD_TYPE;

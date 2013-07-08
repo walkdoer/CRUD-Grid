@@ -225,6 +225,7 @@ define(function (require, exports) {
                     editMode, //编辑模式
                     saveBtnId = conf.id + ':btn:save',
                     idPrefix = '',
+                    winType = record ? 'edit' : 'add',
                     cancelBtnId = conf.id + ':btn:cancel',
                     defaultValues = {},
                     beginFieldString;
@@ -244,50 +245,67 @@ define(function (require, exports) {
                         defaultValues[item.dataIndex] = item.defaultValue;
                     }
 
-                    (function (orgnFldItem) {
+                    (function (fldConfCopy, fldConfOrgn) {
                         var fieldConfItem;
-                        if (orgnFldItem.mEditMode === editMode ||
-                            orgnFldItem.mEditMode === _.ALL_EDITABLE) {
-                            if (_.isEmpty(orgnFldItem.listeners)) {
-                                orgnFldItem.listeners = {};
+                        if (fldConfCopy.mEditMode === editMode ||
+                            fldConfCopy.mEditMode === _.ALL_EDITABLE) {
+                            if (_.isEmpty(fldConfCopy.listeners)) {
+                                fldConfCopy.listeners = {};
                             }
 
-                            if (orgnFldItem.type === 'enum') {
+                            if (fldConfCopy.type === 'enum') {
+                                fldConfOrgn.realId[winType] = idPrefix + fldConfCopy.id + ':' + Math.round(Math.random() * 10000);
                                 fieldConfItem = {
-                                    id: idPrefix + orgnFldItem.id + ':' + Math.round(Math.random() * 10000),
-                                    fieldLabel: orgnFldItem.fieldLabel,
-                                    store: orgnFldItem.editStore, //direct array data
+                                    id: fldConfOrgn.realId[winType],
+                                    fieldLabel: fldConfCopy.fieldLabel,
+                                    store: fldConfCopy.editStore, //direct array data
                                     typeAhead: true,
                                     triggerAction: 'all',
-                                    width: orgnFldItem.width,
-                                    mode: orgnFldItem.mMode,
-                                    emptyText: orgnFldItem.emptyText,
-                                    valueField: orgnFldItem.valueField || orgnFldItem.dataIndex,
-                                    displayField: orgnFldItem.displayField === undefined ? 'displayText'
-                                                                            : orgnFldItem.displayField,
-                                    editable: orgnFldItem.editable,
-                                    valueNotFoundText: orgnFldItem.valueNotFoundText === undefined ? '没有该选项'
-                                                                                    : orgnFldItem.valueNotFoundText,
+                                    width: fldConfCopy.width,
+                                    mode: fldConfCopy.mMode,
+                                    emptyText: fldConfCopy.emptyText,
+                                    valueField: fldConfCopy.valueField || fldConfCopy.dataIndex,
+                                    displayField: fldConfCopy.displayField === undefined ? 'displayText'
+                                                                            : fldConfCopy.displayField,
+                                    editable: fldConfCopy.editable,
+                                    valueNotFoundText: fldConfCopy.valueNotFoundText === undefined ? '没有该选项'
+                                                                                    : fldConfCopy.valueNotFoundText,
                                     forceSelection: true,
+                                    mParent: fldConfCopy.mParent,
                                     blankText : '请选择',
-                                    dataIndex: orgnFldItem.dataIndex,
-                                    name: orgnFldItem.id,
+                                    dataIndex: fldConfCopy.dataIndex,
+                                    name: fldConfCopy.id,
                                     selectOnFocus: true,
                                     allowBlank: false,
                                     listeners: {
                                         afterrender: function (combo) {
-                                            //combo.setValue(combo.store.getAt(selectPos).data[orgnFldItem.dataIndex]);
+                                            //combo.setValue(combo.store.getAt(selectPos).data[fldConfCopy.dataIndex]);
+                                        },
+                                        beforequery: function () {
+                                            var parentId,
+                                                config = this.initialConfig;
+                                            console.debug('beforequery', config);
+                                            if (config.mParent) {
+                                                parentId = _.getColumnById(config.mParent, fieldConfig).realId[winType];
+                                                var param = {};
+                                                param[config.mParent] = Ext.getCmp(parentId).getValue();
+                                                if (CRUD_FIELD_ALL === param[config.mParent]) {
+                                                    param[config.mParent] = '';
+                                                }
+                                                _.setBaseParam(this.store, param);
+                                                this.store.load(param);
+                                            }
                                         }
                                     }
                                 };
                             } else {
-                                fieldConfItem = _.except(orgnFldItem, ['type', 'editable', 'mEditMode']);
+                                fieldConfItem = _.except(fldConfCopy, ['type', 'editable', 'mEditMode']);
                                 fieldConfItem.id = idPrefix + fieldConfItem.id + Math.round(Math.random() * 10000);
-                                fieldConfItem.name = orgnFldItem.dataIndex;
+                                fieldConfItem.name = fldConfCopy.dataIndex;
                             }
                             //为窗口字段创建监听，以控制保存按钮的状态
-                            var orgnEventHandler = fieldConfItem.listeners[LISTENERS_TYPE[orgnFldItem.type]];
-                            fieldConfItem.listeners[LISTENERS_TYPE[orgnFldItem.type]] = function (field, rec, index) {
+                            var orgnEventHandler = fieldConfItem.listeners[LISTENERS_TYPE[fldConfCopy.type]];
+                            fieldConfItem.listeners[LISTENERS_TYPE[fldConfCopy.type]] = function (field, rec, index) {
                                 var btn = Ext.getCmp(saveBtnId);
                                 if (record && field.getValue() === record.get(field.getName())) {
                                     btn.disable();
@@ -299,9 +317,9 @@ define(function (require, exports) {
                                 }
                             };
                             //可编辑字段根据数据类型创建field
-                            fields.push(new FIELD_TYPE[orgnFldItem.type](fieldConfItem));
+                            fields.push(new FIELD_TYPE[fldConfCopy.type](fieldConfItem));
                         }
-                    })(item);
+                    })(item, fieldConfig[i]);
 
                 }
                 if (!conf.title) {

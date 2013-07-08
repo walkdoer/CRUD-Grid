@@ -27,6 +27,7 @@ exports.new = function (req, res, next) {
         data = req.params.data;
         title = data.title || '';
     } catch (e) {
+        console.log(e);
         return next(e);
     }
     title = title.trim();
@@ -43,9 +44,11 @@ exports.new = function (req, res, next) {
     db.todo.save({
         title: title,
         type_id: data.type_id,
+        subType: data.subType,
         post_date: new Date()
     }, function (err, row) {
         if (err) {
+            console.log("error");
             return next(err);
         }
         res.write(JSON.stringify(util.result(true, '添加成功', row)));
@@ -66,6 +69,8 @@ exports.edit = function (req, res, next) {
     }, {
         $set: {
             title: data.title,
+            type_id: data.type_id,
+            subType: data.subType,
             finished: data.finished
         }
     }, {
