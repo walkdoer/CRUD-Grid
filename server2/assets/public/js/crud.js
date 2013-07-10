@@ -86,7 +86,7 @@ define(function(require, exports) {
                 mUrl: Portal.data.proxyUrl('crud:category:read'),
                 //mCrud: 'tab:crud:category',
                 displayField: 'name',
-                valueField: 'id',
+                valueField: '_id',
                 dataIndex: 'type_id'
             }, {
                 id: 'subType',
@@ -97,7 +97,7 @@ define(function(require, exports) {
                 mUrl: Portal.data.proxyUrl('crud:subCate:read'),
                 //mCrud: 'tab:crud:subCate',
                 displayField: 'name',
-                valueField: 'id',
+                valueField: '_id',
                 dataIndex: 'subType'
             }],
             listeners: {
@@ -112,6 +112,9 @@ define(function(require, exports) {
                 },
                 crud_load_success: function () {
                     console.log('加载成功');
+                },
+                destroy: function (){
+                    console.log('destroy');
                 }
             }
         });

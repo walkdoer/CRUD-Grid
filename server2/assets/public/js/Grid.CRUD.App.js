@@ -15,10 +15,12 @@ define(function(require, exports) {
     require('crud/public/js/lib/lovcombo.js');
     require('crud/public/js/lib/Examples.js');
     require('crud/public/js/lib/datetimefield.js');
-    var _ = require('crud/public/js/Grid.CRUD.Common.js');
-    var Model = require('crud/public/js/Grid.CRUD.Model.js'),
-        Config = require('crud/public/js/Grid.CRUD.Config.js'),
-        View = require('crud/public/js/Grid.CRUD.View.js');
+    var _          = require('crud/public/js/Grid.CRUD.Common.js'),
+        Model      = require('crud/public/js/Grid.CRUD.Model.js'),
+        View       = require('crud/public/js/Grid.CRUD.View.js'),
+        Config     = require('crud/public/js/Grid.CRUD.Config.js'),
+        __system__ = {},
+        __relyer__ = {};
     //create namespace
     Ext.ns('Ext.ux.CRUD');
     Ext.ux.clone = function (o) {
@@ -45,8 +47,37 @@ define(function(require, exports) {
     }; // eo function clone*/
 
     Ext.ux.CRUD = Ext.extend(Ext.Panel, {
+        constructor: function (config) {
+            if (!config.listeners) {
+                config.listeners = {};
+            }
+            var orgnDestroy = config.listeners.destroy,
+                sysCode = config.api.read;
+            //destroy后删除__system__和relyer中对该系统的记录
+            config.listeners.destroy = function () {
+                var sys;
+                __system__[sysCode] = null;
+                delete __system__[sysCode];
+                for (var system in __relyer__) {
+                    if (__relyer__.hasOwnProperty(system)) {
+                        sys = __relyer__[system];
+                        for (var i = sys.length - 1; i >= 0; i--) {
+                            if (sys[i] === this) {
+                                console.log('删除系统依赖');
+                                sys.splice(i, 1);
+                            }
+                        }
+                    }
+                }
+                if (orgnDestroy) {
+                    orgnDestroy.apply(this, arguments);
+                }
+            };
+            Ext.ux.CRUD.superclass.constructor.apply(this, arguments);
+        },
         initComponent: function () {
             var self = this,
+                sysCode = this.initialConfig.api.read,//系统的代号，使用read接口来作为code
                 reloadMethod; //store.reload() or store.loadData()
             if (!!self.data) {
                 reloadMethod = 'loadData';
@@ -64,6 +95,21 @@ define(function(require, exports) {
                 data: this.data || this.api,
                 reader: self.config.get('store', 'reader')
             });
+            //检查依赖关系
+            var columns = this.initialConfig.mColumns, col, relyFlag;
+            for (var i = 0; i < columns.length; i++) {
+                col = columns[i];
+                if (!(relyFlag = col.mUrl) || relyFlag === sysCode) {
+                    continue;
+                }
+                //如果依赖的系统已经打开
+                if (!__relyer__[relyFlag]) {
+                    __relyer__[relyFlag] = [];
+                }
+                __relyer__[relyFlag].push(this);
+            }
+            __system__[sysCode] = this;
+            console.log(__relyer__, __system__);
             /**
              * 返回记录是否处于编辑状态
              * @param  {Ext.data.Record}  record 打开的记录
@@ -147,8 +193,9 @@ define(function(require, exports) {
                         view.closeWindow('add');
                     }
                     view.changeAllBtnStatu();
-                    view.selectRecord(rs);
+                    //view.selectRecord(rs);
                     self.fireEvent(self.config.getEvent('app', 'CREATE_SUCCESS'), rs);
+                    updateRelyer();
                 },
                 delete: function (store, action, result, res, rs) {
                     var nextIndex,
@@ -168,6 +215,7 @@ define(function(require, exports) {
                     view.selectRow(nextIndex);
                     view.changeAllBtnStatu();
                     self.fireEvent(self.config.getEvent('app', 'DELETE_SUCCESS'), rs, index);
+                    updateRelyer();
                 },
                 update: function (store, action, result, res, rs) {
                     //todo
@@ -181,6 +229,7 @@ define(function(require, exports) {
                     }
                     view.changeAllBtnStatu();
                     self.fireEvent(self.config.getEvent('app', 'UPDATE_SUCCESS'), rs);
+                    updateRelyer();
                 },
                 read: function (store, action, rs, options) {
                     self.fireEvent(self.config.getEvent('app', 'LOAD_SUCCESS'), rs);
@@ -305,7 +354,7 @@ define(function(require, exports) {
                 })(buttonsBarConfig.items);
             }
 
-            function loadData() {
+            var loadData = function loadData() {
                 var store = model.getStore(),
                     paramsNew,
                     params = self.config.get('store', 'params');
@@ -321,7 +370,19 @@ define(function(require, exports) {
                 }
                 _.setBaseParam(store, paramsNew);
                 store.load();
-            }
+            },
+            //更新依赖者
+            updateRelyer = function updateRelyer() {
+                var relyers = __relyer__[sysCode],
+                    rly;
+                for (var i = 0; relyers && i < relyers.length; i++) {
+                    rly = relyers[i];
+                    if (rly.loadResource) {
+                        console.log('reload rely resource');
+                        rly.loadResource();
+                    }
+                }
+            };
             viewlisteners[self.config.getEvent('view', 'VIEW_READY')] = function (view) {
                 //如果需要预加载，则显示LoadMask ，提示加载状态
                 if (self.config.get('needPreloadRes')) {
