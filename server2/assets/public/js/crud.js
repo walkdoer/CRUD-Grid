@@ -84,8 +84,9 @@ define(function(require, exports) {
                 header: '任务类型',
                 type: 'enum',
                 mUrl: Portal.data.proxyUrl('crud:category:read'),
+                //mCrud: 'tab:crud:category',
                 displayField: 'name',
-                valueField: '_id',
+                valueField: 'id',
                 dataIndex: 'type_id'
             }, {
                 id: 'subType',
@@ -94,8 +95,9 @@ define(function(require, exports) {
                 mParent: 'type',
                 allowBlank: true,
                 mUrl: Portal.data.proxyUrl('crud:subCate:read'),
+                //mCrud: 'tab:crud:subCate',
                 displayField: 'name',
-                valueField: '_id',
+                valueField: 'id',
                 dataIndex: 'subType'
             }],
             listeners: {

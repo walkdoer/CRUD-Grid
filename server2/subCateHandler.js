@@ -50,6 +50,7 @@ exports.create = function (req, res, next) {
     db.subCate.save({
         name: name,
         parentId:  data.parentId,
+        test: {a: 1, b: 2},
         post_date: new Date()
     }, function (err, row) {
         if (err) {

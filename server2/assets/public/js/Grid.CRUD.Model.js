@@ -9,7 +9,6 @@ define(function (require, exports) {
      *
      */
     'use strict';
-    
     var _ = require('crud/public/js/Grid.CRUD.Common.js');
     //引入StoreFactory
     var createStore = function (conf) {
@@ -22,6 +21,7 @@ define(function (require, exports) {
         }
         if (!_.isArray(data)) {
             defaultConf = {
+                storeId: conf.storeId,
                 proxy: new Ext.data.HttpProxy({
                     api: {
                         read: { url: conf.data.read, method: 'GET' },
@@ -31,7 +31,7 @@ define(function (require, exports) {
                     }
                 }),
                 autoSave: false,
-                autoDestroy: true,
+                autoDestroy: false,
                 reader: new Ext.data.JsonReader(conf.reader),
                 writer: new Ext.data.JsonWriter({
                     writeAllFields: true,
@@ -59,6 +59,7 @@ define(function (require, exports) {
                 dataFields.push(fn);
             }
             store = new Ext.data.ArrayStore({
+                storeId: conf.storeId,
                 /**
                  * 配置项是一个数组，例如
                    [
@@ -105,8 +106,8 @@ define(function (require, exports) {
                 } else {
                     that.fireEvent('error', action, options, record, msg);
                 }
-                if (errorFunc[action] && typeof errorFunc[action] === 'function') { 
-                    errorFunc[action](); 
+                if (errorFunc[action] && typeof errorFunc[action] === 'function') {
+                    errorFunc[action]();
                 }
             });
             store.on('write', function (store, action, result, res, rs) {
@@ -114,7 +115,7 @@ define(function (require, exports) {
                 if (action === 'destroy') {
                     action = 'delete';
                 }
-                if (successFunc[action] && typeof successFunc[action] === 'function') { 
+                if (successFunc[action] && typeof successFunc[action] === 'function') {
                     successFunc[action]();
                 }
                 that.fireEvent('success', store, action, result, res, rs);
@@ -131,12 +132,15 @@ define(function (require, exports) {
             store.on('load', function (store, records, options) {
                 that.fireEvent('success', store, 'read', records, options);
             });
-            
+
             this.getStore = function () {
                 return store;
             };
             this.addEvents('success', 'error', 'fail');
         },
+        /**
+         * 保存记录
+         */
         saveRecord: function (record) {
             var store = this.getStore();
             if (record) {
@@ -144,6 +148,9 @@ define(function (require, exports) {
             }
             store.save();
         },
+        /**
+         * 删除记录
+         */
         removeRecord: function (record) {
             var store = this.getStore();
             if (record) {

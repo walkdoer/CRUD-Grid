@@ -293,7 +293,7 @@ define(function (require, exports) {
                                                     param[config.mParent] = '';
                                                 }
                                                 _.setBaseParam(this.store, param);
-                                                this.store.load(param);
+                                                this.store.load();
                                             }
                                         }
                                     }

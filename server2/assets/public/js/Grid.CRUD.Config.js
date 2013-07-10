@@ -274,7 +274,9 @@ define(function(require, exports) {
     createStoreFromComboConfig = function createStoreFromComboConfig(combo, useToEdit) {
         console.log("##createStoreFromComboConfig##");
         var store;
-        if (combo.mStore) {
+        if (combo.mCrud) {
+            store = Ext.StoreMgr.get(combo.mCrud + ':store');
+        } else if (combo.mStore) {
             store = combo.mStore;
         } else if (combo.mUrl) {
             var valueName = combo.valueField || combo.id,//优先使用用户自定义的valueField
@@ -591,7 +593,7 @@ define(function(require, exports) {
                                         param[config.mParent] = '';
                                     }
                                     _.setBaseParam(this.store, param);
-                                    column.store.load(param);
+                                    column.store.load();
                                 }
                             }
                         }

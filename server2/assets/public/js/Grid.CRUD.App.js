@@ -60,7 +60,7 @@ define(function(require, exports) {
             self.config = new Config(this.initialConfig).init();
             //初始化数据库
             var model = new Model({
-                storeId: 'mydata',
+                storeId: this.initialConfig.id + ':store',
                 data: this.data || this.api,
                 reader: self.config.get('store', 'reader')
             });
