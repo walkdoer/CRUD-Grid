@@ -26,11 +26,11 @@ define(function(require, exports) {
             search: {property: ['name']},
             mButtons: ['add', 'delete', 'refresh'],
             mColumns: [{
-                id: 'id',
+                id: 'thi is aid',
                 type: 'string',
-                mEdit: false,
-                dataIndex: '_id',
-                editable: false
+                //mEdit: false,
+                dataIndex: '_id'
+                //editable: false
             }, {
                 id: 'name',
                 type: 'string',
