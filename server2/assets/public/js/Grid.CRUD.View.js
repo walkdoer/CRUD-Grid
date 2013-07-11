@@ -457,13 +457,13 @@ define(function (require, exports) {
                             return function (value) {
                                 if (value === true) {
                                     if (pc) {
-                                        return '<font color="' + pc + '">' + pt + '</font>';
+                                        return '<font style="color:' + pc + '">' + pt + '</font>';
                                     } else {
                                         return pt;
                                     }
                                 } else if (value === false) {
                                     if (nc) {
-                                        return '<font color="' + nc + '">' + nt + '</font>';
+                                        return '<font style="color:' + nc + '">' + nt + '</font>';
                                     } else {
                                         return nt;
                                     }

@@ -105,18 +105,25 @@ define(function(require, exports) {
                     col.widthArray[kk] = col.widthArray[0];
                 }
             }
-            if (col.mNegaText) {
-                textColor = col.mNegaText.split(/\s+/);
-                col.mNegaText = textColor[0];
-                if (textColor[1]) {
-                    col.mNegaColor = textColor[1];
+            if (col.mText) {
+                var testArr = col.mText.split(','),
+                    reg = new RegExp(/\s+/);
+                col.mPosiText = testArr[0];
+                col.mNegaText = testArr[1];
+
+                if (col.mNegaText) {
+                    textColor = col.mNegaText.split(reg);
+                    col.mNegaText = textColor[0];
+                    if (textColor[1]) {
+                        col.mNegaColor = textColor[1];
+                    }
                 }
-            }
-            if (col.mPosiText) {
-                textColor = col.mPosiText.split(/\s+/);
-                col.mPosiText = textColor[0];
-                if (textColor[1]) {
-                    col.mPosiColor = textColor[1];
+                if (col.mPosiText) {
+                    textColor = col.mPosiText.split(reg);
+                    col.mPosiText = textColor[0];
+                    if (textColor[1]) {
+                        col.mPosiColor = textColor[1];
+                    }
                 }
             }
         }
