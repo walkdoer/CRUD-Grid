@@ -629,6 +629,7 @@ define(function(require, exports) {
                         'type',
                         'sortable',
                         'header',
+                        'hidden',
                         'editable',
                         'mEditMode',
                         'dataIndex'

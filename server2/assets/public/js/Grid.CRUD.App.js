@@ -486,7 +486,7 @@ define(function(require, exports) {
                 var loadedCount = 0, storeLen = 0, col;
                 for (var i = 0; i < columns.length; i++) {
                     col = columns[i];
-                    if (col.store) {
+                    if (col.store && !(col.store instanceof Ext.data.ArrayStore)) {
                         storeLen++;
                         (function (store, editStore) {
                             var loadedCheck = function () {

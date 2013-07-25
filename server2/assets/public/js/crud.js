@@ -73,7 +73,7 @@ define(function(require, exports) {
                 id: 'post_date',
                 header   : 'DeadLine',
                 allowBlank: true,
-                type     : 'datetime',
+                type     : 'date',
                 renderer : Ext.util.Format.dateRenderer('n/j h:ia'),
                 mWidth    : [120, 200, 230, 230],//表格列宽度，搜索栏宽度，添加窗口宽度，编辑窗口宽度
                 sortable : true,
@@ -98,24 +98,7 @@ define(function(require, exports) {
                 displayField: 'name',
                 valueField: '_id',
                 dataIndex: 'subType'
-            }],
-            listeners: {
-                crud_view_ready: function () {
-                    console.log('界面准备好了');
-                },
-                crud_delete_success: function () {
-                    console.log('删除成功');
-                },
-                crud_delete_error: function () {
-                    console.log('删除失败');
-                },
-                crud_load_success: function () {
-                    console.log('加载成功');
-                },
-                destroy: function (){
-                    console.log('destroy');
-                }
-            }
+            }]
         });
         return gridPanel;
     }
