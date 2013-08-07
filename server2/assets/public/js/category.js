@@ -52,10 +52,8 @@ define(function(require, exports) {
             }, {
                 id: 'type',
                 header: '等级',
-                fieldLabel: '等级',
                 type: 'enum',
                 mLocalData: [[1, '低'], [2, '中'], [3, '高']],
-                displayField: 'typeName',
                 mEdit: false
             }]
         });

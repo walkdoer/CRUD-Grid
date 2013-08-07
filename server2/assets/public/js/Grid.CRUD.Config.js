@@ -280,7 +280,7 @@ define(function(require, exports) {
      */
     createStoreFromComboConfig = function createStoreFromComboConfig(combo, useToEdit) {
         console.log("##createStoreFromComboConfig##");
-        var store, localData;
+        var store, localData = [[CRUD_FIELD_ALL, '全部']];
         if (combo.mCrud) {
             store = Ext.StoreMgr.get(combo.mCrud + ':store');
         } else if (combo.mStore) {
@@ -322,9 +322,9 @@ define(function(require, exports) {
             });
         } else if (combo.mLocalData) {
             if (_.isObject(combo.mLocalData)) {
-                localData = getArrayFromObject(combo.mLocalData);
+                localData = localData.concat(getArrayFromObject(combo.mLocalData));
             } else if (_.isArray(combo.mLocalData)) {
-                localData = combo.mLocalData;
+                localData = localData.concat(combo.mLocalData);
             } else {
                 throw '[Grid.CRUD.Config] function createStoreFromComboConfig () : mLocalData is null or invalid';//出错
             }
