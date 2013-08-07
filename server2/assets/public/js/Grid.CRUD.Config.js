@@ -280,7 +280,7 @@ define(function(require, exports) {
      */
     createStoreFromComboConfig = function createStoreFromComboConfig(combo, useToEdit) {
         console.log("##createStoreFromComboConfig##");
-        var store;
+        var store, localData;
         if (combo.mCrud) {
             store = Ext.StoreMgr.get(combo.mCrud + ':store');
         } else if (combo.mStore) {
@@ -321,9 +321,16 @@ define(function(require, exports) {
                 listeners: listeners
             });
         } else if (combo.mLocalData) {
+            if (_.isObject(combo.mLocalData)) {
+                localData = getArrayFromObject(combo.mLocalData);
+            } else if (_.isArray(combo.mLocalData)) {
+                localData = combo.mLocalData;
+            } else {
+                throw '[Grid.CRUD.Config] function createStoreFromComboConfig () : mLocalData is null or invalid';//出错
+            }
             store = new Ext.data.ArrayStore({
-                fields: [combo.id, 'displayText'],
-                data: getArrayFromObject(combo.mLocalData)
+                fields: [combo.id,  combo.displayField || 'displayText'],
+                data: localData
             });
         }
         return store;
@@ -635,7 +642,7 @@ define(function(require, exports) {
                         'dataIndex'
                     ]);
                     conf.id = realId;
-                    conf.width = getSearchBarItemWidth(column.type) || column.widthArray[1],
+                    conf.width = getSearchBarItemWidth(column.type) || column.widthArray[1];
                     conf.allowBlank = true;//搜索框的字段为非必填，可以为空
                     field = new FIELD_TYPE[column.type](conf);
                 }

@@ -502,6 +502,9 @@ define(function(require, exports) {
                         })(col.store, col.editStore);
                     }
                 }
+                if (storeLen === 0) {
+                    callback(); 
+                }
             };
         }
     });
