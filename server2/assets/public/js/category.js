@@ -23,7 +23,7 @@ define(function(require, exports) {
                 read: Portal.data.proxyUrl('crud:category:read')
             },
             store: {idProperty: '_id'},
-            search: {property: ['name']},
+            search: {property: ['name', 'type']},
             mButtons: ['add', 'delete', 'refresh'],
             mColumns: [{
                 id: 'thi is aid',
@@ -46,18 +46,15 @@ define(function(require, exports) {
                 mEdit: false,
                 allowBlank: true,
                 type     : 'date',
-                width    : 85,
+                width    : '150, 80',
                 sortable : true,
                 dataIndex: 'post_date'
             }, {
                 id: 'type',
-                header: '任务类型',
-                fieldLabel: '类型',
+                header: '等级',
                 type: 'enum',
-                mUrl: Portal.data.proxyUrl('crud:category:read'),
-                displayField: 'name',
-                valueField: '_id',
-                hidden: true
+                mLocalData: [[1, '低'], [2, '中'], [3, '高']],
+                mEdit: false
             }]
         });
         return gridPanel;

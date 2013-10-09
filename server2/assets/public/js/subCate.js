@@ -22,7 +22,7 @@ define(function(require, exports) {
                 read: Portal.data.proxyUrl('crud:subCate:read')
             },
             store: {idProperty: '_id'},
-            search: {property: ['name']},
+            search: {property: ['name', 'parentId']},
             mButtons: ['add', 'delete', 'refresh'],
             mColumns: [{
                 id: 'id',
